@@ -224,23 +224,30 @@ const Sound = {
     try {
       const c = this.ctx, t = c.currentTime;
       const src = c.createBufferSource(); src.buffer = this.noiseBuf(); src.loop = true;
-      const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 650; bp.Q.value = 0.6;
-      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
-      const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(1, t + 1.5);
-      const mod = c.createGain(); mod.gain.value = 0.5;
-      src.connect(bp); bp.connect(lp); lp.connect(g); g.connect(mod); mod.connect(c.destination);
+      const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 380;
+      const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(1, t + 2);
+      const mod = c.createGain(); mod.gain.value = 0.05;
+      src.connect(hp); g.connect(mod); mod.connect(c.destination);
+      // murmúrio: três faixas de "vozes" com modulação lenta e diferente em cada uma
+      const lfos = [];
+      [[620, 3.1, 1.0], [1350, 4.3, 0.8], [2400, 5.7, 0.5]].forEach(([f, rate, vol]) => {
+        const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 1.6;
+        const bg = c.createGain(); bg.gain.value = vol * 0.6;
+        const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = rate; lg.gain.value = vol * 0.35; l.connect(lg); lg.connect(bg.gain); l.start();
+        hp.connect(bp); bp.connect(bg); bg.connect(g); lfos.push(l);
+      });
       src.start();
       const tm = setInterval(() => {
         if (!this.amb || this.amb.roar) return;
         const now = c.currentTime; mod.gain.cancelScheduledValues(now); mod.gain.setValueAtTime(mod.gain.value, now);
-        mod.gain.linearRampToValueAtTime(0.35 + Math.random() * 0.35, now + 1.5 + Math.random() * 2);
-      }, 2600);
-      this.amb = { src, g, mod, bp, tm, roar: false };
+        mod.gain.linearRampToValueAtTime(0.035 + Math.random() * 0.035, now + 2 + Math.random() * 2);
+      }, 3000);
+      this.amb = { src, g, mod, bp: { frequency: { cancelScheduledValues() {}, setValueAtTime() {}, linearRampToValueAtTime() {}, value: 0 } }, tm, roar: false, lfos };
     } catch (e) {}
   },
   stopCrowd() {
     const a = this.amb; if (!a) return; this.amb = null; clearInterval(a.tm);
-    try { const now = this.ctx.currentTime; a.g.gain.cancelScheduledValues(now); a.g.gain.setValueAtTime(a.g.gain.value, now); a.g.gain.linearRampToValueAtTime(0.0001, now + 0.7); a.src.stop(now + 0.8); } catch (e) {}
+    try { const now = this.ctx.currentTime; a.g.gain.cancelScheduledValues(now); a.g.gain.setValueAtTime(a.g.gain.value, now); a.g.gain.linearRampToValueAtTime(0.0001, now + 0.7); a.src.stop(now + 0.8); (a.lfos || []).forEach(l => l.stop(now + 0.8)); } catch (e) {}
   },
   setOn(v) { this.on = v; if (!v) this.stopCrowd(); },
   roar() {
@@ -248,7 +255,7 @@ const Sound = {
     try {
       const now = this.ctx.currentTime; a.roar = true;
       a.mod.gain.cancelScheduledValues(now); a.mod.gain.setValueAtTime(a.mod.gain.value, now);
-      a.mod.gain.linearRampToValueAtTime(2.6, now + 0.35); a.mod.gain.setValueAtTime(2.6, now + 1.3); a.mod.gain.linearRampToValueAtTime(0.5, now + 4.2);
+      a.mod.gain.linearRampToValueAtTime(0.22, now + 0.4); a.mod.gain.setValueAtTime(0.22, now + 1.4); a.mod.gain.linearRampToValueAtTime(0.05, now + 4.2);
       a.bp.frequency.cancelScheduledValues(now); a.bp.frequency.setValueAtTime(a.bp.frequency.value, now);
       a.bp.frequency.linearRampToValueAtTime(1100, now + 0.5); a.bp.frequency.linearRampToValueAtTime(650, now + 4.2);
       setTimeout(() => { if (this.amb) this.amb.roar = false; }, 4300);
