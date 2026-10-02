@@ -122,6 +122,16 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 .colors{display:flex;gap:14px}.colors label{flex:1}
 .ef input[type=color]{width:100%;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:3px;cursor:pointer}
 
+.acct{margin-top:10px;text-align:center;font-size:14px;color:var(--muted)}
+.acct .btn{width:100%}
+.acctrow{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+.acctrow b{color:var(--fg)}
+.authp form{display:grid;gap:12px;max-width:420px;margin:12px 0}
+.authp label{display:grid;gap:4px;color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.authp input{background:var(--surface);border:1px solid var(--line);color:var(--fg);padding:13px;border-radius:12px;font:600 16px var(--font-body)}
+.authmsg{min-height:22px;font-size:14px;color:#ff9a9a}.authmsg.ok{color:var(--lime)}
+.authp .actions .linkbtn{justify-self:start}
+
 </style>
 </head>
 <body>
@@ -134,6 +144,7 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
   <p>Futebol de bot&atilde;o no navegador. Puxe, solte e fa&ccedil;a o gol.</p>
   <div class="menu">
     <div class="field"><label for="inName">Seu nome</label><input id="inName" maxlength="14" autocomplete="off" placeholder="Jogador"></div>
+    <div id="acct" class="acct"></div>
     <button class="btn big hidden" id="btnResume" data-go="resume" style="background:var(--lime)"></button>
     <button class="btn big" data-go="friendly">Amistoso</button>
     <button class="btn big" data-go="cup">Copa</button>
@@ -144,6 +155,9 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
   </div>
 </section>
 <section id="sSetup" class="hidden"><div id="setupBody" class="panel"></div></section>
+<section id="sAuth" class="hidden"><div class="panel authp"><h2 id="authTitle">Entrar</h2><p class="sub">Com uma conta, seus times e seu campeonato ficam salvos e voc&ecirc; continua de qualquer aparelho.</p>
+<form id="authForm" novalidate><label>E-mail<input id="auEmail" type="email" autocomplete="email" inputmode="email"></label><label>Senha<input id="auPass" type="password" autocomplete="current-password" minlength="6"></label><div id="authMsg" class="authmsg" role="status"></div><button class="btn big" id="btnAuthGo" type="submit">Entrar</button></form>
+<div class="actions"><button class="btn ghost" id="btnAuthSwap" type="button">Ainda n&atilde;o tenho conta</button><button class="linkbtn" id="btnAuthForgot" type="button">Esqueci minha senha</button><button class="btn ghost" data-go="menu" type="button">Voltar</button></div></div></section>
 <section id="sTeam" class="hidden"><div id="teamBody" class="panel"></div></section>
 <section id="sTour" class="hidden"><div id="tourBody" class="panel"></div></section>
 <section id="sConfig" class="hidden"><div class="panel"><h2>Configura&ccedil;&otilde;es</h2><div id="cfgBody"></div><p><button class="btn ghost" data-go="menu">Voltar</button></p></div></section>
@@ -737,7 +751,7 @@ const pick = (a, n) => shuffle(a).slice(0, n);
 /* ---------- Configurações salvas ---------- */
 const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('tampinhas_cfg') || '{}')); } catch (e) {}
-function saveCfg() { try { localStorage.setItem('tampinhas_cfg', JSON.stringify(CFG)); } catch (e) {} }
+function saveCfg() { try { localStorage.setItem('tampinhas_cfg', JSON.stringify(CFG)); } catch (e) {} if (typeof schedulePush === 'function') schedulePush(); }
 Sound.on = CFG.sound;
 const LEVELS = [[0, 'Iniciante'], [1, 'Fácil'], [2, 'Médio'], [3, 'Difícil'], [4, 'Profissional']];
 
@@ -754,11 +768,11 @@ function loadUserTeams() {
     });
   } catch (e) {}
 }
-function saveUserTeams() { try { localStorage.setItem('tampinhas_teams', JSON.stringify(USER_TEAMS)); } catch (e) {} }
+function saveUserTeams() { try { localStorage.setItem('tampinhas_teams', JSON.stringify(USER_TEAMS)); } catch (e) {} if (typeof schedulePush === 'function') schedulePush(); }
 loadUserTeams();
 
 /* ---------- Telas ---------- */
-const SCREENS = ['sMenu', 'sSetup', 'sTour', 'sMatch', 'sConfig', 'sHelp', 'sTeam'];
+const SCREENS = ['sMenu', 'sSetup', 'sTour', 'sMatch', 'sConfig', 'sHelp', 'sTeam', 'sAuth'];
 let current = 'sMenu';
 function show(id) {
   current = id;
@@ -785,6 +799,8 @@ function initMenu() {
     if (g === 'friendly' || g === 'cup' || g === 'league') startSetup(g);
     else if (g === 'config') { renderConfig(); show('sConfig'); }
     else if (g === 'resume') resumeTour();
+    else if (g === 'auth') { window._authDraw && window._authDraw(); show('sAuth'); }
+    else if (g === 'logout') doLogout();
     else if (g === 'help') show('sHelp');
     else if (g === 'team') { TEAMED.cur = null; renderTeam(); show('sTeam'); }
     else if (g === 'menu') { show('sMenu'); }
@@ -1081,10 +1097,10 @@ function tableHTML(rows, uid, qual, rel) {
 const SAVE_KEY = 'tampinhas_save';
 function saveTour() {
   try {
-    if (!TOUR || TOUR.phase === 'finished') { localStorage.removeItem(SAVE_KEY); return; }
-    const copy = Object.assign({}, TOUR, { playing: null, comp: TOUR.comp ? { id: TOUR.comp.id, free: !!TOUR.comp.free } : null });
+    if (!TOUR || TOUR.phase === 'finished') { localStorage.removeItem(SAVE_KEY); schedulePush(); return; }
+    const copy = Object.assign({}, TOUR, { savedAt: Date.now(), playing: null, comp: TOUR.comp ? { id: TOUR.comp.id, free: !!TOUR.comp.free } : null });
     const json = JSON.stringify(copy, (k, v) => (v && typeof v === 'object' && !Array.isArray(v) && v.id && v.kind && v.rating != null) ? { __t: v.id } : v);
-    localStorage.setItem(SAVE_KEY, json);
+    localStorage.setItem(SAVE_KEY, json); schedulePush();
   } catch (e) {}
 }
 function readSave() {
@@ -1218,8 +1234,121 @@ function initTeam() {
   });
 }
 
+/* ---------- Conta (Supabase) e salvamento na nuvem ---------- */
+const SB_URL = 'https://lephzateozhdiyvgpgly.supabase.co';
+const SB_KEY = 'sb_publishable_fy4N7G17i5zsKJREatUEcQ_LrAEuKoc';
+const CLOUD = { sb: null, user: null, status: '', pushT: null, busy: false };
+function sbReady(cb) {
+  if (CLOUD.sb) return cb(CLOUD.sb);
+  if (window.supabase && window.supabase.createClient) {
+    CLOUD.sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+    CLOUD.sb.auth.onAuthStateChange((ev, sess) => {
+      const u = sess && sess.user ? sess.user : null;
+      const was = CLOUD.user && CLOUD.user.id; CLOUD.user = u; renderAcct();
+      if (u && u.id !== was) setTimeout(syncDown, 0);
+    });
+    CLOUD.sb.auth.getSession().then(r => { if (r.data && r.data.session) { CLOUD.user = r.data.session.user; renderAcct(); } });
+    return cb(CLOUD.sb);
+  }
+  if (!sbReady.loading) {
+    sbReady.loading = true;
+    const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+    sc.onload = () => { sbReady.loading = false; sbReady(() => {}); const q = sbReady.q || []; sbReady.q = []; q.forEach(f => sbReady(f)); }; sc.onerror = () => { sbReady.loading = false; CLOUD.status = 'Sem conexão com o servidor'; renderAcct(); };
+    document.head.appendChild(sc);
+  }
+  if (cb) (sbReady.q = sbReady.q || []).push(cb);
+}
+function ptErr(m) {
+  m = String(m || '');
+  if (/Invalid login/i.test(m)) return 'E-mail ou senha incorretos.';
+  if (/already registered|already been registered/i.test(m)) return 'Esse e-mail já tem conta. Use "Entrar".';
+  if (/Password should be|at least/i.test(m)) return 'A senha precisa ter pelo menos 6 caracteres.';
+  if (/valid email|invalid format|Unable to validate/i.test(m)) return 'Digite um e-mail válido.';
+  if (/not confirmed/i.test(m)) return 'Confirme seu e-mail primeiro (veja a caixa de entrada e o spam).';
+  if (/rate limit|too many/i.test(m)) return 'Muitas tentativas. Espere um pouco e tente de novo.';
+  return 'Não deu certo agora. Tente de novo em instantes.';
+}
+function renderAcct() {
+  const el = $('acct'); if (!el) return;
+  if (CLOUD.user) el.innerHTML = '<div class="acctrow"><span>Conta: <b>' + esc(CLOUD.user.email || '') + '</b>' + (CLOUD.status ? ' <small>' + esc(CLOUD.status) + '</small>' : '') + '</span><button class="linkbtn" data-go="logout">Sair</button></div>';
+  else el.innerHTML = '<button class="btn ghost" data-go="auth">Entrar ou criar conta (salva seu progresso)</button>' + (CLOUD.status ? '<small class="sub">' + esc(CLOUD.status) + '</small>' : '');
+  const m = $('authMsg'); if (m && CLOUD.user && current === 'sAuth') show('sMenu');
+}
+function snapshotLocal() {
+  let tour = null; try { const r = localStorage.getItem(SAVE_KEY); if (r) tour = JSON.parse(r); } catch (e) {}
+  return { teams: USER_TEAMS.map(t => Object.assign({}, t)), tour, cfg: { name: CFG.name, level: CFG.level, duration: CFG.duration } };
+}
+async function pushNow() {
+  if (!CLOUD.sb || !CLOUD.user) return true;
+  const s = snapshotLocal();
+  const { error } = await CLOUD.sb.from('tampinhas_data').upsert({ user_id: CLOUD.user.id, teams: s.teams, tour: s.tour, cfg: s.cfg, updated_at: new Date().toISOString() });
+  CLOUD.status = error ? 'Não salvou na nuvem' : 'Salvo na nuvem';
+  renderAcct(); return !error;
+}
+function schedulePush() { if (!CLOUD.user) return; clearTimeout(CLOUD.pushT); CLOUD.pushT = setTimeout(pushNow, 1500); }
+async function syncDown() {
+  if (!CLOUD.sb || !CLOUD.user) return;
+  CLOUD.status = 'Sincronizando...'; renderAcct();
+  const { data, error } = await CLOUD.sb.from('tampinhas_data').select('*').eq('user_id', CLOUD.user.id).maybeSingle();
+  if (error) { CLOUD.status = 'Não consegui sincronizar'; renderAcct(); return; }
+  if (data) {
+    // times: junta os da nuvem com os locais (por id)
+    const map = new Map(); (data.teams || []).forEach(t => t && t.id && map.set(t.id, t)); USER_TEAMS.forEach(t => map.set(t.id, t));
+    try { localStorage.setItem('tampinhas_teams', JSON.stringify([...map.values()].slice(0, 8))); } catch (e) {}
+    USER_TEAMS.length = 0; loadUserTeams(); spriteCache.clear();
+    // torneio: vale o mais recente
+    let localSave = null; try { localSave = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) {}
+    const rt = data.tour, rts = rt && rt.savedAt || 0, lts = localSave && localSave.savedAt || 0;
+    if (rt && rts > lts) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(rt)); } catch (e) {} }
+    if (data.cfg) { if (data.cfg.name && CFG.name === 'Jogador') { CFG.name = String(data.cfg.name).slice(0, 14); $('inName').value = CFG.name; } if (data.cfg.level != null) CFG.level = Number(data.cfg.level) | 0; saveCfg(); }
+  }
+  await pushNow(); refreshResume();
+}
+function initAuth() {
+  sbReady(() => {});
+  $('acct').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (!b) return; Sound.init(); if (b.dataset.go === 'auth') { window._authDraw && window._authDraw(); show('sAuth'); } else if (b.dataset.go === 'logout') doLogout(); });
+  let mode = 'in';
+  const msg = (t, ok) => { const m = $('authMsg'); m.textContent = t || ''; m.className = 'authmsg' + (ok ? ' ok' : ''); };
+  const draw = () => { $('authTitle').textContent = mode === 'in' ? 'Entrar' : 'Criar conta'; $('btnAuthGo').textContent = mode === 'in' ? 'Entrar' : 'Criar conta'; $('btnAuthSwap').textContent = mode === 'in' ? 'Ainda não tenho conta' : 'Já tenho conta'; $('btnAuthForgot').classList.toggle('hidden', mode !== 'in'); $('auPass').autocomplete = mode === 'in' ? 'current-password' : 'new-password'; msg(''); };
+  window._authDraw = () => { mode = 'in'; draw(); $('auPass').value = ''; };
+  $('btnAuthSwap').onclick = () => { mode = mode === 'in' ? 'up' : 'in'; draw(); };
+  $('btnAuthForgot').onclick = () => {
+    const email = $('auEmail').value.trim(); if (!email) return msg('Digite seu e-mail acima e toque de novo.');
+    sbReady(async sb => { const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }); msg(error ? ptErr(error.message) : 'Enviamos um link para redefinir a senha no seu e-mail.', !error); });
+  };
+  $('authForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const email = $('auEmail').value.trim(), pass = $('auPass').value;
+    if (!email || !pass) return msg('Preencha e-mail e senha.');
+    if (mode === 'up' && pass.length < 6) return msg('A senha precisa ter pelo menos 6 caracteres.');
+    $('btnAuthGo').disabled = true; msg('Aguarde...');
+    sbReady(async sb => {
+      try {
+        if (mode === 'in') {
+          const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+          if (error) msg(ptErr(error.message)); else { msg(''); }
+        } else {
+          const { data, error } = await sb.auth.signUp({ email, password: pass, options: { emailRedirectTo: location.origin + location.pathname } });
+          if (error) msg(ptErr(error.message));
+          else if (!data.session) msg('Conta criada! Confirme pelo link que enviamos para o seu e-mail (veja o spam) e depois entre.', true);
+        }
+      } catch (er) { msg('Sem conexão. Tente de novo.'); }
+      $('btnAuthGo').disabled = false;
+    });
+  });
+}
+async function doLogout() {
+  clearTimeout(CLOUD.pushT);
+  const ok = await pushNow();
+  sbReady(async sb => {
+    await sb.auth.signOut(); CLOUD.user = null; CLOUD.status = '';
+    if (ok) { try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem('tampinhas_teams'); } catch (e) {} USER_TEAMS.length = 0; spriteCache.clear(); }
+    renderAcct(); refreshResume();
+  });
+}
+
 /* ---------- Início ---------- */
-initMenu(); initSetup(); initMatchUI(); initTour(); initTeam();
+initMenu(); initSetup(); initMatchUI(); initTour(); initTeam(); initAuth(); renderAcct();
 refreshResume(); show('sMenu');
 
 </script>
