@@ -143,7 +143,10 @@ const GAMES = [
     url: "/tampinhas/", c1: "#1F6B2A", c2: "#FFB03A", arte: "campo", pagina: "" },
   { nome: "Mestre do Taco", genero: "Sinuca · Esportes", status: "Jogue agora",
     texto: "Bola 8 e Sinuca Brasileira contra o computador ou em 2, com treino livre, 5 níveis e progresso salvo na sua conta.",
-    url: "/mestre-do-taco/", c1: "#0B4A2E", c2: "#F2C14E", arte: "mesa", pagina: "" }
+    url: "/mestre-do-taco/", c1: "#0B4A2E", c2: "#F2C14E", arte: "mesa", pagina: "" },
+  { nome: "Mente em Jogo", genero: "Quiz · Conhecimentos gerais", status: "Jogue agora",
+    texto: "Suba a escada até R$ 1 milhão, enfrente o Relâmpago, a Sobrevivência, o Desafio Diário e o Duelo, e entre no ranking.",
+    url: "/mente-em-jogo/", c1: "#2A0F6B", c2: "#FF3D8B", arte: "quiz", pagina: "" }
 ];
 
 const ARTES = {
@@ -177,6 +180,18 @@ const ARTES = {
     <circle cx="90" cy="100" r="9" fill="#fff"/>
     <circle cx="200" cy="92" r="9" fill="#E8B020"/><circle cx="218" cy="102" r="9" fill="#2255CC"/><circle cx="200" cy="112" r="9" fill="#D02828"/><circle cx="218" cy="122" r="9" fill="#111"/><circle cx="236" cy="92" r="9" fill="#7A2A9A"/>
     <path d="M20 170L84 106" stroke="#F2C14E" stroke-width="4" stroke-linecap="round"/>
+  </svg>`,
+  quiz: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#2A0F6B"/>
+    <path d="M160 0L90 200H230Z" fill="#fff" opacity=".07"/>
+    <rect x="40" y="30" width="240" height="56" rx="10" fill="#1B0A4A" stroke="#27E1FF" stroke-width="3"/>
+    <text x="160" y="66" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="26" fill="#fff">?</text>
+    <g font-family="Arial,sans-serif" font-weight="700" font-size="14" fill="#fff">
+      <rect x="40" y="104" width="112" height="30" rx="15" fill="#1B0A4A" stroke="#FFC83D" stroke-width="2"/><text x="60" y="124" fill="#FFC83D">A</text>
+      <rect x="168" y="104" width="112" height="30" rx="15" fill="#127A45" stroke="#2BD67B" stroke-width="2"/><text x="188" y="124" fill="#fff">B</text>
+      <rect x="40" y="146" width="112" height="30" rx="15" fill="#1B0A4A" stroke="#FFC83D" stroke-width="2"/><text x="60" y="166" fill="#FFC83D">C</text>
+      <rect x="168" y="146" width="112" height="30" rx="15" fill="#1B0A4A" stroke="#FFC83D" stroke-width="2"/><text x="188" y="166" fill="#FFC83D">D</text>
+    </g>
   </svg>`
 };
 

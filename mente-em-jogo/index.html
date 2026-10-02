@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mente em Jogo | Falzinho Games</title>
+<meta name="description" content="Mente em Jogo: quiz de perguntas e respostas no navegador. Suba a escada até R$ 1 milhão, jogue o Relâmpago, a Sobrevivência, o Desafio Diário e o Duelo.">
+<link rel="canonical" href="https://falzinhogames.com.br/mente-em-jogo/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<style>
+:root{--bg:#07041a;--surface:#130c33;--surface2:#1c1347;--line:#34287a;--fg:#f2f0ff;--muted:#a29bd0;--pink:#ff3d8b;--cyan:#27e1ff;--gold:#ffc83d;--green:#2bd67b;--red:#ff4d57;--gutter:16px;
+--font-display:'Bungee',Impact,sans-serif;--font-body:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.5;padding-inline:var(--gutter);-webkit-tap-highlight-color:transparent;
+background:radial-gradient(900px 500px at 50% -120px,rgba(255,61,139,.28),transparent 70%),radial-gradient(700px 500px at 100% 40%,rgba(39,225,255,.10),transparent 70%),radial-gradient(700px 500px at 0% 70%,rgba(255,61,139,.10),transparent 70%),var(--bg);background-attachment:fixed}
+[hidden],.hidden{display:none!important}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--cyan);outline-offset:3px;border-radius:6px}
+h1,h2,h3{margin:0}
+.bar{max-width:1040px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px}
+.bar .back{text-decoration:none;color:var(--muted);font-weight:600;font-size:14px}
+.bar .back:hover{color:var(--fg)}
+.bar .logo{font-family:var(--font-display);font-size:15px;color:var(--cyan);letter-spacing:1px}
+.iconbtn{background:var(--surface);border:1px solid var(--line);color:var(--fg);width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer}
+main{max-width:1040px;margin-inline:auto;padding-bottom:40px}
+.in-game .bar,.in-game #redes{display:none}
+.hero{position:relative;text-align:center;padding:26px 0 8px}
+.hero .spot{position:absolute;left:50%;top:-30px;width:520px;height:260px;transform:translateX(-50%);background:conic-gradient(from 180deg at 50% 0,transparent 160deg,rgba(255,255,255,.07) 175deg,transparent 190deg);pointer-events:none;filter:blur(2px)}
+.kick{font:600 12px var(--font-body);letter-spacing:.34em;text-transform:uppercase;color:var(--cyan)}
+.hero h1{font-family:var(--font-display);font-weight:400;font-size:clamp(40px,10.5vw,92px);line-height:1;margin:10px 0;letter-spacing:1px;text-shadow:0 0 28px rgba(255,61,139,.55)}
+.hero h1 span{color:#fff}.hero h1 em{font-style:normal;color:var(--pink);font-size:.62em;vertical-align:.18em}.hero h1 .y{color:var(--gold);text-shadow:0 0 28px rgba(255,200,61,.5)}
+.tag{color:var(--muted);max-width:520px;margin:6px auto 0}
+.who{display:flex;gap:10px;align-items:center;justify-content:center;margin:18px 0 6px;flex-wrap:wrap}
+.who label{color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.who input,.who2 input,.authp input{background:var(--surface);border:1px solid var(--line);color:var(--fg);padding:12px 14px;border-radius:10px;font:600 17px var(--font-body);width:min(240px,100%)}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0 8px}
+.mcard{position:relative;display:grid;gap:4px;align-content:start;text-align:left;background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--line);color:var(--fg);padding:18px 16px 16px;cursor:pointer;font-family:var(--font-body);min-height:132px;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,22px 100%,0 calc(100% - 22px));transition:transform .15s,filter .15s}
+.mcard:hover{transform:translateY(-3px);filter:brightness(1.18)}
+.mcard .mi{font-size:30px;line-height:1}
+.mcard b{font:400 18px var(--font-display);letter-spacing:.5px;margin-top:6px}
+.mcard small{color:var(--muted);font-size:13px;line-height:1.35}
+.m-milionario{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(255,200,61,.25)}.m-milionario b{color:var(--gold)}
+.m-relampago b{color:var(--cyan)}.m-survival b{color:var(--red)}.m-diario b{color:var(--green)}.m-duelo b{color:var(--pink)}
+.mini{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:14px;margin:12px 0}
+.mini b{color:var(--fg)}
+.menurow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#ff5fa0,#e0286f);color:#fff;border:0;border-radius:999px;padding:12px 24px;font:700 16px var(--font-body);cursor:pointer;text-decoration:none;min-height:46px;box-shadow:0 4px 0 #8c1442}
+.btn:hover{filter:brightness(1.1)}.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #8c1442}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line);box-shadow:none}
+.btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn.big{font-size:18px;padding:15px 30px}
+.linkbtn{background:none;border:0;color:var(--cyan);text-decoration:underline;font:600 15px var(--font-body);cursor:pointer;padding:6px}
+.acct{margin-top:14px;text-align:center;font-size:14px;color:var(--muted)}
+.acctrow{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}.acctrow b{color:var(--fg)}
+.panel{max-width:760px;margin:18px auto 0}
+h2{font-family:var(--font-display);font-weight:400;font-size:clamp(24px,5vw,34px);margin-bottom:8px;color:var(--cyan)}
+h3{font:700 13px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--pink);margin:22px 0 8px}
+.sub{color:var(--muted);margin:0 0 12px}
+.help ul{padding-left:20px;color:#ddd8ff}.help li{margin-bottom:10px}
+.actions{display:grid;gap:10px;margin-top:20px;max-width:420px}
+.who2{display:grid;gap:12px;margin:14px 0}.who2 label,.authp label{display:grid;gap:4px;color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.authp form{display:grid;gap:12px;max-width:420px;margin:12px 0}
+.authmsg{min-height:22px;font-size:14px;color:#ff9aa0}.authmsg.ok{color:var(--green)}
+.seg{display:inline-flex;gap:6px;background:var(--surface);border:1px solid var(--line);padding:5px;border-radius:999px;margin:0 8px 12px 0}
+.seg button{background:transparent;border:0;color:var(--muted);font:700 14px var(--font-body);padding:9px 16px;border-radius:999px;cursor:pointer}
+.seg button.on{background:var(--pink);color:#fff}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.tabs button{background:var(--surface);border:1px solid var(--line);color:var(--muted);font:700 14px var(--font-body);padding:9px 14px;border-radius:999px;cursor:pointer}
+.tabs button.on{background:var(--cyan);color:#06122e;border-color:var(--cyan)}
+.rk{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:6px}
+.rk li{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.rk li.me{border-color:var(--gold);background:rgba(255,200,61,.1)}
+.rk .pos{font:400 18px var(--font-display);text-align:center}.rk .nm{font-weight:600}.rk b{color:var(--gold)}
+/* perfil */
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stats4 div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 6px;text-align:center}
+.stats4 b{display:block;font:400 24px var(--font-display);color:var(--gold)}.stats4 small{color:var(--muted);font-size:12px}
+.recs{display:flex;gap:10px;flex-wrap:wrap}.recs div{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px}
+.cats{display:grid;gap:8px}.cr{display:grid;grid-template-columns:150px 1fr 44px;align-items:center;gap:10px;font-size:14px}
+.cb{height:8px;background:var(--surface);border-radius:99px;overflow:hidden}.cb i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--cyan))}.cr b{text-align:right}
+.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.ach{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;opacity:.5}.ach.on{opacity:1;border-color:var(--gold)}
+.ach span{font-size:24px}.ach b{display:block;font-size:14px}.ach small{color:var(--muted);font-size:12px}
+/* partida */
+.hud{max-width:900px;margin:12px auto 8px;display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:700;font-size:15px;flex-wrap:wrap}
+.hud #hMode{font-family:var(--font-display);font-weight:400;color:var(--cyan);font-size:15px}
+.hud #hInfo{color:var(--gold);flex:1;text-align:center}
+.hud #hTimer{font:400 20px var(--font-display);min-width:48px;text-align:right}
+.tbar{max-width:900px;margin:0 auto 14px;height:10px;background:var(--surface);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.tbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .15s linear}
+.tbar i.low{background:linear-gradient(90deg,var(--red),var(--gold))}.tbar i.free{opacity:.25}
+.arena{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 210px;gap:20px;align-items:start}
+.arena:has(#ladder.hidden){grid-template-columns:1fr}
+.duelturn{text-align:center;font:400 16px var(--font-display);color:var(--pink);margin-bottom:10px}
+.qcard{background:linear-gradient(160deg,var(--surface2),var(--surface));border:2px solid var(--cyan);box-shadow:0 0 24px rgba(39,225,255,.25);padding:18px 22px 22px;clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,26px 100%,0 calc(100% - 26px));min-height:150px}
+.qmeta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.05em;margin-bottom:8px}
+.dif{padding:2px 10px;border-radius:99px;font-size:12px;color:#06122e}.d1{background:var(--green)}.d2{background:#9be84e}.d3{background:var(--gold)}.d4{background:#ff9a3d}.d5{background:var(--red)}
+.qcard h2{font-family:var(--font-body);font-weight:700;color:var(--fg);font-size:clamp(20px,3.6vw,28px);line-height:1.3;margin:0}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.opt{position:relative;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:10px;text-align:left;background:linear-gradient(160deg,var(--surface2),var(--surface));border:2px solid var(--line);color:var(--fg);padding:14px 18px;min-height:64px;cursor:pointer;font:600 17px var(--font-body);clip-path:polygon(18px 0,calc(100% - 18px) 0,100% 50%,calc(100% - 18px) 100%,18px 100%,0 50%);transition:filter .12s,transform .12s}
+.opt:hover:not(:disabled){filter:brightness(1.3);border-color:var(--gold)}
+.opt b{font:400 18px var(--font-display);color:var(--gold)}.opt em{font-style:normal;color:var(--cyan);font-weight:700}
+.opt.picked{background:linear-gradient(160deg,#6a4a00,#3a2800);border-color:var(--gold)}
+.opt.right{background:linear-gradient(160deg,#127a45,#0a4a2a);border-color:var(--green);animation:pop .4s}
+.opt.wrong{background:linear-gradient(160deg,#8a1f27,#4a0f14);border-color:var(--red)}
+.opt.gone{opacity:.15}
+.opt:disabled{cursor:default}
+@keyframes pop{50%{transform:scale(1.03)}}
+@media (prefers-reduced-motion:reduce){.opt.right{animation:none}}
+.aid{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.aidb{background:var(--surface);border:2px solid var(--pink);color:var(--fg);padding:9px 16px;border-radius:999px;font:700 14px var(--font-body);cursor:pointer}
+.aidb:hover:not(:disabled){background:var(--pink)}.aidb:disabled{opacity:.3;border-color:var(--line);cursor:default;text-decoration:line-through}
+.msg{min-height:26px;text-align:center;font-weight:700;margin:12px 0 0;color:var(--muted)}.msg.ok{color:var(--green)}.msg.bad{color:var(--red)}.msg.hint{color:var(--gold)}
+.gbtns{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:6px}
+.ladder{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.ladder h3{margin:0 0 8px}.ladder ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.ladder li{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;font-weight:600;font-size:14px;color:var(--muted)}
+.ladder li span{width:20px;font:400 12px var(--font-display);color:var(--muted)}
+.ladder li.safe{color:var(--fg)}.ladder li small{color:var(--cyan);font-size:11px}
+.ladder li.done{color:var(--green)}.ladder li.cur{background:var(--gold);color:#241800}.ladder li.cur span{color:#241800}
+/* resultado */
+.card{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:18px;padding:26px 20px;text-align:center}
+.card .trophy{font-size:54px;line-height:1}.card h2{margin:8px 0;color:var(--gold)}
+.card .big{font:700 22px var(--font-body);margin:4px 0 8px}.card .best{color:var(--cyan);font-weight:700;margin:4px 0}
+@media (max-width:860px){.mgrid{grid-template-columns:1fr 1fr}.arena{grid-template-columns:1fr}.ladder{order:-1}.ladder ol{grid-template-columns:repeat(5,1fr)}.ladder li{flex-direction:column;gap:0;text-align:center;font-size:11px;padding:4px 2px}.ladder li span{width:auto}.ladder li small{display:none}.ladder h3{display:none}}
+@media (max-width:560px){.mgrid{grid-template-columns:1fr}.opts{grid-template-columns:1fr}.stats4{grid-template-columns:1fr 1fr}.cr{grid-template-columns:110px 1fr 40px;font-size:13px}.opt{font-size:16px}.qcard{padding:16px}}
+
+</style>
+</head>
+<body>
+<div id="redes" style="margin-inline:calc(var(--gutter) * -1);padding:10px var(--gutter);background:#FF8A3D;color:#1A1209;font-size:14px;font-weight:600;text-align:center;display:flex;gap:6px 16px;justify-content:center;align-items:center;flex-wrap:wrap"><span>Siga a gente nas redes: dicas, novidades e feedbacks</span><a href="https://www.instagram.com/falzingames" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Instagram</a><a href="https://x.com/falzinhogames" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">X (Twitter)</a></div>
+<header class="bar"><a class="back" href="/">&larr; Falzinho Games</a><span class="logo">MENTE EM JOGO</span><button class="iconbtn" id="btnSound" aria-label="Som">&#128266;</button></header>
+<main>
+<section id="sMenu">
+  <div class="hero">
+    <div class="spot" aria-hidden="true"></div>
+    <div class="kick">O quiz do Falzinho Games</div>
+    <h1><span>MENTE</span> <em>EM</em> <span class="y">JOGO</span></h1>
+    <p class="tag">198 perguntas, 16 categorias e 5 n&iacute;veis de dificuldade. Quanto voc&ecirc; sabe de verdade?</p>
+  </div>
+  <div class="who"><label for="inName">Seu nome</label><input id="inName" maxlength="14" autocomplete="off" placeholder="Jogador"></div>
+  <div id="modeGrid" class="mgrid"></div>
+  <div id="mini" class="mini"></div>
+  <div class="menurow"><button class="btn ghost" data-go="rank">&#127942; Ranking</button><button class="btn ghost" data-go="perfil">&#128100; Perfil</button><button class="btn ghost" data-go="config">&#9881; Config</button><button class="btn ghost" data-go="help">Como jogar</button></div>
+  <div id="acct" class="acct"></div>
+</section>
+<section id="sDuel" class="hidden"><div class="panel"><h2>Duelo</h2><p class="sub">Dois jogadores no mesmo aparelho, cada um responde 5 perguntas que ficam mais dif&iacute;ceis a cada rodada. Maior pontua&ccedil;&atilde;o vence.</p>
+<div class="who2"><label>Jogador 1<input id="d1" maxlength="14" placeholder="Jogador 1"></label><label>Jogador 2<input id="d2" maxlength="14" placeholder="Jogador 2"></label></div>
+<div class="actions"><button class="btn big" id="duelGo">Come&ccedil;ar duelo</button><button class="btn ghost" data-go="menu">Voltar</button></div></div></section>
+<section id="sGame" class="hidden">
+  <div class="hud"><span id="hMode"></span><span id="hInfo"></span><span id="hTimer"></span></div>
+  <div class="tbar"><i id="tFill"></i></div>
+  <div class="arena">
+    <div class="stagecol">
+      <div id="duelTurn" class="duelturn hidden"></div>
+      <div class="qcard"><div class="qmeta" id="qMeta"></div><h2 id="qText"></h2></div>
+      <div class="opts" id="opts"></div>
+      <div class="aid" id="aid"></div>
+      <p id="msg" class="msg" role="status"></p>
+      <div class="gbtns"><button class="btn ghost hidden" id="btnStop"></button><button class="linkbtn" id="btnQuit">Sair da partida</button></div>
+    </div>
+    <aside id="ladder" class="ladder hidden"></aside>
+  </div>
+</section>
+<section id="sResult" class="hidden"><div class="panel" id="resBody"></div></section>
+<section id="sRank" class="hidden"><div class="panel"><h2>Ranking</h2><div id="rankTabs" class="tabs"></div><p id="rankMine" class="sub"></p><div id="rankList"></div><p><button class="btn ghost" data-go="menu">Voltar</button></p></div></section>
+<section id="sPerfil" class="hidden"><div class="panel"><h2>Perfil</h2><div id="perfilBody"></div><p><button class="btn ghost" data-go="menu">Voltar</button></p></div></section>
+<section id="sConfig" class="hidden"><div class="panel"><h2>Configura&ccedil;&otilde;es</h2><div id="cfgBody"></div><p><button class="btn ghost" data-go="menu">Voltar</button></p></div></section>
+<section id="sHelp" class="hidden"><div class="panel help"><h2>Como jogar</h2>
+<ul>
+<li><b>Milion&aacute;rio:</b> 10 perguntas, de R$ 100 a R$ 1.000.000. Voc&ecirc; pode parar a qualquer momento e levar o que j&aacute; ganhou. Se errar, volta ao &uacute;ltimo patamar garantido (R$ 1.000 ou R$ 50.000).</li>
+<li><b>Ajudas (s&oacute; no Milion&aacute;rio):</b> 50/50 tira duas erradas, Plateia mostra uma vota&ccedil;&atilde;o (que pode errar), Dica d&aacute; uma pista e Trocar muda a pergunta. Cada uma s&oacute; pode ser usada uma vez.</li>
+<li><b>Rel&acirc;mpago:</b> 60 segundos no rel&oacute;gio. Cada acerto vale pontos, cada erro tira 5 segundos. A dificuldade sobe com a sequ&ecirc;ncia de acertos.</li>
+<li><b>Sobreviv&ecirc;ncia:</b> 3 vidas, 20 segundos por pergunta. A dificuldade aumenta a cada 4 acertos.</li>
+<li><b>Desafio Di&aacute;rio:</b> as mesmas 10 perguntas para todo mundo no dia, uma tentativa. Sobrar tempo d&aacute; pontos extras.</li>
+<li><b>Duelo:</b> dois jogadores alternam as perguntas no mesmo aparelho.</li>
+<li><b>Conta:</b> entre com e-mail e senha para guardar seu progresso e aparecer no ranking.</li>
+</ul>
+<p><button class="btn ghost" data-go="menu">Voltar</button></p></div></section>
+<section id="sAuth" class="hidden"><div class="panel authp"><h2 id="authTitle">Entrar</h2><p class="sub">Com uma conta, seus recordes e estat&iacute;sticas ficam salvos e voc&ecirc; entra no ranking. &Eacute; a mesma conta do Tampinhas e do Mestre do Taco.</p>
+<form id="authForm" novalidate><label>E-mail<input id="auEmail" type="email" autocomplete="email" inputmode="email"></label><label>Senha<input id="auPass" type="password" autocomplete="current-password" minlength="6"></label><div id="authMsg" class="authmsg" role="status"></div><button class="btn big" id="btnAuthGo" type="submit">Entrar</button></form>
+<div class="actions"><button class="btn ghost" id="btnAuthSwap" type="button">Ainda n&atilde;o tenho conta</button><button class="linkbtn" id="btnAuthForgot" type="button">Esqueci minha senha</button><button class="btn ghost" data-go="menu" type="button">Voltar</button></div></div></section>
+</main>
+<script>
+'use strict';
+/* ===== Mente em Jogo: núcleo (dados, utilidades, som, estatísticas) ===== */
+const QUESTIONS = [{"c":"Geografia","d":1,"q":"Qual é a capital do Brasil?","a":["Brasília","Rio de Janeiro","São Paulo","Salvador"]},{"c":"Geografia","d":1,"q":"Qual é o maior oceano do planeta?","a":["Pacífico","Atlântico","Índico","Ártico"]},{"c":"Geografia","d":1,"q":"Em que continente fica o Egito?","a":["África","Ásia","Europa","Oceania"]},{"c":"Geografia","d":1,"q":"Qual é a capital da França?","a":["Paris","Lyon","Marselha","Bruxelas"]},{"c":"Brasil","d":1,"q":"Qual é o idioma oficial do Brasil?","a":["Português","Espanhol","Inglês","Tupi"]},{"c":"Brasil","d":1,"q":"Qual é a moeda do Brasil?","a":["Real","Peso","Dólar","Cruzeiro Novo"]},{"c":"Brasil","d":1,"q":"Em que ano os portugueses chegaram ao Brasil?","a":["1500","1492","1822","1889"]},{"c":"Brasil","d":1,"q":"Qual é o rio mais extenso do Brasil?","a":["Amazonas","São Francisco","Paraná","Tocantins"]},{"c":"História","d":1,"q":"Quem foi o primeiro presidente do Brasil?","a":["Deodoro da Fonseca","Getúlio Vargas","Dom Pedro II","Juscelino Kubitschek"]},{"c":"História","d":1,"q":"Em que ano o Brasil declarou a Independência?","a":["1822","1500","1889","1888"]},{"c":"Ciência","d":1,"q":"Qual é o planeta mais próximo do Sol?","a":["Mercúrio","Vênus","Marte","Terra"]},{"c":"Ciência","d":1,"q":"Qual gás precisamos respirar para viver?","a":["Oxigênio","Hélio","Nitrogênio","Hidrogênio"]},{"c":"Ciência","d":1,"q":"Quantos planetas tem o Sistema Solar?","a":["8","9","7","10"]},{"c":"Ciência","d":1,"q":"A que temperatura a água ferve ao nível do mar?","a":["100 °C","50 °C","90 °C","150 °C"]},{"c":"Esportes","d":1,"q":"Quantos jogadores de cada time ficam em campo no futebol?","a":["11","9","10","12"]},{"c":"Esportes","d":1,"q":"Quantas Copas do Mundo a seleção brasileira masculina ganhou?","a":["5","4","6","3"]},{"c":"Cinema","d":1,"q":"Em Toy Story, qual o nome do caubói?","a":["Woody","Buzz","Rex","Slinky"]},{"c":"Cinema","d":1,"q":"Qual personagem da Disney é um ratinho de shorts vermelho?","a":["Mickey","Pateta","Donald","Pluto"]},{"c":"Música","d":1,"q":"Quantas cordas tem um violão tradicional?","a":["6","4","5","8"]},{"c":"TV","d":1,"q":"Qual personagem é uma esponja amarela que vive no fundo do mar?","a":["Bob Esponja","Patrick","Lula Molusco","Sandy"]},{"c":"Games","d":1,"q":"Qual é o nome do encanador mais famoso dos games?","a":["Mario","Sonic","Link","Kratos"]},{"c":"Games","d":1,"q":"Qual jogo de blocos permite construir e sobreviver em mundos cúbicos?","a":["Minecraft","Fortnite","Roblox","Tetris"]},{"c":"Tecnologia","d":1,"q":"O que significa a sigla WWW?","a":["World Wide Web","World Web Window","Wide Web World","Web World Wide"]},{"c":"Tecnologia","d":1,"q":"Qual empresa criou o iPhone?","a":["Apple","Samsung","Google","Microsoft"]},{"c":"Matemática","d":1,"q":"Quanto é 7 x 8?","a":["56","54","63","48"]},{"c":"Matemática","d":1,"q":"Quantos lados tem um hexágono?","a":["6","5","7","8"]},{"c":"Gerais","d":1,"q":"Quantas horas tem um dia?","a":["24","12","48","20"]},{"c":"Gerais","d":1,"q":"Quantos dias tem um ano bissexto?","a":["366","365","364","367"]},{"c":"Animais","d":1,"q":"Qual é o maior animal terrestre?","a":["Elefante","Girafa","Rinoceronte","Hipopótamo"]},{"c":"Animais","d":1,"q":"Qual animal é conhecido como o rei da selva?","a":["Leão","Tigre","Urso","Gorila"]},{"c":"Automóveis","d":1,"q":"Qual montadora tem uma estrela de três pontas como símbolo?","a":["Mercedes-Benz","BMW","Audi","Volvo"]},{"c":"Gastronomia","d":1,"q":"Qual feijão é usado na feijoada tradicional?","a":["Preto","Carioca","Branco","Fradinho"]},{"c":"Gastronomia","d":1,"q":"Qual é o ingrediente principal da farofa tradicional?","a":["Farinha de mandioca","Farinha de trigo","Fubá","Aveia"]},{"c":"Literatura","d":1,"q":"Quem escreveu Dom Casmurro?","a":["Machado de Assis","Monteiro Lobato","José de Alencar","Clarice Lispector"]},{"c":"Literatura","d":1,"q":"Quem criou o Sítio do Picapau Amarelo?","a":["Monteiro Lobato","Ziraldo","Maurício de Sousa","Ruth Rocha"]},{"c":"Esportes","d":1,"q":"Em qual esporte se faz uma cesta?","a":["Basquete","Vôlei","Handebol","Tênis"]},{"c":"Animais","d":1,"q":"Qual animal faz 'miau'?","a":["Gato","Cachorro","Coelho","Pato"]},{"c":"Geografia","d":1,"q":"Qual país tem o formato de uma bota?","a":["Itália","Grécia","Portugal","Espanha"]},{"c":"Brasil","d":1,"q":"Qual é a capital do estado do Rio de Janeiro?","a":["Rio de Janeiro","Niterói","Petrópolis","Búzios"]},{"c":"Geografia","d":2,"q":"Qual é a capital da Argentina?","a":["Buenos Aires","Montevidéu","Santiago","Assunção"]},{"c":"Geografia","d":2,"q":"Qual é o maior país do mundo em área?","a":["Rússia","Canadá","China","Estados Unidos"]},{"c":"Geografia","d":2,"q":"Qual rio atravessa Paris?","a":["Sena","Tâmisa","Reno","Danúbio"]},{"c":"Brasil","d":2,"q":"Qual é a capital da Bahia?","a":["Salvador","Recife","Aracaju","Feira de Santana"]},{"c":"Brasil","d":2,"q":"Qual estado brasileiro tem a maior população?","a":["São Paulo","Minas Gerais","Rio de Janeiro","Bahia"]},{"c":"Brasil","d":2,"q":"Qual é o maior bioma do Brasil?","a":["Amazônia","Cerrado","Mata Atlântica","Caatinga"]},{"c":"Brasil","d":2,"q":"Em qual estado fica Fernando de Noronha?","a":["Pernambuco","Bahia","Ceará","Rio Grande do Norte"]},{"c":"História","d":2,"q":"Em que ano começou a Segunda Guerra Mundial?","a":["1939","1914","1945","1929"]},{"c":"História","d":2,"q":"Quem proclamou a Independência do Brasil?","a":["Dom Pedro I","Dom João VI","Tiradentes","Deodoro da Fonseca"]},{"c":"História","d":2,"q":"Em que ano foi assinada a Lei Áurea?","a":["1888","1822","1889","1500"]},{"c":"História","d":2,"q":"Qual civilização construiu as pirâmides de Gizé?","a":["Egípcia","Maia","Romana","Grega"]},{"c":"Ciência","d":2,"q":"Qual é o símbolo químico do ouro?","a":["Au","Ag","Or","Go"]},{"c":"Ciência","d":2,"q":"Qual planeta é conhecido como planeta vermelho?","a":["Marte","Vênus","Júpiter","Saturno"]},{"c":"Ciência","d":2,"q":"Qual é o osso mais longo do corpo humano?","a":["Fêmur","Úmero","Tíbia","Coluna"]},{"c":"Ciência","d":2,"q":"Onde fica o DNA na célula animal?","a":["Núcleo","Membrana","Citoplasma","Parede celular"]},{"c":"Esportes","d":2,"q":"Quantos jogadores de cada time ficam em quadra no vôlei?","a":["6","5","7","8"]},{"c":"Esportes","d":2,"q":"Qual país sediou a Copa do Mundo de 2014?","a":["Brasil","Alemanha","África do Sul","Rússia"]},{"c":"Esportes","d":2,"q":"Quem ficou conhecido como o Rei do Futebol?","a":["Pelé","Garrincha","Zico","Romário"]},{"c":"Cinema","d":2,"q":"Quem dirigiu o filme Tubarão (1975)?","a":["Steven Spielberg","George Lucas","Martin Scorsese","James Cameron"]},{"c":"Cinema","d":2,"q":"Qual animação tem um ogro verde como protagonista?","a":["Shrek","Madagascar","Kung Fu Panda","Os Incríveis"]},{"c":"Cinema","d":2,"q":"Quem interpretou Jack no filme Titanic?","a":["Leonardo DiCaprio","Brad Pitt","Tom Cruise","Johnny Depp"]},{"c":"Música","d":2,"q":"Quem é conhecido como o Rei do Pop?","a":["Michael Jackson","Elvis Presley","Prince","Justin Bieber"]},{"c":"Música","d":2,"q":"Quem é o vocalista dos Rolling Stones?","a":["Mick Jagger","Paul McCartney","Freddie Mercury","Robert Plant"]},{"c":"Música","d":2,"q":"Quem fez a letra de Garota de Ipanema com música de Tom Jobim?","a":["Vinicius de Moraes","Chico Buarque","Caetano Veloso","Cazuza"]},{"c":"TV","d":2,"q":"Qual emissora exibe o Jornal Nacional?","a":["Globo","SBT","Record","Band"]},{"c":"Games","d":2,"q":"Como se chama o herói da série The Legend of Zelda?","a":["Link","Zelda","Ganon","Epona"]},{"c":"Tecnologia","d":2,"q":"Qual linguagem de programação tem uma cobra como símbolo?","a":["Python","Java","Ruby","Swift"]},{"c":"Tecnologia","d":2,"q":"O que significa a sigla CPU?","a":["Unidade Central de Processamento","Controle Principal de Usuário","Central de Programas Úteis","Unidade de Cálculo Pessoal"]},{"c":"Matemática","d":2,"q":"Qual é a raiz quadrada de 144?","a":["12","14","11","13"]},{"c":"Matemática","d":2,"q":"Quanto é 15% de 200?","a":["30","15","20","25"]},{"c":"Gerais","d":2,"q":"Quantas cores tem o arco-íris tradicional?","a":["7","6","8","5"]},{"c":"Animais","d":2,"q":"Qual é o animal terrestre mais rápido?","a":["Guepardo","Leão","Cavalo","Antílope"]},{"c":"Animais","d":2,"q":"Quantas patas tem uma aranha?","a":["8","6","10","4"]},{"c":"Animais","d":2,"q":"Qual é o único mamífero capaz de voar?","a":["Morcego","Esquilo-voador","Coruja","Pinguim"]},{"c":"Automóveis","d":2,"q":"Qual montadora fabricou o Fusca?","a":["Volkswagen","Ford","Fiat","Chevrolet"]},{"c":"Automóveis","d":2,"q":"Em qual país fica a sede da Toyota?","a":["Japão","Coreia do Sul","China","Alemanha"]},{"c":"Gastronomia","d":2,"q":"Qual país é a origem do sushi?","a":["Japão","China","Tailândia","Coreia do Sul"]},{"c":"Gastronomia","d":2,"q":"Qual bolinho baiano é frito no azeite de dendê e recheado com vatapá e camarão?","a":["Acarajé","Abará","Moqueca","Cocada"]},{"c":"Literatura","d":2,"q":"Quem escreveu O Pequeno Príncipe?","a":["Antoine de Saint-Exupéry","Jules Verne","Victor Hugo","Lewis Carroll"]},{"c":"Literatura","d":2,"q":"Quem é a autora de Harry Potter?","a":["J.K. Rowling","Suzanne Collins","Stephenie Meyer","Agatha Christie"]},{"c":"Geografia","d":2,"q":"Qual é o maior continente do planeta?","a":["Ásia","África","América","Europa"]},{"c":"Brasil","d":2,"q":"Qual é a capital de Minas Gerais?","a":["Belo Horizonte","Uberlândia","Ouro Preto","Juiz de Fora"]},{"c":"Geografia","d":3,"q":"Qual é a capital da Austrália?","a":["Camberra","Sydney","Melbourne","Perth"]},{"c":"Geografia","d":3,"q":"Qual é a montanha mais alta do mundo?","a":["Monte Everest","K2","Kilimanjaro","Mont Blanc"]},{"c":"Geografia","d":3,"q":"Qual é o menor país do mundo em área?","a":["Vaticano","Mônaco","San Marino","Liechtenstein"]},{"c":"Geografia","d":3,"q":"Em qual rio fica a cidade de Manaus?","a":["Rio Negro","Rio Madeira","Rio Tocantins","Rio Xingu"]},{"c":"Brasil","d":3,"q":"Qual presidente inaugurou Brasília em 1960?","a":["Juscelino Kubitschek","Getúlio Vargas","Jânio Quadros","João Goulart"]},{"c":"Brasil","d":3,"q":"Qual plano econômico criou o Real em 1994?","a":["Plano Real","Plano Cruzado","Plano Collor","Plano Bresser"]},{"c":"Brasil","d":3,"q":"Qual é o maior estado do Brasil em área?","a":["Amazonas","Pará","Mato Grosso","Minas Gerais"]},{"c":"Brasil","d":3,"q":"Qual é a capital do Pará?","a":["Belém","Manaus","Macapá","Santarém"]},{"c":"História","d":3,"q":"Em que ano caiu o Muro de Berlim?","a":["1989","1961","1991","1975"]},{"c":"História","d":3,"q":"Qual navegador chegou à Índia por mar em 1498?","a":["Vasco da Gama","Cristóvão Colombo","Pedro Álvares Cabral","Fernão de Magalhães"]},{"c":"História","d":3,"q":"Em que ano começou a Revolução Francesa?","a":["1789","1776","1815","1848"]},{"c":"História","d":3,"q":"Quem foi o líder do Quilombo dos Palmares?","a":["Zumbi","Tiradentes","Dandara","Frei Caneca"]},{"c":"Ciência","d":3,"q":"Qual é o gás mais abundante na atmosfera terrestre?","a":["Nitrogênio","Oxigênio","Gás carbônico","Argônio"]},{"c":"Ciência","d":3,"q":"Qual é a unidade de força no Sistema Internacional?","a":["Newton","Joule","Watt","Pascal"]},{"c":"Ciência","d":3,"q":"Quem formulou a lei da gravitação universal?","a":["Isaac Newton","Albert Einstein","Galileu Galilei","Johannes Kepler"]},{"c":"Esportes","d":3,"q":"Qual país ganhou a Copa do Mundo de 2002?","a":["Brasil","Alemanha","França","Itália"]},{"c":"Esportes","d":3,"q":"Qual é a distância oficial de uma maratona?","a":["42,195 km","21 km","30 km","50 km"]},{"c":"Esportes","d":3,"q":"Qual esporte o nadador Michael Phelps praticava?","a":["Natação","Atletismo","Remo","Polo aquático"]},{"c":"Cinema","d":3,"q":"Quem dirigiu Pulp Fiction?","a":["Quentin Tarantino","Martin Scorsese","David Fincher","Guy Ritchie"]},{"c":"Cinema","d":3,"q":"Qual filme brasileiro ganhou o Oscar de Melhor Filme Internacional?","a":["Ainda Estou Aqui","Central do Brasil","Cidade de Deus","Tropa de Elite"]},{"c":"Música","d":3,"q":"Quem compôs a Nona Sinfonia?","a":["Beethoven","Mozart","Bach","Chopin"]},{"c":"Música","d":3,"q":"Quantos integrantes tinha a banda The Beatles?","a":["4","3","5","6"]},{"c":"TV","d":3,"q":"Qual série tem o professor de química Walter White?","a":["Breaking Bad","Dark","Lost","Prison Break"]},{"c":"Games","d":3,"q":"Qual console da Sony foi lançado em 1994?","a":["PlayStation","Dreamcast","Mega Drive","Super Nintendo"]},{"c":"Games","d":3,"q":"Qual jogo se passa na cidade fictícia de Los Santos?","a":["GTA V","Red Dead Redemption","Watch Dogs","Mafia"]},{"c":"Tecnologia","d":3,"q":"Quem fundou a Microsoft ao lado de Paul Allen?","a":["Bill Gates","Steve Jobs","Mark Zuckerberg","Larry Page"]},{"c":"Tecnologia","d":3,"q":"O que é HTML?","a":["Linguagem de marcação de páginas web","Um banco de dados","Um sistema operacional","Um protocolo de e-mail"]},{"c":"Matemática","d":3,"q":"Quanto vale a soma dos ângulos internos de um triângulo?","a":["180°","90°","270°","360°"]},{"c":"Matemática","d":3,"q":"Quanto é 2 elevado a 10?","a":["1024","512","2048","1000"]},{"c":"Matemática","d":3,"q":"Qual é o fatorial de 5?","a":["120","24","60","720"]},{"c":"Gerais","d":3,"q":"Qual é o menor número primo?","a":["2","1","3","0"]},{"c":"Animais","d":3,"q":"Qual destes animais é um marsupial?","a":["Canguru","Lontra","Tamanduá","Preguiça"]},{"c":"Animais","d":3,"q":"Quantos corações tem um polvo?","a":["3","1","2","8"]},{"c":"Automóveis","d":3,"q":"Qual marca italiana tem um cavalo empinado no símbolo?","a":["Ferrari","Lamborghini","Maserati","Alfa Romeo"]},{"c":"Automóveis","d":3,"q":"Quem fundou a Ford Motor Company?","a":["Henry Ford","Karl Benz","Ferdinand Porsche","Louis Chevrolet"]},{"c":"Gastronomia","d":3,"q":"Qual país é a origem da paella?","a":["Espanha","Itália","México","Portugal"]},{"c":"Gastronomia","d":3,"q":"Em qual estado brasileiro nasceu o pão de queijo?","a":["Minas Gerais","São Paulo","Goiás","Bahia"]},{"c":"Literatura","d":3,"q":"Quem escreveu Grande Sertão: Veredas?","a":["Guimarães Rosa","Graciliano Ramos","Jorge Amado","Érico Veríssimo"]},{"c":"Literatura","d":3,"q":"Quem escreveu o romance 1984?","a":["George Orwell","Aldous Huxley","Ray Bradbury","Franz Kafka"]},{"c":"Geografia","d":4,"q":"Qual é a capital do Canadá?","a":["Ottawa","Toronto","Vancouver","Montreal"]},{"c":"Geografia","d":4,"q":"Qual é o maior lago da África?","a":["Lago Vitória","Lago Tanganica","Lago Chade","Lago Niassa"]},{"c":"Geografia","d":4,"q":"Qual estreito separa a parte europeia da asiática de Istambul?","a":["Bósforo","Gibraltar","Ormuz","Dardanelos"]},{"c":"Geografia","d":4,"q":"Qual é a capital da Nova Zelândia?","a":["Wellington","Auckland","Christchurch","Hamilton"]},{"c":"Brasil","d":4,"q":"Em que ano foi promulgada a Constituição brasileira atual?","a":["1988","1967","1946","1824"]},{"c":"Brasil","d":4,"q":"Qual é o ponto mais alto do Brasil?","a":["Pico da Neblina","Pico da Bandeira","Monte Roraima","Pedra da Mina"]},{"c":"Brasil","d":4,"q":"Qual é a capital do Tocantins?","a":["Palmas","Araguaína","Gurupi","Porto Nacional"]},{"c":"História","d":4,"q":"Em que ano caiu Constantinopla para os otomanos?","a":["1453","1204","1492","1648"]},{"c":"História","d":4,"q":"Qual tratado de 1494 dividiu o mundo entre Portugal e Espanha?","a":["Tratado de Tordesilhas","Tratado de Versalhes","Tratado de Utrecht","Tratado de Madri"]},{"c":"História","d":4,"q":"Quem foi a primeira mulher a ganhar um Prêmio Nobel?","a":["Marie Curie","Rosalind Franklin","Mãe Teresa","Bertha von Suttner"]},{"c":"História","d":4,"q":"Em que ano aconteceu a Revolução Russa que levou os bolcheviques ao poder?","a":["1917","1905","1922","1936"]},{"c":"Ciência","d":4,"q":"Qual é o elemento mais abundante do universo?","a":["Hidrogênio","Hélio","Oxigênio","Carbono"]},{"c":"Ciência","d":4,"q":"Qual é o número atômico do carbono?","a":["6","12","8","14"]},{"c":"Ciência","d":4,"q":"Quem descobriu a penicilina?","a":["Alexander Fleming","Louis Pasteur","Robert Koch","Edward Jenner"]},{"c":"Ciência","d":4,"q":"Qual é o menor osso do corpo humano?","a":["Estribo","Martelo","Pisiforme","Cóccix"]},{"c":"Esportes","d":4,"q":"Quantos títulos mundiais de Fórmula 1 teve Ayrton Senna?","a":["3","2","4","5"]},{"c":"Esportes","d":4,"q":"Qual seleção venceu a Copa do Mundo de 1998?","a":["França","Brasil","Itália","Croácia"]},{"c":"Esportes","d":4,"q":"Quem é o maior medalhista olímpico da história?","a":["Michael Phelps","Usain Bolt","Carl Lewis","Mark Spitz"]},{"c":"Cinema","d":4,"q":"Quem dirigiu O Poderoso Chefão?","a":["Francis Ford Coppola","Martin Scorsese","Brian De Palma","Sidney Lumet"]},{"c":"Cinema","d":4,"q":"Em qual filme clássico a palavra 'Rosebud' é central?","a":["Cidadão Kane","Casablanca","Psicose","Vertigo"]},{"c":"Cinema","d":4,"q":"Quem dirigiu o filme Cidade de Deus?","a":["Fernando Meirelles","Walter Salles","José Padilha","Kleber Mendonça Filho"]},{"c":"Música","d":4,"q":"Quem compôs As Quatro Estações?","a":["Vivaldi","Bach","Haydn","Handel"]},{"c":"Música","d":4,"q":"Qual banda lançou o álbum The Dark Side of the Moon?","a":["Pink Floyd","Led Zeppelin","Queen","The Who"]},{"c":"Música","d":4,"q":"Quem compôs a canção Construção?","a":["Chico Buarque","Caetano Veloso","Gilberto Gil","Milton Nascimento"]},{"c":"TV","d":4,"q":"Qual foi a primeira emissora de televisão do Brasil?","a":["TV Tupi","TV Globo","TV Excelsior","TV Record"]},{"c":"Games","d":4,"q":"Em que ano foi lançado o primeiro Super Mario Bros.?","a":["1985","1981","1990","1978"]},{"c":"Games","d":4,"q":"Qual empresa criou o Sonic?","a":["Sega","Nintendo","Atari","Capcom"]},{"c":"Games","d":4,"q":"Qual estúdio desenvolveu The Witcher 3?","a":["CD Projekt Red","BioWare","Bethesda","Ubisoft"]},{"c":"Tecnologia","d":4,"q":"Quem criou o sistema operacional Linux?","a":["Linus Torvalds","Richard Stallman","Dennis Ritchie","Ken Thompson"]},{"c":"Tecnologia","d":4,"q":"Quem criou a World Wide Web?","a":["Tim Berners-Lee","Vint Cerf","Bill Gates","Larry Page"]},{"c":"Tecnologia","d":4,"q":"Qual protocolo é usado para navegação segura na web?","a":["HTTPS","FTP","SMTP","SSH"]},{"c":"Matemática","d":4,"q":"Quanto é a soma dos números de 1 a 100?","a":["5050","5000","5100","4950"]},{"c":"Matemática","d":4,"q":"Qual é a derivada de x ao quadrado?","a":["2x","x","x ao cubo","2"]},{"c":"Matemática","d":4,"q":"Quanto vale aproximadamente o número de Euler (e)?","a":["2,718","3,141","1,618","1,414"]},{"c":"Gerais","d":4,"q":"Quantos ossos tem o corpo de um adulto?","a":["206","180","250","300"]},{"c":"Animais","d":4,"q":"Qual é a maior ave do mundo?","a":["Avestruz","Emu","Condor","Albatroz"]},{"c":"Automóveis","d":4,"q":"Qual foi o primeiro carro produzido em larga escala em linha de montagem?","a":["Ford Modelo T","Fusca","Mini","Citroën 2CV"]},{"c":"Automóveis","d":4,"q":"Quem projetou o Fusca original?","a":["Ferdinand Porsche","Enzo Ferrari","Henry Ford","Karl Benz"]},{"c":"Gastronomia","d":4,"q":"De qual país é o queijo Roquefort?","a":["França","Itália","Suíça","Holanda"]},{"c":"Gastronomia","d":4,"q":"Qual é o ingrediente principal do guacamole?","a":["Abacate","Tomate","Pepino","Milho"]},{"c":"Literatura","d":4,"q":"Quem escreveu Os Lusíadas?","a":["Camões","Fernando Pessoa","Eça de Queirós","Gil Vicente"]},{"c":"Literatura","d":4,"q":"Quem escreveu Dom Quixote?","a":["Miguel de Cervantes","Lope de Vega","Gabriel García Márquez","Jorge Luis Borges"]},{"c":"Geografia","d":5,"q":"Qual é a capital do Cazaquistão?","a":["Astana","Almaty","Tashkent","Bishkek"]},{"c":"Geografia","d":5,"q":"Qual é o lago mais profundo do mundo?","a":["Baikal","Tanganica","Superior","Titicaca"]},{"c":"Geografia","d":5,"q":"Qual é o ponto mais profundo dos oceanos?","a":["Fossa das Marianas","Fossa de Porto Rico","Fossa de Java","Fossa das Filipinas"]},{"c":"Geografia","d":5,"q":"Qual é a capital da Mongólia?","a":["Ulan Bator","Astana","Pyongyang","Thimphu"]},{"c":"Brasil","d":5,"q":"Quem foi o último presidente do regime militar brasileiro?","a":["João Figueiredo","Ernesto Geisel","Costa e Silva","Castelo Branco"]},{"c":"Brasil","d":5,"q":"Quem liderou a Revolta da Chibata em 1910?","a":["João Cândido","Zumbi dos Palmares","Antônio Conselheiro","Luís Carlos Prestes"]},{"c":"Brasil","d":5,"q":"Em que ano terminou a Guerra do Paraguai?","a":["1870","1865","1888","1850"]},{"c":"História","d":5,"q":"Em que batalha Napoleão foi derrotado definitivamente em 1815?","a":["Waterloo","Austerlitz","Trafalgar","Leipzig"]},{"c":"História","d":5,"q":"Qual foi o último faraó da dinastia ptolomaica do Egito?","a":["Cleópatra VII","Nefertiti","Hatshepsut","Ramsés II"]},{"c":"História","d":5,"q":"Qual imperador romano dividiu o Império entre os filhos em 395?","a":["Teodósio I","Constantino","Diocleciano","Justiniano"]},{"c":"Ciência","d":5,"q":"Qual é o valor aproximado do número de Avogadro?","a":["6,022 x 10²³","3,0 x 10⁸","9,8","1,6 x 10⁻¹⁹"]},{"c":"Ciência","d":5,"q":"Quem formulou o princípio da incerteza na física quântica?","a":["Werner Heisenberg","Niels Bohr","Erwin Schrödinger","Max Planck"]},{"c":"Ciência","d":5,"q":"Qual é o símbolo químico do tungstênio?","a":["W","Tu","Tn","T"]},{"c":"Ciência","d":5,"q":"Qual partícula está associada ao campo que dá massa às outras partículas?","a":["Bóson de Higgs","Fóton","Gluon","Neutrino"]},{"c":"Esportes","d":5,"q":"Qual seleção venceu a primeira Copa do Mundo, em 1930?","a":["Uruguai","Argentina","Brasil","Itália"]},{"c":"Esportes","d":5,"q":"Quem comandou a seleção brasileira como técnico no tricampeonato de 1970?","a":["Zagallo","Telê Santana","Feola","Parreira"]},{"c":"Esportes","d":5,"q":"Em qual país foram realizados os primeiros Jogos Olímpicos da era moderna, em 1896?","a":["Grécia","França","Inglaterra","Estados Unidos"]},{"c":"Esportes","d":5,"q":"Quantos títulos de Grand Slam Roger Federer conquistou em simples?","a":["20","17","22","18"]},{"c":"Cinema","d":5,"q":"Qual é considerado o primeiro longa-metragem sonoro de Hollywood?","a":["O Cantor de Jazz","Luzes da Cidade","Metropolis","Nosferatu"]},{"c":"Cinema","d":5,"q":"Quem dirigiu 2001: Uma Odisseia no Espaço?","a":["Stanley Kubrick","Ridley Scott","Steven Spielberg","Andrei Tarkovski"]},{"c":"Música","d":5,"q":"Quem compôs o Bolero?","a":["Maurice Ravel","Claude Debussy","Erik Satie","Camille Saint-Saëns"]},{"c":"Música","d":5,"q":"Quantas teclas tem um piano padrão?","a":["88","76","92","100"]},{"c":"Games","d":5,"q":"Quem criou o personagem Mario?","a":["Shigeru Miyamoto","Satoru Iwata","Hideo Kojima","Yuji Naka"]},{"c":"Games","d":5,"q":"Qual foi o primeiro videogame doméstico comercial, lançado em 1972?","a":["Magnavox Odyssey","Atari 2600","Pong Home","Colecovision"]},{"c":"Tecnologia","d":5,"q":"Quem é considerada a primeira programadora da história?","a":["Ada Lovelace","Grace Hopper","Margaret Hamilton","Hedy Lamarr"]},{"c":"Tecnologia","d":5,"q":"Em que ano foi lançado o primeiro iPhone?","a":["2007","2005","2009","2010"]},{"c":"Tecnologia","d":5,"q":"Qual empresa criou a linguagem Java?","a":["Sun Microsystems","Microsoft","Oracle","IBM"]},{"c":"Matemática","d":5,"q":"Quanto vale i ao quadrado, na unidade imaginária?","a":["-1","1","i","0"]},{"c":"Matemática","d":5,"q":"Quantas diagonais tem um hexágono?","a":["9","6","12","15"]},{"c":"Matemática","d":5,"q":"Quem demonstrou o Último Teorema de Fermat?","a":["Andrew Wiles","Pierre de Fermat","Euler","Gauss"]},{"c":"Animais","d":5,"q":"Qual é o maior felino do mundo?","a":["Tigre","Leão","Onça-pintada","Leopardo"]},{"c":"Automóveis","d":5,"q":"Quem construiu o primeiro automóvel a combustão patenteado, em 1886?","a":["Karl Benz","Henry Ford","Rudolf Diesel","Gottlieb Daimler"]},{"c":"Gastronomia","d":5,"q":"Qual país é a origem do ceviche?","a":["Peru","México","Chile","Equador"]},{"c":"Literatura","d":5,"q":"Quem escreveu Ulisses?","a":["James Joyce","Samuel Beckett","Virginia Woolf","T. S. Eliot"]},{"c":"Literatura","d":5,"q":"Quem escreveu A Metamorfose?","a":["Franz Kafka","Albert Camus","Thomas Mann","Hermann Hesse"]},{"c":"Literatura","d":5,"q":"Quem escreveu Vidas Secas?","a":["Graciliano Ramos","Rachel de Queiroz","José Lins do Rego","Jorge Amado"]}];
+const CAT_ICON = { 'Geografia': '🌎', 'Brasil': '🇧🇷', 'História': '🏛️', 'Ciência': '🔬', 'Esportes': '⚽', 'Cinema': '🎬', 'Música': '🎵', 'TV': '📺', 'Games': '🎮', 'Tecnologia': '💻', 'Matemática': '🧮', 'Gerais': '🧠', 'Animais': '🐾', 'Automóveis': '🚗', 'Gastronomia': '🍔', 'Literatura': '📚' };
+const DIFF_NAME = ['', 'Fácil', 'Médio', 'Difícil', 'Muito difícil', 'Especialista'];
+const PRIZES = [100, 500, 1000, 5000, 10000, 50000, 100000, 250000, 500000, 1000000];
+const SAFE_AT = [2, 5]; // índices dos patamares garantidos (R$ 1.000 e R$ 50.000)
+const LADDER_DIFF = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
+const MODES = {
+  milionario: { nome: 'Milionário', icone: '💰', desc: '10 perguntas até R$ 1 milhão, com ajudas e patamares garantidos' },
+  relampago: { nome: 'Relâmpago', icone: '⚡', desc: '60 segundos: acertou ganha ponto, errou perde tempo' },
+  survival: { nome: 'Sobrevivência', icone: '☠️', desc: '3 vidas e perguntas cada vez mais difíceis' },
+  diario: { nome: 'Desafio Diário', icone: '🎯', desc: '10 perguntas iguais pra todo mundo, uma vez por dia' },
+  duelo: { nome: 'Duelo', icone: '👥', desc: 'Dois jogadores, mesmas regras, no mesmo aparelho' }
+};
+const RANK_MODES = ['milionario', 'relampago', 'survival', 'diario'];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = n => 'R$ ' + Number(n).toLocaleString('pt-BR');
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function shuffle(a, rnd) { rnd = rnd || Math.random; a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function todayKey() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+const BY_DIFF = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+QUESTIONS.forEach((q, i) => BY_DIFF[q.d].push(i));
+function prep(i, rnd) {
+  const q = QUESTIONS[i], opts = shuffle(q.a.map((t, k) => ({ t, ok: k === 0 })), rnd);
+  return { i, c: q.c, d: q.d, q: q.q, opts, right: opts.findIndex(o => o.ok), ans: q.a[0] };
+}
+function hintFor(p) {
+  const a = p.ans, words = a.split(/\s+/).length;
+  return 'Dica: categoria ' + p.c + '. A resposta começa com "' + a[0].toUpperCase() + '" e tem ' + a.replace(/\s/g, '').length + ' letras' + (words > 1 ? ' (' + words + ' palavras)' : '') + '.';
+}
+
+/* ---------- configurações e estatísticas ---------- */
+const CFG = { name: 'Jogador', sound: true, timer: true };
+const emptyStats = () => ({ games: 0, answered: 0, correct: 0, bestStreak: 0, best: { milionario: 0, relampago: 0, survival: 0, diario: 0 }, millions: 0, duelo: { w: 0, l: 0, d: 0 }, cat: {}, dailyDone: '', dailyScore: 0 });
+let STATS = emptyStats();
+function loadLocal() {
+  try { const c = JSON.parse(localStorage.getItem('mj_cfg') || 'null'); if (c) { CFG.name = String(c.name || 'Jogador').slice(0, 14); CFG.sound = c.sound !== false; CFG.timer = c.timer !== false; } } catch (e) {}
+  try { const s = JSON.parse(localStorage.getItem('mj_stats') || 'null'); if (s) STATS = Object.assign(emptyStats(), s, { best: Object.assign(emptyStats().best, s.best || {}), duelo: Object.assign({ w: 0, l: 0, d: 0 }, s.duelo || {}), cat: s.cat || {} }); } catch (e) {}
+}
+function saveCfg() { try { localStorage.setItem('mj_cfg', JSON.stringify(CFG)); } catch (e) {} schedulePush(); }
+function saveStats() { try { localStorage.setItem('mj_stats', JSON.stringify(STATS)); } catch (e) {} schedulePush(); }
+function mergeStats(r) {
+  r = r || {}; const b = r.best || {};
+  ['games', 'answered', 'correct', 'bestStreak', 'millions'].forEach(k => { STATS[k] = Math.max(STATS[k] | 0, r[k] | 0); });
+  Object.keys(STATS.best).forEach(k => { STATS.best[k] = Math.max(STATS.best[k] | 0, b[k] | 0); });
+  const du = r.duelo || {}; ['w', 'l', 'd'].forEach(k => { STATS.duelo[k] = Math.max(STATS.duelo[k] | 0, du[k] | 0); });
+  Object.keys(r.cat || {}).forEach(c => { const x = r.cat[c] || [0, 0], y = STATS.cat[c] || [0, 0]; STATS.cat[c] = [Math.max(x[0] | 0, y[0] | 0), Math.max(x[1] | 0, y[1] | 0)]; });
+  if ((r.dailyDone || '') > (STATS.dailyDone || '')) { STATS.dailyDone = r.dailyDone; STATS.dailyScore = r.dailyScore | 0; }
+  else if (r.dailyDone && r.dailyDone === STATS.dailyDone) STATS.dailyScore = Math.max(STATS.dailyScore | 0, r.dailyScore | 0);
+}
+const ACHIEVEMENTS = [
+  { id: 'a1', nome: 'Primeiros passos', desc: 'Responda 10 perguntas', ok: s => s.answered >= 10 },
+  { id: 'a2', nome: 'Sabichão', desc: 'Acerte 100 perguntas', ok: s => s.correct >= 100 },
+  { id: 'a3', nome: 'Garantido', desc: 'Chegue a R$ 1.000 no Milionário', ok: s => s.best.milionario >= 1000 },
+  { id: 'a4', nome: 'Meio milhão', desc: 'Chegue a R$ 500.000', ok: s => s.best.milionario >= 500000 },
+  { id: 'a5', nome: 'Milionário!', desc: 'Leve o R$ 1.000.000', ok: s => s.millions >= 1 },
+  { id: 'a6', nome: 'Em chamas', desc: 'Acerte 10 seguidas', ok: s => s.bestStreak >= 10 },
+  { id: 'a7', nome: 'Relâmpago', desc: '200 pontos no Relâmpago', ok: s => s.best.relampago >= 200 },
+  { id: 'a8', nome: 'Sobrevivente', desc: '300 pontos na Sobrevivência', ok: s => s.best.survival >= 300 },
+  { id: 'a9', nome: 'Viciado no diário', desc: 'Jogue o Desafio Diário', ok: s => !!s.dailyDone },
+  { id: 'a10', nome: 'Duelista', desc: 'Vença um duelo', ok: s => s.duelo.w >= 1 }
+];
+
+/* ---------- som (sintetizado) ---------- */
+const Sound = {
+  ctx: null,
+  init() { if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
+  tone(f, d, type, vol, at) {
+    if (!CFG.sound || !this.ctx) return; const c = this.ctx, t = c.currentTime + (at || 0), o = c.createOscillator(), g = c.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + d + 0.05);
+  },
+  click() { this.tone(520, 0.06, 'triangle', 0.07); },
+  pick() { this.tone(330, 0.12, 'sine', 0.1); this.tone(440, 0.12, 'sine', 0.08, 0.08); },
+  right() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.22, 'triangle', 0.12, i * 0.09)); },
+  wrong() { this.tone(180, 0.35, 'sawtooth', 0.1); this.tone(130, 0.5, 'sawtooth', 0.1, 0.15); },
+  tick() { this.tone(900, 0.05, 'square', 0.04); },
+  win() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => this.tone(f, 0.3, 'triangle', 0.13, i * 0.12)); },
+  lose() { [392, 330, 262, 196].forEach((f, i) => this.tone(f, 0.35, 'sawtooth', 0.08, i * 0.18)); },
+  life() { this.tone(660, 0.1, 'sine', 0.1); this.tone(880, 0.16, 'sine', 0.1, 0.1); }
+};
+
+/* ===== Mente em Jogo: partida e modos ===== */
+let G = null, TM = null;
+const LETTERS = ['A', 'B', 'C', 'D'];
+
+function newGame(mode, opts) {
+  opts = opts || {};
+  G = { mode, used: {}, level: 0, streak: 0, bestStreak: 0, correct: 0, answered: 0, score: 0, lives: 3, round: 0, q: null, locked: false, over: false, hidden: [], pct: null,
+    aid: { fifty: 1, crowd: 1, hint: 1, swap: 1 }, names: opts.names || [CFG.name], cur: 0, scores: [0, 0], deadline: 0, clockEnd: 0, daily: null, catHits: [], timeBonus: 0 };
+  if (mode === 'relampago') G.clockEnd = Date.now() + 60000;
+  if (mode === 'diario') {
+    const rnd = mulberry32(hashStr('mente-' + todayKey())), used = {}, list = [];
+    LADDER_DIFF.forEach(d => { const pool = BY_DIFF[d].filter(i => !used[i]); const i = pool[Math.floor(rnd() * pool.length)]; used[i] = 1; list.push(prep(i, rnd)); });
+    G.daily = list;
+  }
+  show('sGame'); nextQuestion();
+  clearInterval(TM); TM = setInterval(tick, 100);
+}
+function diffFor() {
+  const g = G;
+  if (g.mode === 'milionario') return LADDER_DIFF[g.level];
+  if (g.mode === 'relampago') return Math.min(5, 1 + Math.floor(g.streak / 3));
+  if (g.mode === 'survival') return Math.min(5, 1 + Math.floor(g.correct / 4));
+  if (g.mode === 'duelo') return LADDER_DIFF[g.round];
+  return 1;
+}
+function pickIdx(d) {
+  let pool = BY_DIFF[d].filter(i => !G.used[i]);
+  if (!pool.length) { BY_DIFF[d].forEach(i => delete G.used[i]); pool = BY_DIFF[d].slice(); }
+  const i = pool[Math.floor(Math.random() * pool.length)]; G.used[i] = 1; return i;
+}
+function perQuestionTime() {
+  if (!CFG.timer && G.mode !== 'diario' && G.mode !== 'duelo' && G.mode !== 'survival') return 0;
+  return ({ milionario: 45, survival: 20, diario: 25, duelo: 20, relampago: 0 })[G.mode] || 0;
+}
+function nextQuestion() {
+  G.locked = false; G.hidden = []; G.pct = null;
+  G.q = G.mode === 'diario' ? G.daily[G.round] : prep(pickIdx(diffFor()));
+  const t = perQuestionTime(); G.deadline = t ? Date.now() + t * 1000 : 0; G.qTime = t;
+  $('msg').textContent = ''; $('msg').className = 'msg';
+  renderQ();
+}
+
+function pts(d) { return 10 * d; }
+function tick() {
+  if (!G || G.over || !$('sGame') || $('sGame').classList.contains('hidden')) return;
+  const now = Date.now(); let left = 0, total = 0;
+  if (G.mode === 'relampago') { left = (G.clockEnd - now) / 1000; total = 60; if (left <= 0 && !G.locked) return endGame('tempo'); }
+  else if (G.deadline) { left = (G.deadline - now) / 1000; total = G.qTime; if (left <= 0 && !G.locked) return answer(-1); }
+  if (total) {
+    const pc = Math.max(0, Math.min(100, left / total * 100));
+    $('tFill').style.width = pc + '%'; $('tFill').className = pc < 25 ? 'low' : '';
+    $('hTimer').textContent = Math.max(0, Math.ceil(left)) + 's';
+    const c = Math.ceil(left); if (!G.locked && c <= 5 && c > 0 && c !== G._lastTick) { G._lastTick = c; Sound.tick(); }
+  } else { $('tFill').style.width = '100%'; $('tFill').className = 'free'; $('hTimer').textContent = '∞'; }
+}
+
+function renderQ() {
+  const q = G.q;
+  $('qMeta').innerHTML = '<span>' + (CAT_ICON[q.c] || '') + ' ' + esc(q.c) + '</span><span class="dif d' + q.d + '">' + DIFF_NAME[q.d] + '</span>';
+  $('qText').textContent = q.q;
+  $('opts').innerHTML = q.opts.map((o, i) => '<button class="opt" data-i="' + i + '"><b>' + LETTERS[i] + '</b><span>' + esc(o.t) + '</span><em></em></button>').join('');
+  const m = G.mode;
+  $('hMode').textContent = (MODES[m].icone + ' ' + MODES[m].nome);
+  let info = '';
+  if (m === 'milionario') info = 'Pergunta ' + (G.level + 1) + '/10 · vale ' + money(PRIZES[G.level]);
+  else if (m === 'relampago') info = G.score + ' pts · sequência ' + G.streak;
+  else if (m === 'survival') info = '❤'.repeat(G.lives) + '🖤'.repeat(3 - G.lives) + ' · ' + G.score + ' pts';
+  else if (m === 'diario') info = 'Pergunta ' + (G.round + 1) + '/10 · ' + G.score + ' pts';
+  else if (m === 'duelo') info = 'Rodada ' + (G.round + 1) + '/10 · ' + G.names[0] + ' ' + G.scores[0] + ' x ' + G.scores[1] + ' ' + G.names[1];
+  $('hInfo').textContent = info;
+  $('duelTurn').classList.toggle('hidden', m !== 'duelo'); if (m === 'duelo') $('duelTurn').textContent = 'Vez de ' + G.names[G.cur];
+  renderAids(); renderLadder();
+  $('btnStop').classList.toggle('hidden', m !== 'milionario' || G.level === 0);
+  if (m === 'milionario') $('btnStop').textContent = 'Parar e levar ' + money(PRIZES[G.level - 1] || 0);
+  $('opts').querySelectorAll('.opt').forEach(b => b.onclick = () => { Sound.init(); answer(+b.dataset.i); });
+}
+function renderAids() {
+  const on = G.mode === 'milionario';
+  $('aid').classList.toggle('hidden', !on); if (!on) return;
+  const L = [['fifty', '50/50'], ['crowd', '👥 Plateia'], ['hint', '💡 Dica'], ['swap', '🔄 Trocar']];
+  $('aid').innerHTML = L.map(([k, t]) => '<button class="aidb" data-k="' + k + '"' + (G.aid[k] ? '' : ' disabled') + '>' + t + '</button>').join('');
+  $('aid').querySelectorAll('.aidb').forEach(b => b.onclick = () => { Sound.init(); useAid(b.dataset.k); });
+}
+function renderLadder() {
+  const el = $('ladder'); el.classList.toggle('hidden', G.mode !== 'milionario'); if (G.mode !== 'milionario') return;
+  let h = '';
+  for (let i = 9; i >= 0; i--) h += '<li class="' + (i === G.level ? 'cur' : i < G.level ? 'done' : '') + (SAFE_AT.includes(i) ? ' safe' : '') + '"><span>' + (i + 1) + '</span>' + money(PRIZES[i]) + (SAFE_AT.includes(i) ? ' <small>garantido</small>' : '') + '</li>';
+  el.innerHTML = '<h3>Escada</h3><ol>' + h + '</ol>';
+}
+function useAid(k) {
+  if (G.locked || !G.aid[k]) return; const q = G.q; G.aid[k] = 0; Sound.click();
+  if (k === 'fifty') {
+    const wrong = q.opts.map((o, i) => i).filter(i => i !== q.right && !G.hidden.includes(i)); shuffle(wrong).slice(0, 2).forEach(i => G.hidden.push(i));
+    G.hidden.forEach(i => { const b = $('opts').children[i]; b.classList.add('gone'); b.disabled = true; });
+  } else if (k === 'crowd') {
+    const strong = Math.max(35, 88 - q.d * 11 + Math.floor(Math.random() * 10)), alive = q.opts.map((o, i) => i).filter(i => !G.hidden.includes(i)), others = alive.filter(i => i !== q.right);
+    let rest = 100 - strong; const p = {}; p[q.right] = strong;
+    others.forEach((i, n) => { const v = n === others.length - 1 ? rest : Math.floor(Math.random() * rest * 0.7); p[i] = v; rest -= v; });
+    $('opts').querySelectorAll('.opt').forEach((b, i) => { if (p[i] != null) b.querySelector('em').textContent = p[i] + '%'; });
+    $('msg').textContent = 'A plateia opinou. Mas plateia também erra!'; $('msg').className = 'msg';
+  } else if (k === 'hint') { $('msg').textContent = hintFor(q); $('msg').className = 'msg hint'; }
+  else if (k === 'swap') { G.q = prep(pickIdx(q.d)); G.hidden = []; renderQ(); $('msg').textContent = 'Pergunta trocada.'; }
+  renderAids();
+}
+
+function answer(i) {
+  if (G.locked) return; G.locked = true;
+  const q = G.q, ok = i === q.right;
+  $('opts').querySelectorAll('.opt').forEach((b, k) => { b.disabled = true; if (k === i) b.classList.add('picked'); });
+  document.querySelectorAll('.aidb').forEach(b => b.disabled = true); $('btnStop').disabled = true;
+  G.leftAt = G.deadline ? Math.max(0, (G.deadline - Date.now()) / 1000) : 0;
+  Sound.pick();
+  const delay = i < 0 ? 200 : 1100;
+  setTimeout(() => {
+    $('opts').querySelectorAll('.opt').forEach((b, k) => { b.classList.remove('picked'); if (k === q.right) b.classList.add('right'); else if (k === i) b.classList.add('wrong'); });
+    ok ? Sound.right() : Sound.wrong();
+    G.answered++; const c = STATS.cat[q.c] || (STATS.cat[q.c] = [0, 0]); c[1]++; STATS.answered++;
+    if (ok) { G.correct++; G.streak++; G.bestStreak = Math.max(G.bestStreak, G.streak); c[0]++; STATS.correct++; STATS.bestStreak = Math.max(STATS.bestStreak, G.streak); }
+    else G.streak = 0;
+    if (!ok) $('msg').textContent = (i < 0 ? 'Acabou o tempo! ' : '') + 'Era: ' + q.ans; else if (G.mode !== 'milionario') $('msg').textContent = 'Acertou! +' + pts(q.d) + ' pts';
+    if ($('msg').textContent) $('msg').className = 'msg ' + (ok ? 'ok' : 'bad');
+    resolve(ok, q);
+  }, delay);
+}
+function resolve(ok, q) {
+  const m = G.mode; let end = null, wait = 1700;
+  if (m === 'milionario') {
+    if (ok) { G.level++; if (G.level >= 10) end = 'ganhou'; } else end = 'errou';
+  } else if (m === 'relampago') {
+    if (ok) G.score += pts(q.d); else G.clockEnd -= 5000;
+    if (Date.now() >= G.clockEnd) end = 'tempo'; wait = ok ? 650 : 1500;
+  } else if (m === 'survival') {
+    if (ok) G.score += pts(q.d); else { G.lives--; if (G.lives <= 0) end = 'fim'; }
+  } else if (m === 'diario') {
+    if (ok) { G.score += 100 + Math.ceil(G.leftAt) * 2; }
+    G.round++; if (G.round >= 10) end = 'fim';
+  } else if (m === 'duelo') {
+    if (ok) G.scores[G.cur] += pts(q.d);
+    G.round++; G.cur = 1 - G.cur; if (G.round >= 10) end = 'fim';
+  }
+  setTimeout(() => { if (!G || G.over) return; end ? endGame(end) : (nextQuestion(), $('btnStop').disabled = false); }, wait);
+}
+function prizeNow() {
+  if (G.level >= 10) return PRIZES[9];
+  const lv = G.level; let safe = 0; if (lv > 5) safe = PRIZES[5]; else if (lv > 2) safe = PRIZES[2]; return safe;
+}
+function endGame(why) {
+  if (!G || G.over) return; G.over = true; clearInterval(TM);
+  const m = G.mode; let score = G.score, title = '', sub = '';
+  STATS.games++;
+  if (m === 'milionario') {
+    score = why === 'parou' ? (PRIZES[G.level - 1] || 0) : prizeNow(); G.score = score;
+    title = why === 'ganhou' ? 'VOCÊ É MILIONÁRIO! 🏆' : why === 'parou' ? 'Você parou na hora certa' : 'Errou! Fim de jogo';
+    sub = 'Você leva ' + money(score);
+    if (why === 'ganhou') STATS.millions++;
+  } else if (m === 'relampago') { title = 'Tempo esgotado ⚡'; sub = G.score + ' pontos · melhor sequência ' + G.bestStreak; }
+  else if (m === 'survival') { title = 'Acabaram as vidas ☠️'; sub = G.score + ' pontos · ' + G.correct + ' acertos'; }
+  else if (m === 'diario') {
+    title = 'Desafio de hoje concluído 🎯'; sub = G.score + ' pontos · ' + G.correct + '/10 acertos';
+    STATS.dailyDone = todayKey(); STATS.dailyScore = G.score;
+  } else if (m === 'duelo') {
+    const a = G.scores[0], b = G.scores[1];
+    if (a === b) { title = 'Empate!'; STATS.duelo.d++; } else { const w = a > b ? 0 : 1; title = G.names[w] + ' venceu! 🏆'; if (w === 0) STATS.duelo.w++; else STATS.duelo.l++; }
+    sub = G.names[0] + ' ' + a + ' x ' + b + ' ' + G.names[1];
+  }
+  if (RANK_MODES.includes(m)) { if (score > (STATS.best[m] | 0)) { STATS.best[m] = score; G.newBest = true; } }
+  saveStats();
+  (why === 'ganhou' || (m === 'duelo' && G.scores[0] !== G.scores[1]) || (m === 'diario')) ? Sound.win() : Sound.lose();
+  showResult(m, title, sub, score);
+  if (RANK_MODES.includes(m) && score > 0) submitScore(m, score);
+}
+function shareText(score) {
+  return 'Mente em Jogo 🧠 Desafio Diário ' + todayKey().split('-').reverse().join('/') + '\n' + G.correct + '/10 acertos · ' + score + ' pontos\nJoga lá: https://falzinhogames.com.br/mente-em-jogo/';
+}
+function showResult(m, title, sub, score) {
+  show('sResult');
+  const best = RANK_MODES.includes(m) ? '<p class="best">' + (G.newBest ? '🎉 Novo recorde pessoal!' : 'Seu recorde: ' + (m === 'milionario' ? money(STATS.best[m]) : STATS.best[m] + ' pts')) + '</p>' : '';
+  $('resBody').innerHTML = '<div class="card res"><div class="trophy">' + MODES[m].icone + '</div><h2>' + esc(title) + '</h2><p class="big">' + esc(sub) + '</p>' + best +
+    '<p class="sub">Acertos: ' + G.correct + ' de ' + G.answered + ' · maior sequência: ' + G.bestStreak + '</p><div id="rankMsg" class="sub"></div></div>' +
+    '<div class="actions">' + (m === 'diario' ? '<button class="btn" id="btnShare">Copiar resultado</button>' : '<button class="btn big" data-go="again">Jogar de novo</button>') +
+    '<button class="btn ghost" data-go="rank">Ver ranking</button><button class="btn ghost" data-go="menu">Menu</button></div>';
+  G.lastMode = m;
+  const sh = $('btnShare'); if (sh) sh.onclick = () => { const t = shareText(score); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => sh.textContent = 'Copiado! ✔', () => { sh.textContent = 'Copie manualmente'; $('rankMsg').textContent = t; }); };
+}
+function quitGame() { if (G && !G.over && !confirm('Sair da partida? O progresso desta partida será perdido.')) return; if (G) G.over = true; clearInterval(TM); show('sMenu'); }
+function stopGame() { if (G && G.mode === 'milionario' && !G.locked && G.level > 0) endGame('parou'); }
+
+/* ===== Mente em Jogo: telas, ranking, conta e nuvem ===== */
+const SCREENS = ['sMenu', 'sGame', 'sResult', 'sRank', 'sPerfil', 'sConfig', 'sHelp', 'sAuth', 'sDuel'];
+let current = 'sMenu';
+function show(id) {
+  current = id; SCREENS.forEach(s => $(s).classList.toggle('hidden', s !== id));
+  document.body.classList.toggle('in-game', id === 'sGame'); window.scrollTo(0, 0);
+  if (id === 'sMenu') renderMenu(); if (id === 'sPerfil') renderPerfil(); if (id === 'sConfig') renderConfig(); if (id === 'sRank') renderRank(rankTab);
+}
+function setName(v) { CFG.name = (String(v || '').trim().slice(0, 14)) || 'Jogador'; saveCfg(); }
+function renderMenu() {
+  $('inName').value = CFG.name === 'Jogador' && !localStorage.getItem('mj_cfg') ? '' : CFG.name;
+  const done = STATS.dailyDone === todayKey();
+  $('modeGrid').innerHTML = Object.keys(MODES).map(k => '<button class="mcard m-' + k + '" data-go="' + k + '"><span class="mi">' + MODES[k].icone + '</span><b>' + MODES[k].nome + '</b><small>' + (k === 'diario' && done ? 'Feito hoje: ' + STATS.dailyScore + ' pts' : MODES[k].desc) + '</small></button>').join('');
+  const s = STATS; $('mini').innerHTML = s.answered ? '<span><b>' + s.correct + '</b> acertos</span><span><b>' + (Math.round(s.correct / Math.max(1, s.answered) * 100)) + '%</b> de aproveitamento</span><span><b>' + money(s.best.milionario) + '</b> recorde</span>' : '<span>Bora começar? Escolha um modo.</span>';
+}
+function renderConfig() {
+  $('cfgBody').innerHTML = '<div class="seg"><button data-c="sound" class="' + (CFG.sound ? 'on' : '') + '">Som ligado</button><button data-c="soundoff" class="' + (!CFG.sound ? 'on' : '') + '">Som desligado</button></div>' +
+    '<h3>Cronômetro no Milionário</h3><div class="seg"><button data-c="timer" class="' + (CFG.timer ? 'on' : '') + '">45 segundos</button><button data-c="timeroff" class="' + (!CFG.timer ? 'on' : '') + '">Sem tempo</button></div>' +
+    '<p class="sub">Nos outros modos o tempo faz parte da regra.</p>';
+  $('cfgBody').querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const c = b.dataset.c; if (c === 'sound') CFG.sound = true; if (c === 'soundoff') CFG.sound = false; if (c === 'timer') CFG.timer = true; if (c === 'timeroff') CFG.timer = false; saveCfg(); Sound.init(); renderConfig(); });
+}
+function renderPerfil() {
+  const s = STATS, pct = Math.round(s.correct / Math.max(1, s.answered) * 100);
+  const cats = Object.keys(CAT_ICON).map(c => { const v = s.cat[c] || [0, 0], p = v[1] ? Math.round(v[0] / v[1] * 100) : 0; return '<div class="cr"><span>' + CAT_ICON[c] + ' ' + c + '</span><div class="cb"><i style="width:' + p + '%"></i></div><b>' + (v[1] ? p + '%' : '—') + '</b></div>'; }).join('');
+  const ach = ACHIEVEMENTS.map(a => '<div class="ach ' + (a.ok(s) ? 'on' : '') + '"><span>' + (a.ok(s) ? '🏅' : '🔒') + '</span><div><b>' + a.nome + '</b><small>' + a.desc + '</small></div></div>').join('');
+  $('perfilBody').innerHTML = '<div class="stats4"><div><b>' + s.games + '</b><small>partidas</small></div><div><b>' + s.correct + '</b><small>acertos</small></div><div><b>' + pct + '%</b><small>aproveit.</small></div><div><b>' + s.bestStreak + '</b><small>maior sequência</small></div></div>' +
+    '<h3>Recordes</h3><div class="recs"><div>💰 ' + money(s.best.milionario) + '</div><div>⚡ ' + s.best.relampago + ' pts</div><div>☠️ ' + s.best.survival + ' pts</div><div>🎯 ' + s.best.diario + ' pts</div><div>👥 ' + s.duelo.w + 'V ' + s.duelo.l + 'D ' + s.duelo.d + 'E</div></div>' +
+    '<h3>Por categoria</h3><div class="cats">' + cats + '</div><h3>Conquistas</h3><div class="achs">' + ach + '</div>';
+}
+let rankTab = 'milionario';
+async function renderRank(tab) {
+  rankTab = tab || rankTab;
+  $('rankTabs').innerHTML = RANK_MODES.map(k => '<button class="' + (k === rankTab ? 'on' : '') + '" data-t="' + k + '">' + MODES[k].icone + ' ' + MODES[k].nome + '</button>').join('');
+  $('rankTabs').querySelectorAll('button').forEach(b => b.onclick = () => renderRank(b.dataset.t));
+  const box = $('rankList'); box.innerHTML = '<p class="sub">Carregando...</p>';
+  const mine = STATS.best[rankTab] | 0; $('rankMine').textContent = 'Seu recorde: ' + (rankTab === 'milionario' ? money(mine) : mine + ' pts') + (CLOUD.user ? '' : ' · entre na sua conta para aparecer no ranking');
+  sbReady(async sb => {
+    const { data, error } = await sb.from('mente_ranking').select('user_id,nome,pontos').eq('modo', rankTab).order('pontos', { ascending: false }).limit(60);
+    if (error) { box.innerHTML = '<p class="sub">Não consegui carregar o ranking agora.</p>'; return; }
+    const seen = {}, rows = []; (data || []).forEach(r => { if (!seen[r.user_id]) { seen[r.user_id] = 1; rows.push(r); } });
+    const top = rows.slice(0, 15);
+    box.innerHTML = top.length ? '<ol class="rk">' + top.map((r, i) => '<li class="' + (CLOUD.user && r.user_id === CLOUD.user.id ? 'me' : '') + '"><span class="pos">' + (i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1) + '</span><span class="nm">' + esc(r.nome) + '</span><b>' + (rankTab === 'milionario' ? money(r.pontos) : r.pontos + ' pts') + '</b></li>').join('') + '</ol>' : '<p class="sub">Ninguém no ranking ainda. Seja o primeiro!</p>';
+  });
+}
+async function submitScore(mode, pontos) {
+  const el = () => $('rankMsg'); if (!CLOUD.user) { if (el()) el().textContent = 'Entre na sua conta para salvar sua pontuação no ranking.'; return; }
+  sbReady(async sb => {
+    const { error } = await sb.from('mente_ranking').insert({ user_id: CLOUD.user.id, nome: CFG.name.slice(0, 14), modo: mode, pontos });
+    if (el()) el().textContent = error ? 'Não consegui enviar ao ranking agora.' : 'Pontuação enviada ao ranking ✔';
+  });
+}
+
+/* ---------- navegação ---------- */
+function go(a) {
+  Sound.init(); Sound.click();
+  if (a === 'menu') return show('sMenu');
+  if (a === 'config' || a === 'help' || a === 'rank' || a === 'perfil') return show({ config: 'sConfig', help: 'sHelp', rank: 'sRank', perfil: 'sPerfil' }[a]);
+  if (a === 'auth') { window._authDraw && window._authDraw(); return show('sAuth'); }
+  if (a === 'logout') return doLogout();
+  if (a === 'again') return startMode(G.lastMode);
+  if (a === 'duelo') { $('d1').value = CFG.name; return show('sDuel'); }
+  startMode(a);
+}
+function startMode(m) {
+  if (m === 'diario' && STATS.dailyDone === todayKey()) { alert('Você já jogou o Desafio Diário de hoje (' + STATS.dailyScore + ' pontos). Volte amanhã!'); return show('sMenu'); }
+  if (m === 'duelo') { $('d1').value = CFG.name; return show('sDuel'); }
+  newGame(m);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (!b || b.closest('#acct')) return; go(b.dataset.go); });
+$('inName').addEventListener('input', e => setName(e.target.value));
+$('btnStop').onclick = () => { Sound.init(); stopGame(); };
+$('btnQuit').onclick = quitGame;
+$('btnSound').onclick = () => { CFG.sound = !CFG.sound; saveCfg(); Sound.init(); $('btnSound').textContent = CFG.sound ? '🔊' : '🔇'; };
+$('duelGo').onclick = () => { Sound.init(); const a = ($('d1').value.trim() || 'Jogador 1').slice(0, 14); let b = ($('d2').value.trim() || 'Jogador 2').slice(0, 14); if (a === b) b += ' 2'; newGame('duelo', { names: [a, b] }); };
+
+/* ---------- conta (Supabase) e nuvem ---------- */
+const SB_URL = 'https://lephzateozhdiyvgpgly.supabase.co';
+const SB_KEY = 'sb_publishable_fy4N7G17i5zsKJREatUEcQ_LrAEuKoc';
+const CLOUD = { sb: null, user: null, status: '', pushT: null };
+function sbReady(cb) {
+  if (CLOUD.sb) return cb && cb(CLOUD.sb);
+  if (window.supabase && window.supabase.createClient) {
+    CLOUD.sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+    CLOUD.sb.auth.onAuthStateChange((ev, sess) => { const u = sess && sess.user ? sess.user : null, was = CLOUD.user && CLOUD.user.id; CLOUD.user = u; renderAcct(); if (u && u.id !== was) setTimeout(syncDown, 0); });
+    CLOUD.sb.auth.getSession().then(r => { if (r.data && r.data.session) { CLOUD.user = r.data.session.user; renderAcct(); } });
+    return cb && cb(CLOUD.sb);
+  }
+  if (cb) (sbReady.q = sbReady.q || []).push(cb);
+  if (!sbReady.loading) {
+    sbReady.loading = true;
+    const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+    sc.onload = () => { sbReady.loading = false; sbReady(); const q = sbReady.q || []; sbReady.q = []; q.forEach(f => sbReady(f)); };
+    sc.onerror = () => { sbReady.loading = false; CLOUD.status = 'Sem conexão com o servidor'; renderAcct(); };
+    document.head.appendChild(sc);
+  }
+}
+function ptErr(m) {
+  m = String(m || '');
+  if (/Invalid login/i.test(m)) return 'E-mail ou senha incorretos.';
+  if (/already registered|already been registered/i.test(m)) return 'Esse e-mail já tem conta. Use "Entrar".';
+  if (/Password should be|at least/i.test(m)) return 'A senha precisa ter pelo menos 6 caracteres.';
+  if (/valid email|invalid format|Unable to validate/i.test(m)) return 'Digite um e-mail válido.';
+  if (/not confirmed/i.test(m)) return 'Confirme seu e-mail primeiro (veja a caixa de entrada e o spam).';
+  if (/rate limit|too many/i.test(m)) return 'Muitas tentativas. Espere um pouco e tente de novo.';
+  return 'Não deu certo agora. Tente de novo em instantes.';
+}
+function renderAcct() {
+  const el = $('acct'); if (!el) return;
+  if (CLOUD.user) el.innerHTML = '<div class="acctrow"><span>Conta: <b>' + esc(CLOUD.user.email || '') + '</b>' + (CLOUD.status ? ' <small>' + esc(CLOUD.status) + '</small>' : '') + '</span><button class="linkbtn" data-go="logout">Sair</button></div>';
+  else el.innerHTML = '<button class="btn ghost" data-go="auth">Entrar ou criar conta (salva progresso e entra no ranking)</button>' + (CLOUD.status ? '<small class="sub">' + esc(CLOUD.status) + '</small>' : '');
+  if (CLOUD.user && current === 'sAuth') show('sMenu');
+}
+async function pushNow() {
+  if (!CLOUD.sb || !CLOUD.user) return true;
+  const { error } = await CLOUD.sb.from('mente_data').upsert({ user_id: CLOUD.user.id, stats: JSON.parse(JSON.stringify(STATS)), cfg: { name: CFG.name, sound: CFG.sound, timer: CFG.timer }, daily: { done: STATS.dailyDone, score: STATS.dailyScore }, updated_at: new Date().toISOString() });
+  CLOUD.status = error ? 'Não salvou na nuvem' : 'Salvo na nuvem'; renderAcct(); return !error;
+}
+function schedulePush() { if (!CLOUD.user) return; clearTimeout(CLOUD.pushT); CLOUD.pushT = setTimeout(pushNow, 1500); }
+async function syncDown() {
+  if (!CLOUD.sb || !CLOUD.user) return; CLOUD.status = 'Sincronizando...'; renderAcct();
+  const { data, error } = await CLOUD.sb.from('mente_data').select('*').eq('user_id', CLOUD.user.id).maybeSingle();
+  if (error) { CLOUD.status = 'Não consegui sincronizar'; renderAcct(); return; }
+  if (data) {
+    mergeStats(data.stats); try { localStorage.setItem('mj_stats', JSON.stringify(STATS)); } catch (e) {}
+    const c = data.cfg || {}; if (c.name && !localStorage.getItem('mj_cfg')) { CFG.name = String(c.name).slice(0, 14); } if (c.sound != null) CFG.sound = c.sound !== false; if (c.timer != null) CFG.timer = c.timer !== false;
+    try { localStorage.setItem('mj_cfg', JSON.stringify(CFG)); } catch (e) {}
+  }
+  await pushNow(); if (current === 'sMenu') renderMenu();
+}
+function initAuth() {
+  sbReady();
+  $('acct').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (!b) return; Sound.init(); if (b.dataset.go === 'auth') { window._authDraw && window._authDraw(); show('sAuth'); } else if (b.dataset.go === 'logout') doLogout(); });
+  let mode = 'in';
+  const msg = (t, ok) => { const m = $('authMsg'); m.textContent = t || ''; m.className = 'authmsg' + (ok ? ' ok' : ''); };
+  const draw = () => { $('authTitle').textContent = mode === 'in' ? 'Entrar' : 'Criar conta'; $('btnAuthGo').textContent = mode === 'in' ? 'Entrar' : 'Criar conta'; $('btnAuthSwap').textContent = mode === 'in' ? 'Ainda não tenho conta' : 'Já tenho conta'; $('btnAuthForgot').classList.toggle('hidden', mode !== 'in'); $('auPass').autocomplete = mode === 'in' ? 'current-password' : 'new-password'; msg(''); };
+  window._authDraw = () => { mode = 'in'; draw(); $('auPass').value = ''; };
+  $('btnAuthSwap').onclick = () => { mode = mode === 'in' ? 'up' : 'in'; draw(); };
+  $('btnAuthForgot').onclick = () => { const email = $('auEmail').value.trim(); if (!email) return msg('Digite seu e-mail acima e toque de novo.'); sbReady(async sb => { const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }); msg(error ? ptErr(error.message) : 'Enviamos um link para redefinir a senha no seu e-mail.', !error); }); };
+  $('authForm').addEventListener('submit', e => {
+    e.preventDefault(); const email = $('auEmail').value.trim(), pass = $('auPass').value;
+    if (!email || !pass) return msg('Preencha e-mail e senha.'); if (mode === 'up' && pass.length < 6) return msg('A senha precisa ter pelo menos 6 caracteres.');
+    $('btnAuthGo').disabled = true; msg('Aguarde...');
+    sbReady(async sb => {
+      try {
+        if (mode === 'in') { const { error } = await sb.auth.signInWithPassword({ email, password: pass }); if (error) msg(ptErr(error.message)); else msg(''); }
+        else { const { data, error } = await sb.auth.signUp({ email, password: pass, options: { emailRedirectTo: location.origin + location.pathname } }); if (error) msg(ptErr(error.message)); else if (!data.session) msg('Conta criada! Confirme pelo link que enviamos para o seu e-mail (veja o spam) e depois entre.', true); }
+      } catch (er) { msg('Sem conexão. Tente de novo.'); }
+      $('btnAuthGo').disabled = false;
+    });
+  });
+}
+async function doLogout() {
+  clearTimeout(CLOUD.pushT); const ok = await pushNow();
+  sbReady(async sb => { await sb.auth.signOut(); CLOUD.user = null; CLOUD.status = ''; if (ok) { try { localStorage.removeItem('mj_stats'); } catch (e) {} STATS = emptyStats(); } renderAcct(); renderMenu(); });
+}
+
+/* ---------- início ---------- */
+loadLocal(); $('btnSound').textContent = CFG.sound ? '🔊' : '🔇';
+initAuth(); renderAcct(); show('sMenu');
+
+</script>
+</body>
+</html>
