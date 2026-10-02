@@ -774,11 +774,34 @@ loadUserTeams();
 /* ---------- Telas ---------- */
 const SCREENS = ['sMenu', 'sSetup', 'sTour', 'sMatch', 'sConfig', 'sHelp', 'sTeam', 'sAuth'];
 let current = 'sMenu';
+/* sai da tela cheia e solta o travamento de orientação (senão o celular fica preso em paisagem) */
+function unlockOrientation() { try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {} }
+function leaveFullscreen() {
+  try {
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+  } catch (e) {}
+  unlockOrientation();
+}
+function relayout() {
+  window.scrollTo(0, 0);
+  window.dispatchEvent(new Event('resize'));
+}
+function onFsChange() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) unlockOrientation();
+  relayout();
+  setTimeout(relayout, 150);
+  setTimeout(relayout, 500);
+}
+document.addEventListener('fullscreenchange', onFsChange);
+document.addEventListener('webkitfullscreenchange', onFsChange);
+window.addEventListener('orientationchange', () => { setTimeout(relayout, 150); setTimeout(relayout, 500); });
+if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', () => setTimeout(relayout, 150));
 function show(id) {
   current = id;
   SCREENS.forEach(s => $(s).classList.toggle('hidden', s !== id));
   document.body.classList.toggle('in-match', id === 'sMatch');
-  if (id !== 'sMatch') running = false;
+  if (id !== 'sMatch') { running = false; leaveFullscreen(); }
   if (id === 'sMenu') refreshResume();
   if (id === 'sMatch') { Sound.stopMusic(); Sound.startCrowd(); } else { Sound.stopCrowd(); Sound.startMusic(); }
   window.scrollTo(0, 0);
