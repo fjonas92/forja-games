@@ -140,7 +140,7 @@ const GAMES = [
     url: "https://masterfut.onrender.com", c1: "#1F6B2A", c2: "#8DF29A", arte: "campo", pagina: "master-fut.html" },
   { nome: "Tampinhas", genero: "Futebol de botão · Esportes", status: "Jogue agora",
     texto: "Futebol de botão com seleções e clubes: amistoso contra o computador ou em 2, Copa e Campeonato.",
-    url: "/tampinhas/", c1: "#1F6B2A", c2: "#FFB03A", arte: "campo", pagina: "" },
+    url: "/tampinhas/", c1: "#1F6B2A", c2: "#FFB03A", arte: "tampinhas", pagina: "" },
   { nome: "Mestre do Taco", genero: "Sinuca · Esportes", status: "Jogue agora",
     texto: "Bola 8 e Sinuca Brasileira contra o computador ou em 2, com treino livre, 5 níveis e progresso salvo na sua conta.",
     url: "/mestre-do-taco/", c1: "#0B4A2E", c2: "#F2C14E", arte: "mesa", pagina: "" },
@@ -148,6 +148,8 @@ const GAMES = [
     texto: "Suba a escada até R$ 1 milhão, enfrente o Relâmpago, a Sobrevivência, o Desafio Diário e o Duelo, e entre no ranking.",
     url: "/mente-em-jogo/", c1: "#2A0F6B", c2: "#FF3D8B", arte: "quiz", pagina: "" }
 ];
+
+const cap = (x, y, cor, miolo) => `<g transform="translate(${x} ${y})"><circle r="15" fill="#000" opacity=".28" transform="translate(2 3)"/><circle r="14" fill="${cor}" stroke="#fff" stroke-width="2"/><circle r="14" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="3" stroke-dasharray="2.2 2.2"/><circle r="8" fill="${miolo}" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/></g>`;
 
 const ARTES = {
   castelo: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -171,6 +173,18 @@ const ARTES = {
     <g fill="#26792F"><rect x="0" y="0" width="320" height="25"/><rect x="0" y="50" width="320" height="25"/><rect x="0" y="100" width="320" height="25"/><rect x="0" y="150" width="320" height="25"/></g>
     <g fill="none" stroke="#E9FFE9" stroke-width="3" opacity=".85"><rect x="20" y="20" width="280" height="160"/><line x1="160" y1="20" x2="160" y2="180"/><circle cx="160" cy="100" r="30"/><rect x="20" y="62" width="44" height="76"/><rect x="256" y="62" width="44" height="76"/></g>
     <circle cx="200" cy="120" r="12" fill="#fff"/><path d="M200 112L206 118L203 126H197L194 118Z" fill="#1B2332"/>
+  </svg>`,
+  tampinhas: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#14532D"/>
+    <g fill="#186338"><rect x="0" y="0" width="40" height="200"/><rect x="80" y="0" width="40" height="200"/><rect x="160" y="0" width="40" height="200"/><rect x="240" y="0" width="40" height="200"/></g>
+    <g fill="none" stroke="#F1FFF1" stroke-width="2.5" opacity=".8"><rect x="22" y="18" width="276" height="164"/><line x1="160" y1="18" x2="160" y2="182"/><circle cx="160" cy="100" r="28"/></g>
+    <g fill="#0B2E1A" stroke="#F1FFF1" stroke-width="2.5"><rect x="6" y="74" width="16" height="52"/><rect x="298" y="74" width="16" height="52"/></g>
+    <g stroke="#F1FFF1" stroke-opacity=".45" stroke-width="1"><path d="M10 74V126M14 74V126M18 74V126M6 86H22M6 98H22M6 110H22"/><path d="M302 74V126M306 74V126M310 74V126M298 86H314M298 98H314M298 110H314"/></g>
+    <path d="M118 100Q132 70 164 94" fill="none" stroke="#FFB03A" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round"/>
+    <path d="M164 94L152 92M164 94L160 106" fill="none" stroke="#FFB03A" stroke-width="3" stroke-linecap="round"/>
+    ${cap(60, 100, "#FFB03A", "#C97A00")}${cap(92, 62, "#FFB03A", "#C97A00")}${cap(92, 138, "#FFB03A", "#C97A00")}${cap(118, 100, "#FFB03A", "#C97A00")}
+    ${cap(262, 100, "#2F7BFF", "#1A4FB0")}${cap(228, 66, "#2F7BFF", "#1A4FB0")}${cap(228, 134, "#2F7BFF", "#1A4FB0")}${cap(200, 100, "#2F7BFF", "#1A4FB0")}
+    <circle cx="176" cy="104" r="8" fill="#fff" stroke="#1B2332" stroke-width="1.5"/><path d="M176 99L180 102L178.5 107H173.5L172 102Z" fill="#1B2332"/>
   </svg>`,
   mesa: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <rect width="320" height="200" fill="#4A2A12"/>
