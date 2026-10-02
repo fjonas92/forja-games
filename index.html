@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Forja Games: jogos de navegador. Atelon, Novo Mundo e Master Fut 2026.">
+<title>Forja Games</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --bg: #EEF1F6; --surface: #FFFFFF; --line: #D5DBE6; --fg: #151B26; --muted: #566074;
+  --ember: #E8530E; --ember-ink: #FFFFFF;
+  --font-display: 'Alfa Slab One', Georgia, 'Times New Roman', serif;
+  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --radius: 14px; --gutter: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #11151D; --surface: #1A2030; --line: #2B3447; --fg: #EEF1F7; --muted: #9AA5BA; --ember: #FF8A3D; --ember-ink: #1A1209; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #11151D; --surface: #1A2030; --line: #2B3447; --fg: #EEF1F7; --muted: #9AA5BA; --ember: #FF8A3D; --ember-ink: #1A1209; color-scheme: dark; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; padding-inline: var(--gutter); }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--ember); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1080px; margin-inline: auto; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 18px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand svg { width: 44px; height: 44px; flex: none; }
+.brand .name { font-family: var(--font-display); font-size: 22px; line-height: 1; letter-spacing: .5px; }
+.brand .name small { display: block; font-family: var(--font-body); font-weight: 700; font-size: 11px; letter-spacing: 6px; color: var(--ember); margin-top: 4px; }
+.nav { display: flex; gap: 20px; font-weight: 600; font-size: 15px; }
+.nav a { text-decoration: none; color: var(--muted); }
+.nav a:hover { color: var(--fg); }
+.hero { padding-block: 40px 36px; display: grid; gap: 20px; max-width: 760px; }
+.hero h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(34px, 7vw, 62px); line-height: 1.04; margin: 0; text-wrap: balance; }
+.hero h1 em { font-style: normal; color: var(--ember); }
+.hero p { margin: 0; font-size: 18px; color: var(--muted); max-width: 56ch; }
+.cta { display: inline-flex; width: fit-content; align-items: center; gap: 10px; background: var(--ember); color: var(--ember-ink); font-weight: 700; text-decoration: none; padding: 14px 22px; border-radius: 10px; }
+.cta:hover { filter: brightness(1.08); }
+.section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 8px 0 18px; flex-wrap: wrap; }
+.section-title h2 { font-family: var(--font-display); font-weight: 400; font-size: 28px; margin: 0; }
+.section-title span { color: var(--muted); font-size: 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 20px; }
+.game { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.art { aspect-ratio: 16 / 10; max-width: 100%; position: relative; background: var(--c1); overflow: hidden; }
+.art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.badge { position: absolute; top: 12px; left: 12px; background: rgba(10,12,18,.72); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; padding: 5px 10px; border-radius: 999px; }
+.body { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.genre { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--c1); }
+:root[data-theme="dark"] .genre { color: var(--c2); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .genre { color: var(--c2); } }
+.game h3 { font-family: var(--font-display); font-weight: 400; font-size: 26px; margin: 0; line-height: 1.1; }
+.game p { margin: 0; color: var(--muted); }
+.play { margin-top: auto; padding-top: 10px; }
+.play a, .play span { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; padding: 13px 18px; border-radius: 10px; font-weight: 700; text-decoration: none; }
+.play a { background: var(--c1); color: #fff; }
+.play a:hover { filter: brightness(1.12); }
+.play span { border: 1px dashed var(--line); color: var(--muted); }
+.ad { margin-block: 28px; min-height: 90px; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 24px; padding-block: 44px; margin-top: 12px; border-top: 1px solid var(--line); }
+.facts h4 { margin: 0 0 6px; font-size: 17px; }
+.facts p { margin: 0; color: var(--muted); }
+footer { border-top: 1px solid var(--line); padding-block: 28px 36px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 14px; }
+@media (prefers-reduced-motion: no-preference) {
+  .game { transition: transform .2s ease, border-color .2s ease; }
+  .game:hover { transform: translateY(-4px); border-color: var(--ember); }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#topo" aria-label="Forja Games, início">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 3C36 10 43 12 39 19C37 17 35 16 33 17C29 16 27 18 27 18C24 12 30 10 32 3Z" fill="#FFB03A"/>
+        <path d="M32 9C34 12 37 13 35 17C34 16 33 16 32 16C30 16 29 17 29 17C28 14 31 13 32 9Z" fill="#FF6B2C"/>
+        <polygon points="4,24 14,22 54,22 54,30 42,32 38,40 44,48 54,48 54,54 14,54 14,48 22,48 26,40 22,32 14,30" fill="currentColor"/>
+      </svg>
+      <span class="name">FORJA<small>GAMES</small></span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="#jogos">Jogos</a>
+      <a href="#sobre">Sobre</a>
+    </nav>
+  </header>
+
+  <main id="topo">
+    <section class="hero">
+      <h1>Jogos de navegador <em>forjados</em> um por vez.</h1>
+      <p>Reino medieval, cidade política e gerenciador de futebol. Escolha um, clique em jogar e comece direto do celular ou do computador.</p>
+      <a class="cta" href="#jogos">Ver os jogos</a>
+    </section>
+
+    <div class="ad" id="ad-topo" hidden>Publicidade</div>
+
+    <section id="jogos" aria-labelledby="t-jogos">
+      <div class="section-title">
+        <h2 id="t-jogos">Nossos jogos</h2>
+        <span id="contagem"></span>
+      </div>
+      <div class="grid" id="grade"></div>
+    </section>
+
+    <div class="ad" id="ad-meio" hidden>Publicidade</div>
+
+    <section class="facts" id="sobre" aria-label="Sobre a Forja Games">
+      <div><h4>Abre no navegador</h4><p>Sem baixar nada. Entrou no link, está jogando.</p></div>
+      <div><h4>Funciona no celular</h4><p>Os jogos e este site se ajustam à tela que você tiver na mão.</p></div>
+      <div><h4>Sempre tem novidade</h4><p>A Forja está em atividade. Novos jogos entram aqui conforme saem da bancada.</p></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© <span id="ano"></span> Forja Games</span>
+    <span>Feito em Salvador, Bahia</span>
+  </footer>
+</div>
+
+<script>
+/* CONFIGURAÇÃO
+   1) Cole o link de cada jogo em "url". Enquanto estiver vazio, o botão mostra "Em breve".
+   2) Para ativar anúncios, mude ADS_ENABLED para true e coloque o código do AdSense nos blocos #ad-topo e #ad-meio. */
+const ADS_ENABLED = false;
+const GAMES = [
+  { nome: "Atelon", genero: "Reino medieval · Estratégia", status: "Em desenvolvimento",
+    texto: "Construa seu reino, treine tropas e defenda suas terras em um mundo medieval direto no navegador.",
+    url: "", c1: "#8A1F3A", c2: "#FF8FA8", arte: "castelo" },
+  { nome: "Novo Mundo", genero: "Cidade política · Construção", status: "Em desenvolvimento",
+    texto: "Erga uma cidade do zero e governe com decisões políticas que mudam o rumo do seu povo.",
+    url: "", c1: "#0E6B5C", c2: "#6FE3CE", arte: "cidade" },
+  { nome: "Master Fut 2026", genero: "Futebol · Gerenciador", status: "Em desenvolvimento",
+    texto: "Monte o elenco, defina a tática e leve o seu clube ao topo da temporada.",
+    url: "", c1: "#1F6B2A", c2: "#8DF29A", arte: "campo" }
+];
+
+const ARTES = {
+  castelo: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#8A1F3A"/><circle cx="240" cy="55" r="30" fill="#FFB03A" opacity=".9"/>
+    <path d="M0 200V150L40 130L80 150L120 120L160 150V200Z" fill="#5E1226"/>
+    <path d="M90 200V110H110V95H122V110H138V95H150V110H166V95H178V110H196V200Z" fill="#2A0A14"/>
+    <path d="M60 200V90H72V78H82V90H94V78H104V90H116V200Z" fill="#3A0F1D"/>
+    <path d="M176 200V70H188V58H198V70H210V58H220V70H232V200Z" fill="#3A0F1D"/>
+    <rect x="132" y="150" width="28" height="50" rx="14" fill="#8A1F3A"/>
+  </svg>`,
+  cidade: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#0E6B5C"/><circle cx="70" cy="50" r="24" fill="#E8FFF9" opacity=".85"/>
+    <rect x="30" y="110" width="40" height="90" fill="#0A4B41"/><rect x="78" y="80" width="46" height="120" fill="#073A32"/>
+    <rect x="132" y="120" width="36" height="80" fill="#0A4B41"/><rect x="176" y="60" width="52" height="140" fill="#073A32"/>
+    <rect x="236" y="100" width="50" height="100" fill="#0A4B41"/>
+    <path d="M202 60V30" stroke="#E8FFF9" stroke-width="3"/><path d="M202 30H228L220 38L228 46H202Z" fill="#FFB03A"/>
+    <g fill="#6FE3CE" opacity=".8"><rect x="88" y="96" width="8" height="8"/><rect x="104" y="96" width="8" height="8"/><rect x="88" y="116" width="8" height="8"/><rect x="104" y="116" width="8" height="8"/><rect x="188" y="84" width="8" height="8"/><rect x="206" y="84" width="8" height="8"/><rect x="188" y="106" width="8" height="8"/><rect x="206" y="106" width="8" height="8"/></g>
+  </svg>`,
+  campo: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#1F6B2A"/>
+    <g fill="#26792F"><rect x="0" y="0" width="320" height="25"/><rect x="0" y="50" width="320" height="25"/><rect x="0" y="100" width="320" height="25"/><rect x="0" y="150" width="320" height="25"/></g>
+    <g fill="none" stroke="#E9FFE9" stroke-width="3" opacity=".85"><rect x="20" y="20" width="280" height="160"/><line x1="160" y1="20" x2="160" y2="180"/><circle cx="160" cy="100" r="30"/><rect x="20" y="62" width="44" height="76"/><rect x="256" y="62" width="44" height="76"/></g>
+    <circle cx="200" cy="120" r="12" fill="#fff"/><path d="M200 112L206 118L203 126H197L194 118Z" fill="#1B2332"/>
+  </svg>`
+};
+
+const grade = document.getElementById("grade");
+GAMES.forEach(j => {
+  const el = document.createElement("article");
+  el.className = "game";
+  el.style.setProperty("--c1", j.c1);
+  el.style.setProperty("--c2", j.c2);
+  const botao = j.url
+    ? `<a href="${j.url}" target="_blank" rel="noopener">Jogar ${j.nome} →</a>`
+    : `<span>Em breve</span>`;
+  el.innerHTML = `
+    <div class="art">${ARTES[j.arte]}<div class="badge">${j.status}</div></div>
+    <div class="body">
+      <div class="genre">${j.genero}</div>
+      <h3>${j.nome}</h3>
+      <p>${j.texto}</p>
+      <div class="play">${botao}</div>
+    </div>`;
+  grade.appendChild(el);
+});
+document.getElementById("contagem").textContent = GAMES.length + " jogos no catálogo";
+document.getElementById("ano").textContent = new Date().getFullYear();
+if (ADS_ENABLED) document.querySelectorAll(".ad").forEach(a => a.hidden = false);
+</script>
+</body>
+</html>
