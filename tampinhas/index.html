@@ -134,6 +134,7 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
   <p>Futebol de bot&atilde;o no navegador. Puxe, solte e fa&ccedil;a o gol.</p>
   <div class="menu">
     <div class="field"><label for="inName">Seu nome</label><input id="inName" maxlength="14" autocomplete="off" placeholder="Jogador"></div>
+    <button class="btn big hidden" id="btnResume" data-go="resume" style="background:var(--lime)"></button>
     <button class="btn big" data-go="friendly">Amistoso</button>
     <button class="btn big" data-go="cup">Copa</button>
     <button class="btn big" data-go="league">Campeonato</button>
@@ -150,11 +151,11 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 <ul>
 <li><b>Chutar:</b> toque num bot&atilde;o do seu time, puxe para tr&aacute;s (como um estilingue) e solte. Quanto mais voc&ecirc; puxar, mais forte &eacute; o chute. A seta mostra para onde ele vai.</li>
 <li><b>Vez:</b> cada jogada passa a vez para o outro time, depois que tudo para de se mexer. Voc&ecirc; tem 15 segundos para jogar.</li>
-<li><b>Objetivo:</b> fa&ccedil;a mais gols que o advers&aacute;rio antes do tempo acabar. No mata-mata, empate vai para o gol de ouro: quem marcar primeiro vence.</li>
+<li><b>Objetivo:</b> fa&ccedil;a mais gols que o advers&aacute;rio antes do tempo acabar. No mata-mata da Copa, empate vai para a prorroga&ccedil;&atilde;o e, se continuar empatado, para o gol de ouro: quem marcar primeiro vence. No campeonato de pontos corridos, empate vale 1 ponto.</li>
 <li><b>Modos:</b> Amistoso (contra o computador ou em 2 no mesmo aparelho), Copa (grupos e mata-mata) e Campeonato de pontos corridos (Brasileir&atilde;o, Europeu e outras ligas, com os outros jogos simulados). Em Meus times voc&ecirc; cria o seu time de tampinha.</li>
 <li><b>Dica:</b> no celular, deixe na horizontal e use o bot&atilde;o de tela cheia.</li>
 </ul>
-<p><button class="btn ghost" data-go="menu">Voltar</button></p></div></section>
+<p class="sub">Sons: Pixabay (freesound_community e JonasBlakewood).</p><p><button class="btn ghost" data-go="menu">Voltar</button></p></div></section>
 <section id="sMatch" class="hidden">
   <div id="rotate">Gire o celular na horizontal para jogar melhor</div>
   <div id="stage"><canvas id="cv" width="1000" height="640"></canvas>
@@ -207,7 +208,7 @@ const hash = s => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + 
 
 /* ---------- Som: torcida ao fundo, gol e apito ---------- */
 const Sound = {
-  ctx: null, on: true, amb: null, nb: null,
+  ctx: null, on: true, amb: false, musicOn: false, crowdEl: null, musicEl: null, crowdBase: 0.16,
   init() {
     if (!this.ctx) { try { const A = window.AudioContext || window.webkitAudioContext; if (A) this.ctx = new A(); } catch (e) {} }
     if (this.ctx && this.ctx.state === 'suspended') { try { this.ctx.resume(); } catch (e) {} }
@@ -219,47 +220,42 @@ const Sound = {
     for (let i = 0; i < n; i++) { const w = Math.random() * 2 - 1; b0 = 0.99765 * b0 + w * 0.099046; b1 = 0.963 * b1 + w * 0.2965164; b2 = 0.57 * b2 + w * 1.0526913; d[i] = (b0 + b1 + b2 + w * 0.1848) * 0.22; }
     this.nb = buf; return buf;
   },
+  mk(src, vol) { const a = new Audio(src); a.loop = true; a.volume = 0; a.preload = 'auto'; a._max = vol; return a; },
+  fade(a, to, ms, cb) {
+    clearInterval(a._f); const from = a.volume, n = Math.max(1, Math.round(ms / 50)); let i = 0;
+    a._f = setInterval(() => { i++; a.volume = clamp(from + (to - from) * i / n, 0, 1); if (i >= n) { clearInterval(a._f); if (cb) cb(); } }, 50);
+  },
   startCrowd() {
-    if (!this.on || !this.ctx || this.amb) return;
+    if (!this.on || this.amb) return;
     try {
-      const c = this.ctx, t = c.currentTime;
-      const src = c.createBufferSource(); src.buffer = this.noiseBuf(); src.loop = true;
-      const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 380;
-      const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(1, t + 2);
-      const mod = c.createGain(); mod.gain.value = 0.05;
-      src.connect(hp); g.connect(mod); mod.connect(c.destination);
-      // murmúrio: três faixas de "vozes" com modulação lenta e diferente em cada uma
-      const lfos = [];
-      [[620, 3.1, 1.0], [1350, 4.3, 0.8], [2400, 5.7, 0.5]].forEach(([f, rate, vol]) => {
-        const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 1.6;
-        const bg = c.createGain(); bg.gain.value = vol * 0.6;
-        const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = rate; lg.gain.value = vol * 0.35; l.connect(lg); lg.connect(bg.gain); l.start();
-        hp.connect(bp); bp.connect(bg); bg.connect(g); lfos.push(l);
-      });
-      src.start();
-      const tm = setInterval(() => {
-        if (!this.amb || this.amb.roar) return;
-        const now = c.currentTime; mod.gain.cancelScheduledValues(now); mod.gain.setValueAtTime(mod.gain.value, now);
-        mod.gain.linearRampToValueAtTime(0.035 + Math.random() * 0.035, now + 2 + Math.random() * 2);
-      }, 3000);
-      this.amb = { src, g, mod, bp: { frequency: { cancelScheduledValues() {}, setValueAtTime() {}, linearRampToValueAtTime() {}, value: 0 } }, tm, roar: false, lfos };
+      if (!this.crowdEl) this.crowdEl = this.mk('audio/torcida.mp3', 0.16);
+      const a = this.crowdEl; this.amb = true; this.crowdBase = 0.16;
+      const pr = a.play(); if (pr && pr.catch) pr.catch(() => { this.amb = false; });
+      this.fade(a, this.crowdBase, 1500);
     } catch (e) {}
   },
   stopCrowd() {
-    const a = this.amb; if (!a) return; this.amb = null; clearInterval(a.tm);
-    try { const now = this.ctx.currentTime; a.g.gain.cancelScheduledValues(now); a.g.gain.setValueAtTime(a.g.gain.value, now); a.g.gain.linearRampToValueAtTime(0.0001, now + 0.7); a.src.stop(now + 0.8); (a.lfos || []).forEach(l => l.stop(now + 0.8)); } catch (e) {}
+    if (!this.amb || !this.crowdEl) return; this.amb = false;
+    const a = this.crowdEl; this.fade(a, 0, 700, () => { if (!this.amb) a.pause(); });
   },
-  setOn(v) { this.on = v; if (!v) this.stopCrowd(); },
-  roar() {
-    const a = this.amb; if (!this.on || !this.ctx || !a) return;
+  startMusic() {
+    if (!this.on || this.musicOn) return;
     try {
-      const now = this.ctx.currentTime; a.roar = true;
-      a.mod.gain.cancelScheduledValues(now); a.mod.gain.setValueAtTime(a.mod.gain.value, now);
-      a.mod.gain.linearRampToValueAtTime(0.22, now + 0.4); a.mod.gain.setValueAtTime(0.22, now + 1.4); a.mod.gain.linearRampToValueAtTime(0.05, now + 4.2);
-      a.bp.frequency.cancelScheduledValues(now); a.bp.frequency.setValueAtTime(a.bp.frequency.value, now);
-      a.bp.frequency.linearRampToValueAtTime(1100, now + 0.5); a.bp.frequency.linearRampToValueAtTime(650, now + 4.2);
-      setTimeout(() => { if (this.amb) this.amb.roar = false; }, 4300);
+      if (!this.musicEl) this.musicEl = this.mk('audio/intro.mp3', 0.2);
+      const a = this.musicEl, pr = a.play(); this.musicOn = true;
+      if (pr && pr.catch) pr.catch(() => { this.musicOn = false; });
+      this.fade(a, 0.2, 1200);
     } catch (e) {}
+  },
+  stopMusic() {
+    if (!this.musicOn || !this.musicEl) return; this.musicOn = false;
+    const a = this.musicEl; this.fade(a, 0, 600, () => { if (!this.musicOn) a.pause(); });
+  },
+  setOn(v) { this.on = v; if (!v) { this.stopCrowd(); this.stopMusic(); } },
+  roar() {
+    if (!this.on || !this.amb || !this.crowdEl) return;
+    const a = this.crowdEl; this.fade(a, 0.4, 400);
+    setTimeout(() => { if (this.amb) this.fade(a, this.crowdBase, 2500); }, 2200);
   },
   blast(t0, dur) {
     const c = this.ctx, o = c.createOscillator(), lfo = c.createOscillator(), lg = c.createGain(), g = c.createGain();
@@ -443,7 +439,7 @@ function resetKickoff() {
   G.ball.x = W / 2; G.ball.y = CY; G.ball.vx = G.ball.vy = 0;
 }
 function newMatch(cfg) {
-  G.cfg = cfg; G.score = [0, 0]; G.time = cfg.duration; G.golden = false; G.over = false; G.paused = false; G.active = true;
+  G.cfg = cfg; G.score = [0, 0]; G.time = cfg.duration; G.golden = false; G.extra = false; G.over = false; G.paused = false; G.active = true;
   G.discs = [[], []]; G.bodies = [];
   for (let t = 0; t < 2; t++) for (let i = 0; i < 5; i++) { const d = mkBody('disc', 0, 0, t, i); G.discs[t].push(d); G.bodies.push(d); }
   G.ball = mkBody('ball', W / 2, CY, -1, 0); G.bodies.push(G.ball);
@@ -493,7 +489,10 @@ function checkEnd() {
   const [a, b] = G.score;
   if (G.golden) { if (a !== b) { endMatch(); return true; } return false; }
   if (G.time <= 0) {
-    if (a === b && !G.cfg.allowDraw) { G.golden = true; G.msg = { t: 'GOL DE OURO!', s: 1.8 }; return false; }
+    if (a === b && !G.cfg.allowDraw) {
+      if (!G.extra) { G.extra = true; G.time = Math.max(30, Math.round(G.cfg.duration / 2)); G.msg = { t: 'PRORROGAÇÃO!', s: 1.8 }; Sound.whistle(); return false; }
+      G.golden = true; G.msg = { t: 'GOL DE OURO!', s: 1.8 }; return false;
+    }
     endMatch(); return true;
   }
   return false;
@@ -502,7 +501,7 @@ function endMatch() {
   if (G.state === 'end') return;
   G.state = 'end'; G.over = true; Sound.whistle();
   const [a, b] = G.score;
-  const res = { score: [a, b], winner: a > b ? 0 : (b > a ? 1 : -1), golden: G.golden };
+  const res = { score: [a, b], winner: a > b ? 0 : (b > a ? 1 : -1), golden: G.golden, extra: G.extra };
   if (G.cfg.onEnd) setTimeout(() => G.cfg.onEnd(res), 1400);
 }
 function tickClock(dt) { if (!G.golden && G.time > 0) { G.time = Math.max(0, G.time - dt); } }
@@ -635,7 +634,7 @@ function drawHUD(ctx) {
   ctx.fillText(G.score[0] + ':' + G.score[1], 500, 30);
   ctx.fillStyle = 'rgba(0,0,0,.55)'; roundRectPath(ctx, 452, 62, 96, 22, 11); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.font = '800 14px Figtree, Arial, sans-serif';
-  ctx.fillText(G.golden ? 'GOL DE OURO' : fmtTime(G.time), 500, 74);
+  ctx.fillText(G.golden ? 'GOL DE OURO' : (G.extra ? 'PRORR. ' : '') + fmtTime(G.time), 500, 74);
   // barra de tempo da jogada
   if (G.state === 'aim') {
     const f = clamp(G.turnT / TURN_TIME, 0, 1), x0 = G.turn === 0 ? 76 : 560;
@@ -766,7 +765,8 @@ function show(id) {
   SCREENS.forEach(s => $(s).classList.toggle('hidden', s !== id));
   document.body.classList.toggle('in-match', id === 'sMatch');
   if (id !== 'sMatch') running = false;
-  if (id === 'sMatch') Sound.startCrowd(); else Sound.stopCrowd();
+  if (id === 'sMenu') refreshResume();
+  if (id === 'sMatch') { Sound.stopMusic(); Sound.startCrowd(); } else { Sound.stopCrowd(); Sound.startMusic(); }
   window.scrollTo(0, 0);
 }
 function teamChip(t, cls) {
@@ -776,6 +776,7 @@ function teamChip(t, cls) {
 
 /* ---------- Menu ---------- */
 function initMenu() {
+  document.addEventListener('pointerdown', () => { Sound.init(); if (current !== 'sMatch') Sound.startMusic(); });
   $('inName').value = CFG.name;
   $('inName').addEventListener('input', e => { CFG.name = e.target.value.trim().slice(0, 14) || 'Jogador'; saveCfg(); });
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
@@ -783,11 +784,12 @@ function initMenu() {
     const g = b.dataset.go;
     if (g === 'friendly' || g === 'cup' || g === 'league') startSetup(g);
     else if (g === 'config') { renderConfig(); show('sConfig'); }
+    else if (g === 'resume') resumeTour();
     else if (g === 'help') show('sHelp');
     else if (g === 'team') { TEAMED.cur = null; renderTeam(); show('sTeam'); }
     else if (g === 'menu') { show('sMenu'); }
   }));
-  $('btnSound').addEventListener('click', () => { Sound.init(); CFG.sound = !Sound.on; Sound.setOn(CFG.sound); if (CFG.sound && current === 'sMatch') Sound.startCrowd(); saveCfg(); $('btnSound').textContent = Sound.on ? '🔊' : '🔇'; });
+  $('btnSound').addEventListener('click', () => { Sound.init(); CFG.sound = !Sound.on; Sound.setOn(CFG.sound); if (CFG.sound) { if (current === 'sMatch') Sound.startCrowd(); else Sound.startMusic(); } saveCfg(); $('btnSound').textContent = Sound.on ? '🔊' : '🔇'; });
   $('btnSound').textContent = Sound.on ? '🔊' : '🔇';
 }
 
@@ -801,7 +803,7 @@ function renderConfig() {
   $('cfgBody').onclick = e => {
     const b = e.target.closest('button[data-k]'); if (!b) return;
     const k = b.dataset.k, v = b.dataset.v;
-    CFG[k] = (k === 'sound') ? v === 'true' : Number(v); if (k === 'sound') { Sound.setOn(CFG.sound); $('btnSound').textContent = Sound.on ? '🔊' : '🔇'; }
+    CFG[k] = (k === 'sound') ? v === 'true' : Number(v); if (k === 'sound') { Sound.setOn(CFG.sound); if (CFG.sound && current !== 'sMatch') Sound.startMusic(); $('btnSound').textContent = Sound.on ? '🔊' : '🔇'; }
     saveCfg(); renderConfig();
   };
 }
@@ -924,7 +926,7 @@ function showEnd(res) {
   let btns;
   if (info.type === 'friendly') btns = '<button class="btn" data-end="again">Jogar de novo</button><button class="btn ghost" data-end="teams">Trocar times</button><button class="btn ghost" data-end="menu">Menu</button>';
   else btns = '<button class="btn" data-end="tour">Continuar</button>';
-  o.innerHTML = '<div class="card"><h2>' + title + '</h2><div class="final"><span>' + esc(G.cfg.teams[0].name) + '</span><strong>' + sa + ' x ' + sb + '</strong><span>' + esc(G.cfg.teams[1].name) + '</span></div>' + (res.golden ? '<p class="sub">Decidido no gol de ouro</p>' : '') + btns + '</div>';
+  o.innerHTML = '<div class="card"><h2>' + title + '</h2><div class="final"><span>' + esc(G.cfg.teams[0].name) + '</span><strong>' + sa + ' x ' + sb + '</strong><span>' + esc(G.cfg.teams[1].name) + '</span></div>' + (res.golden ? '<p class="sub">Decidido no gol de ouro</p>' : (res.extra ? '<p class="sub">Decidido na prorrogação</p>' : '')) + btns + '</div>';
   o.dataset.res = JSON.stringify(res);
 }
 function showPause() {
@@ -1075,6 +1077,35 @@ function tableHTML(rows, uid, qual, rel) {
   return '<table class="tb"><thead><tr><th></th><th>Time</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th><th>Pts</th></tr></thead><tbody>' +
     rows.map((r, i) => '<tr class="' + (r.t.id === uid ? 'mine' : '') + (qual && i < qual ? ' q' : '') + (rel && i >= rows.length - rel ? ' rel' : '') + '"><td>' + (i + 1) + '</td><td class="nm">' + teamChip(r.t, 'sm') + esc(r.t.name) + '</td><td>' + r.j + '</td><td>' + r.v + '</td><td>' + r.e + '</td><td>' + r.d + '</td><td>' + (r.gp - r.gc) + '</td><td><b>' + r.p + '</b></td></tr>').join('') + '</tbody></table>';
 }
+/* ---- Salvar e continuar torneio (neste aparelho) ---- */
+const SAVE_KEY = 'tampinhas_save';
+function saveTour() {
+  try {
+    if (!TOUR || TOUR.phase === 'finished') { localStorage.removeItem(SAVE_KEY); return; }
+    const copy = Object.assign({}, TOUR, { playing: null, comp: TOUR.comp ? { id: TOUR.comp.id, free: !!TOUR.comp.free } : null });
+    const json = JSON.stringify(copy, (k, v) => (v && typeof v === 'object' && !Array.isArray(v) && v.id && v.kind && v.rating != null) ? { __t: v.id } : v);
+    localStorage.setItem(SAVE_KEY, json);
+  } catch (e) {}
+}
+function readSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY); if (!raw) return null;
+    let bad = false;
+    const T = JSON.parse(raw, (k, v) => { if (v && typeof v === 'object' && v.__t) { const t = TEAM_BY_ID[v.__t]; if (!t) bad = true; return t; } return v; });
+    if (bad || !T || !T.user || !T.teams) return null;
+    if (T.type === 'league') { if (!T.rounds || !T.rounds[T.round]) return null; T.cur = T.rounds[T.round]; }
+    else if (T.stage === 'group') { T.cur = [].concat(...T.grounds.map((r, gi) => r[T.round].map(f => Object.assign(f, { g: gi })))); }
+    return T;
+  } catch (e) { return null; }
+}
+function refreshResume() {
+  const b = $('btnResume'); if (!b) return;
+  const T = readSave();
+  if (!T) { b.classList.add('hidden'); return; }
+  const st = T.type === 'league' ? 'rodada ' + (T.round + 1) + '/' + T.rounds.length : (T.stage === 'group' ? 'fase de grupos' : (STAGE_NAME[T.stage] || '').toLowerCase());
+  b.textContent = 'Continuar: ' + T.title + ' (' + T.user.name + ', ' + st + ')'; b.classList.remove('hidden');
+}
+function resumeTour() { const T = readSave(); if (!T) { refreshResume(); return; } TOUR = T; renderTour(); show('sTour'); }
 const STAGE_NAME = { group: 'Fase de grupos', qf: 'Quartas de final', sf: 'Semifinais', final: 'Final' };
 function renderTour() {
   const T = TOUR; let h = '';
@@ -1108,9 +1139,10 @@ function renderTour() {
   else if (T.phase === 'played') btn = '<button class="btn big" data-tour="next">Avançar</button>';
   else btn = '<button class="btn big" data-tour="again">Jogar outro torneio</button>';
   if ((out || T.type === 'league') && T.phase !== 'finished') btn += '<button class="btn ghost" data-tour="all">Simular até o fim</button>';
-  h += '<div class="actions">' + btn + '<button class="btn ghost" data-tour="menu">Sair para o menu</button></div>';
+  h += '<div class="actions">' + btn + '<button class="btn ghost" data-tour="menu">Salvar e sair para o menu</button></div>';
   if (out) h = '<p class="warn">Seu time foi eliminado. Você pode simular o resto e ver quem leva o título.</p>' + h;
   $('tourBody').innerHTML = h;
+  saveTour();
 }
 function initTour() {
   $('tourBody').addEventListener('click', e => {
@@ -1188,7 +1220,7 @@ function initTeam() {
 
 /* ---------- Início ---------- */
 initMenu(); initSetup(); initMatchUI(); initTour(); initTeam();
-show('sMenu');
+refreshResume(); show('sMenu');
 
 </script>
 </body>
