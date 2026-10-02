@@ -58,7 +58,9 @@ a { color: inherit; }
 .game h3 { font-family: var(--font-display); font-weight: 400; font-size: 26px; margin: 0; line-height: 1.1; }
 .game p { margin: 0; color: var(--muted); }
 .play { margin-top: auto; padding-top: 10px; }
-.play a, .play span { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; padding: 13px 18px; border-radius: 10px; font-weight: 700; text-decoration: none; }
+.play a, .more { display:block; margin-top:12px; text-align:center; font-weight:600; font-size:14px; color:var(--muted); }
+.more:hover { color:var(--fg); }
+.play span { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; padding: 13px 18px; border-radius: 10px; font-weight: 700; text-decoration: none; }
 .play a { background: var(--c1); color: #fff; }
 .play a:hover { filter: brightness(1.12); }
 .play span { border: 1px dashed var(--line); color: var(--muted); }
@@ -118,7 +120,7 @@ footer { border-top: 1px solid var(--line); padding-block: 28px 36px; display: f
 
   <footer>
     <span>© <span id="ano"></span> Forja Games</span>
-    <span>Feito em Salvador, Bahia</span>
+    <nav aria-label="Rodapé" style="display:flex;gap:18px;flex-wrap:wrap"><a href="/privacidade.html" style="text-decoration:none">Política de Privacidade e Cookies</a><span>Feito em Salvador, Bahia</span></nav>
   </footer>
 </div>
 
@@ -130,13 +132,13 @@ const ADS_ENABLED = false;
 const GAMES = [
   { nome: "Atelon", genero: "Reino medieval · Estratégia", status: "Jogue agora",
     texto: "Construa seu reino, treine tropas e defenda suas terras em um mundo medieval direto no navegador.",
-    url: "https://atelon.onrender.com", c1: "#8A1F3A", c2: "#FF8FA8", arte: "castelo" },
+    url: "https://atelon.onrender.com", c1: "#8A1F3A", c2: "#FF8FA8", arte: "castelo", pagina: "atelon.html" },
   { nome: "Novo Mundo", genero: "Cidade política · Construção", status: "Jogue agora",
     texto: "Erga uma cidade do zero e governe com decisões políticas que mudam o rumo do seu povo.",
-    url: "https://novomundo.onrender.com", c1: "#0E6B5C", c2: "#6FE3CE", arte: "cidade" },
+    url: "https://novomundo.onrender.com", c1: "#0E6B5C", c2: "#6FE3CE", arte: "cidade", pagina: "novo-mundo.html" },
   { nome: "Master Fut 2026", genero: "Futebol · Gerenciador", status: "Jogue agora",
     texto: "Monte o elenco, defina a tática e leve o seu clube ao topo da temporada.",
-    url: "https://masterfut.onrender.com", c1: "#1F6B2A", c2: "#8DF29A", arte: "campo" }
+    url: "https://masterfut.onrender.com", c1: "#1F6B2A", c2: "#8DF29A", arte: "campo", pagina: "master-fut.html" }
 ];
 
 const ARTES = {
@@ -179,7 +181,7 @@ GAMES.forEach(j => {
       <div class="genre">${j.genero}</div>
       <h3>${j.nome}</h3>
       <p>${j.texto}</p>
-      <div class="play">${botao}</div>
+      <div class="play">${botao}<a class="more" href="/${j.pagina}">Saiba mais sobre o jogo</a></div>
     </div>`;
   grade.appendChild(el);
 });
@@ -187,5 +189,6 @@ document.getElementById("contagem").textContent = GAMES.length + " jogos no cat�
 document.getElementById("ano").textContent = new Date().getFullYear();
 if (ADS_ENABLED) document.querySelectorAll(".ad").forEach(a => a.hidden = false);
 </script>
+<script src="/cookies.js"></script>
 </body>
 </html>
