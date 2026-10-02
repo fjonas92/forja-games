@@ -137,7 +137,10 @@ const GAMES = [
     url: "https://novomundo.onrender.com", c1: "#0E6B5C", c2: "#6FE3CE", arte: "cidade", pagina: "novo-mundo.html" },
   { nome: "Master Fut 2026", genero: "Futebol · Gerenciador", status: "Jogue agora",
     texto: "Monte o elenco, defina a tática e leve o seu clube ao topo da temporada.",
-    url: "https://masterfut.onrender.com", c1: "#1F6B2A", c2: "#8DF29A", arte: "campo", pagina: "master-fut.html" }
+    url: "https://masterfut.onrender.com", c1: "#1F6B2A", c2: "#8DF29A", arte: "campo", pagina: "master-fut.html" },
+  { nome: "Tampinhas", genero: "Futebol de botão · Esportes", status: "Jogue agora",
+    texto: "Futebol de botão com seleções e clubes: amistoso contra o computador ou em 2, Copa e Campeonato.",
+    url: "/tampinhas/", c1: "#1F6B2A", c2: "#FFB03A", arte: "campo", pagina: "" }
 ];
 
 const ARTES = {
@@ -180,7 +183,7 @@ GAMES.forEach(j => {
       <div class="genre">${j.genero}</div>
       <h3>${j.nome}</h3>
       <p>${j.texto}</p>
-      <div class="play">${botao}<a class="more" href="/${j.pagina}">Saiba mais sobre o jogo</a></div>
+      <div class="play">${botao}${j.pagina ? `<a class="more" href="/${j.pagina}">Saiba mais sobre o jogo</a>` : ""}</div>
     </div>`;
   grade.appendChild(el);
 });
