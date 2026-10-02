@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://forja-games.onrender.com/sitemap.xml
+Sitemap: https://falzinhogames.com.br/sitemap.xml
