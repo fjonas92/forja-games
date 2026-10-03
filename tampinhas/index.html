@@ -420,6 +420,10 @@ function collideSeg(b, s, e) {
 function collideBodies(a, b) {
   let dx = b.x - a.x, dy = b.y - a.y; const rr = a.r + b.r; let d2 = dx * dx + dy * dy;
   if (d2 >= rr * rr) return;
+  if (G.koShot && !G.koTouch && (a.kind === 'ball') !== (b.kind === 'ball')) {
+    const other = a.kind === 'ball' ? b : a;
+    if (other !== G.koKicker) G.koTouch = true; // outra tampinha tocou na bola: o gol volta a valer
+  }
   if (d2 < 1e-9) { dx = 0.01; dy = 0; d2 = 0.0001; }
   const d = Math.sqrt(d2), nx = dx / d, ny = dy / d, pen = rr - d, im = 1 / a.m + 1 / b.m;
   a.x -= nx * pen * (1 / a.m) / im; a.y -= ny * pen * (1 / a.m) / im;
@@ -451,6 +455,7 @@ function formation(team) {
 function resetKickoff() {
   for (let t = 0; t < 2; t++) { const f = formation(t); G.discs[t].forEach((d, i) => { d.x = f[i][0]; d.y = f[i][1]; d.vx = d.vy = 0; }); }
   G.ball.x = W / 2; G.ball.y = CY; G.ball.vx = G.ball.vy = 0;
+  G.koPending = true; G.koShot = false; G.koTouch = false; G.koKicker = null; // saída de bola: gol direto não vale
 }
 function newMatch(cfg) {
   G.cfg = cfg; G.score = [0, 0]; G.time = cfg.duration; G.golden = false; G.extra = false; G.over = false; G.paused = false; G.active = true;
@@ -469,6 +474,7 @@ function allStill() { for (const b of G.bodies) if (b.vx || b.vy) return false; 
 function shoot(disc, ux, uy, pull) {
   const v = clamp(pull, 0, MAX_PULL) * PULL_K;
   disc.vx = ux * v; disc.vy = uy * v;
+  G.koShot = !!G.koPending; G.koPending = false; G.koTouch = false; G.koKicker = G.koShot ? disc : null;
   G.state = 'moving'; G.moveT = 0; G.drag = null; G.ai = null; G.shots = (G.shots || 0) + 1;
   Sound.kick();
 }
@@ -495,6 +501,15 @@ function checkGoal() {
   if (b.x < L - 3 && b.y > GY0 && b.y < GY1) scorer = 1;
   else if (b.x > R + 3 && b.y > GY0 && b.y < GY1) scorer = 0;
   if (scorer < 0) return false;
+  if (G.koShot && !G.koTouch) {
+    // gol direto na saída de bola: falta, sem gol, posse pro adversário
+    const kicker = G.koKicker ? G.koKicker.team : G.turn;
+    resetKickoff();
+    G.turn = 1 - kicker; G.turnT = TURN_TIME; G.drag = null; G.ai = null;
+    G.state = 'intro'; G.stateT = 1.2; G.msg = { t: 'FALTA! Gol direto na saída não vale', s: 2.2 };
+    Sound.whistle();
+    return true;
+  }
   G.score[scorer]++; G.state = 'goal'; G.stateT = 2.2; G.lastScorer = scorer; G.drag = null; G.ai = null;
   Sound.goal(); if (G.cfg.onGoal) G.cfg.onGoal(scorer);
   return true;
@@ -595,7 +610,7 @@ function aiPlan(ti) {
   const dif = clamp(G.cfg.difficulty != null ? G.cfg.difficulty : 2, 0, 4), mult = G.cfg.aiNoise || 1;
   const [ea, ep] = AI_NOISE[dif];
   const ang = Math.atan2(best.v.y, best.v.x) + randn() * ea * mult;
-  const vReach = best.vl * 2.2 + 70, vKick = (best.goalDist * 0.9 + 120) / 1.4;
+  const vReach = best.vl * 2.2 + 70, vKick = (best.goalDist * (G.koPending ? 0.4 : 0.9) + 120) / 1.4; // na saída a IA não chuta direto no gol
   let speed = clamp(Math.max(vReach, Math.min(vKick, 1000)), 160, MAX_PULL * PULL_K);
   speed *= 1 + randn() * ep * mult * 0.6;
   const pull = clamp(speed / PULL_K, 30, MAX_PULL);

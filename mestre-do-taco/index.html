@@ -94,6 +94,12 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 .ovl{position:absolute;inset:0;display:grid;place-items:center;background:rgba(14,7,3,.78);z-index:5;padding:12px}
 .cornerbtn{position:absolute;top:1.2%;z-index:4;width:4.6%;min-width:30px;max-width:46px;aspect-ratio:1;height:auto;padding:0;display:grid;place-items:center;border-radius:50%;border:2px solid #f0c85a;background:linear-gradient(180deg,#4a2c14,#26150a);color:#f0c85a;font-size:20px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.5)}
 #btnPause{left:.8%}#btnFull{right:.8%}
+/* botão de tela cheia: aparece com texto e pisca até a pessoa usar */
+#btnFull{width:auto;max-width:none;min-width:0;aspect-ratio:auto;height:auto;border-radius:999px;padding:7px 14px 7px 10px;display:flex;align-items:center;gap:7px;font:800 clamp(12px,2.1vw,16px)/1 system-ui,Arial,sans-serif;background:linear-gradient(180deg,#ffe08a,#f0c85a);color:#2a1606;border-color:#fff3c4;box-shadow:0 0 0 2px rgba(0,0,0,.35),0 3px 10px rgba(0,0,0,.55)}
+#btnFull .fi{font-size:1.35em;line-height:1}
+#btnFull.pulse{animation:fsPulse 1.3s ease-in-out infinite}
+@keyframes fsPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 2px rgba(0,0,0,.35),0 0 0 0 rgba(255,224,138,.8)}50%{transform:scale(1.08);box-shadow:0 0 0 2px rgba(0,0,0,.35),0 0 0 10px rgba(255,224,138,0)}}
+@media(max-width:600px){#btnFull{padding:6px 10px 6px 8px}}
 #rotate{display:none;text-align:center;padding:8px;background:var(--ember);color:var(--ember-ink);font-weight:700}
 @media (orientation:portrait){.in-match #rotate{display:block}}
 @media (max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}}
@@ -212,7 +218,7 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 <section id="sMatch" class="hidden">
   <div id="rotate">Gire o celular na horizontal para jogar melhor</div>
   <div id="stage"><canvas id="cv" width="1000" height="600"></canvas>
-    <button class="cornerbtn" id="btnPause" aria-label="Pausar">&#9208;</button><button class="cornerbtn" id="btnFull" aria-label="Tela cheia">&#9974;</button>
+    <button class="cornerbtn" id="btnPause" aria-label="Pausar">&#9208;</button><button class="cornerbtn pulse" id="btnFull" aria-label="Tela cheia"><span class="fi">&#9974;</span><span id="fsTxt">Tela cheia</span></button>
     <div id="ovl" class="ovl hidden"></div></div>
 </section>
 </main>
@@ -559,7 +565,7 @@ function drawAimLine(ctx) {
   }
   ctx.restore();
 }
-function drawPowerBar(ctx) {
+function drawPowerBar(ctx, passive) {
   const x = 28, y0 = T - 6, y1 = B + 6, h = y1 - y0;
   ctx.save();
   ctx.fillStyle = '#24140a'; rr(ctx, x - 14, y0 - 8, 28, h + 16, 6); ctx.fill(); ctx.strokeStyle = '#d9a441'; ctx.lineWidth = 2; ctx.stroke();
@@ -568,7 +574,21 @@ function drawPowerBar(ctx) {
   const hy = y0 + h * G.power;
   ctx.fillStyle = 'rgba(0,0,0,.45)'; rr(ctx, x - 5, y0, 10, h * G.power, 5); ctx.fill();
   ctx.fillStyle = '#efc566'; ctx.strokeStyle = '#6e4d12'; ctx.lineWidth = 2; rr(ctx, x - 12, hy - 7, 24, 14, 3); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#efc566'; ctx.font = '800 11px Karla, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('FORÇA', x, y1 + 22);
+  const idle = !passive && G.power < 0.03, pulse = idle ? 0.5 + 0.5 * Math.sin(performance.now() / 260) : 0;
+  if (idle) { ctx.strokeStyle = `rgba(255,236,160,${0.35 + 0.65 * pulse})`; ctx.lineWidth = 3; rr(ctx, x - 14, y0 - 8, 28, h + 16, 6); ctx.stroke(); } /* pisca enquanto ninguém puxou a força */
+  /* título bem visível acima da barra */
+  ctx.fillStyle = '#24140a'; rr(ctx, 2, 56, 54, 36, 7); ctx.fill(); ctx.strokeStyle = '#ffe08a'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.textAlign = 'center'; ctx.fillStyle = '#ffe08a'; ctx.font = '900 15px Karla, Arial, sans-serif'; ctx.fillText('FORÇA', 29, 73);
+  ctx.fillStyle = '#f5ead2'; ctx.font = '800 9px Karla, Arial, sans-serif'; ctx.fillText('DA TACADA', 29, 86);
+  /* fraca em cima, forte embaixo */
+  ctx.fillStyle = '#7ce35b'; ctx.font = '800 10px Karla, Arial, sans-serif'; ctx.fillText('FRACA', x, y0 - 12 + 0);
+  ctx.fillStyle = '#ff7a6a'; ctx.font = '900 12px Karla, Arial, sans-serif'; ctx.fillText('▼ FORTE', x, y1 + 24);
+  /* instrução ao lado da barra, some quando a pessoa começa a puxar */
+  if (idle) {
+    ctx.save(); ctx.translate(64, (y0 + y1) / 2); ctx.rotate(Math.PI / 2); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '900 13px Karla, Arial, sans-serif'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(20,10,4,.9)'; ctx.fillStyle = '#ffe08a';
+    ctx.strokeText('PUXE A BARRA PARA BAIXO', 0, 0); ctx.fillText('PUXE A BARRA PARA BAIXO', 0, 0); ctx.restore();
+  }
   ctx.restore();
 }
 function drawFineBtns(ctx) {
@@ -645,7 +665,7 @@ function drawMatch(ctx) {
     if (t) { ctx.save(); ctx.textAlign = 'center'; ctx.font = '800 15px Karla, Arial, sans-serif'; const w = ctx.measureText(t).width + 30; ctx.fillStyle = 'rgba(8,10,24,.7)'; rr(ctx, 500 - w / 2, 70, w, 28, 14); ctx.fill(); ctx.fillStyle = TEAM[G.turn]; ctx.textBaseline = 'middle'; ctx.fillText(t, 500, 85); ctx.restore(); }
   }
 }
-function drawPowerBarPassive(ctx) { ctx.save(); ctx.globalAlpha = 0.35; drawPowerBar(ctx); ctx.restore(); }
+function drawPowerBarPassive(ctx) { ctx.save(); ctx.globalAlpha = 0.35; drawPowerBar(ctx, true); ctx.restore(); }
 
 /* ---------- Entrada (mouse e toque) ---------- */
 function pointerDown(x, y) {
@@ -1085,7 +1105,10 @@ function initMatchUI() {
     else if (a === 'menu') { running = false; G.active = false; show('sMenu'); }
   });
   $('btnPause').addEventListener('click', () => { Sound.init(); showPause(); });
+  try { if (localStorage.getItem('mt_fs') === '1') $('btnFull').classList.remove('pulse'); } catch (e) {}
+  document.addEventListener('fullscreenchange', () => { $('fsTxt').textContent = document.fullscreenElement ? 'Sair da tela cheia' : 'Tela cheia'; });
   $('btnFull').addEventListener('click', () => {
+    $('btnFull').classList.remove('pulse'); try { localStorage.setItem('mt_fs', '1'); } catch (e) {}
     const st = $('stage');
     try { if (document.fullscreenElement) document.exitFullscreen(); else if (st.requestFullscreen) st.requestFullscreen().then(() => { try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }).catch(() => {}); } catch (e) {}
   });
