@@ -573,7 +573,7 @@ function update(dt) {
 
 /* ---------- Inteligência artificial ---------- */
 const AI_NOISE = [[0.30, 0.32], [0.17, 0.2], [0.09, 0.11], [0.045, 0.055], [0.014, 0.02]]; // [erro de ângulo, erro de força] por dificuldade
-function aiPlan(ti) {
+function aiPlanSimple(ti) {
   const me = G.discs[ti], opp = G.discs[1 - ti], ball = G.ball;
   const goalX = ti === 0 ? R : L;
   let best = null;
@@ -616,10 +616,112 @@ function aiPlan(ti) {
   const pull = clamp(speed / PULL_K, 30, MAX_PULL);
   return { disc: best.d, ux: Math.cos(ang), uy: Math.sin(ang), pull };
 }
+
+/* Difícil e Profissional: a IA simula cada jogada candidata com a própria física do jogo
+   (determinística, passo fixo de 1/60 s) e escolhe a de melhor resultado: gol, bola perto
+   do gol adversário e pouco perigo de deixar a bola pronta pro adversário chutar. */
+const AI_SIM = { 3: { gys: [-60, 0, 60], pulls: [0.75, 1, 1.3], tops: 3, offs: [], def: false },
+                 4: { gys: [-80, -40, 0, 40, 80], pulls: [0.6, 0.8, 1, 1.25, 1.6], tops: 5, offs: [-0.1, -0.05, 0.05, 0.1], def: true } };
+function aiSnap() { return { b: G.bodies.map(b => [b.x, b.y, b.vx, b.vy, b.rot]), ko: [G.koPending, G.koShot, G.koTouch, G.koKicker] }; }
+function aiRestore(s) {
+  G.bodies.forEach((b, i) => { const v = s.b[i]; b.x = v[0]; b.y = v[1]; b.vx = v[2]; b.vy = v[3]; b.rot = v[4]; });
+  [G.koPending, G.koShot, G.koTouch, G.koKicker] = s.ko;
+}
+function pathClear(x0, y0, x1, y1, skip, gap) {
+  const vx = x1 - x0, vy = y1 - y0, vl = Math.hypot(vx, vy) || 1, ux = vx / vl, uy = vy / vl;
+  for (const o of G.bodies) {
+    if (o.kind === 'ball' || skip.includes(o)) continue;
+    const t = (o.x - x0) * ux + (o.y - y0) * uy; if (t < 0 || t > vl) continue;
+    if (Math.hypot(o.x - (x0 + ux * t), o.y - (y0 + uy * t)) < gap) return false;
+  }
+  return true;
+}
+// 0..1: o quanto o time `att` tem um chute limpo da bola pro gol em `goalX`, na posição atual
+function aiThreat(att, goalX) {
+  const ball = G.ball; let best = 0;
+  const near = clamp(1 - Math.abs(goalX - ball.x) / (R - L), 0, 1);
+  for (const d of G.discs[att]) {
+    for (const gy of [CY - 70, CY, CY + 70]) {
+      const ux = goalX - ball.x, uy = gy - ball.y, ul = Math.hypot(ux, uy) || 1, u = { x: ux / ul, y: uy / ul };
+      const cx = ball.x - u.x * (BR + DR - 2), cy = ball.y - u.y * (BR + DR - 2);
+      const vx = cx - d.x, vy = cy - d.y, vl = Math.hypot(vx, vy) || 1;
+      const align = (vx * u.x + vy * u.y) / vl; if (align < 0.35) continue;
+      if (!pathClear(d.x, d.y, cx, cy, [d], DR * 2 - 4)) continue;
+      const lane = pathClear(ball.x, ball.y, goalX, gy, [], DR + BR - 2) ? 1 : 0.35;
+      best = Math.max(best, align * lane * (0.35 + 0.65 * near) * (vl < 520 ? 1 : 0.7));
+    }
+  }
+  return best;
+}
+function aiSimulate(ti, c) {
+  const s = aiSnap(), disc = c.disc, v = clamp(c.pull, 0, MAX_PULL) * PULL_K;
+  disc.vx = c.ux * v; disc.vy = c.uy * v;
+  G.koShot = !!G.koPending; G.koPending = false; G.koTouch = false; G.koKicker = G.koShot ? disc : null;
+  let scorer = -1;
+  for (let i = 0; i < 840; i++) {
+    physicsStep(1 / 60);
+    const b = G.ball;
+    if (b.y > GY0 && b.y < GY1) { if (b.x < L - 3) { scorer = 1; break; } if (b.x > R + 3) { scorer = 0; break; } }
+    if (allStill()) break;
+  }
+  const myGoal = ti === 0 ? L : R, oppGoal = ti === 0 ? R : L;
+  let score;
+  if (scorer >= 0 && G.koShot && !G.koTouch) score = -3000;          // gol direto na saída: falta
+  else if (scorer === ti) score = 10000;
+  else if (scorer >= 0) score = -10000;                                 // gol contra
+  else {
+    const b = G.ball, toOpp = Math.hypot(oppGoal - b.x, CY - b.y), toMine = Math.hypot(myGoal - b.x, CY - b.y);
+    score = (toMine - toOpp) * 0.5 - aiThreat(1 - ti, myGoal) * 900 + aiThreat(ti, oppGoal) * 250;
+  }
+  aiRestore(s);
+  return score;
+}
+function aiCandidates(ti, cfg) {
+  const me = G.discs[ti], ball = G.ball, goalX = ti === 0 ? R : L, myGoal = ti === 0 ? L : R, out = [];
+  const ranked = me.map(d => ({ d, dist: Math.hypot(ball.x - d.x, ball.y - d.y) + (d.idx === 0 ? 260 : 0) }))
+    .sort((a, b) => a.dist - b.dist).slice(0, cfg.tops).map(x => x.d);
+  for (const d of ranked) {
+    for (const dy of cfg.gys) {
+      const ux = goalX - ball.x, uy = CY + dy - ball.y, ul = Math.hypot(ux, uy) || 1, u = { x: ux / ul, y: uy / ul };
+      const cx = ball.x - u.x * (BR + DR - 2), cy = ball.y - u.y * (BR + DR - 2);
+      const vx = cx - d.x, vy = cy - d.y, vl = Math.hypot(vx, vy); if (vl < 1) continue;
+      const base = Math.atan2(vy, vx), need = (vl * 2.2 + 70 + (ul * 0.9 + 120) / 1.4) / PULL_K;
+      for (const k of cfg.pulls) out.push({ disc: d, ang: base, pull: clamp(need * k, 30, MAX_PULL) });
+    }
+    const bx = ball.x - d.x, by = ball.y - d.y, bl = Math.hypot(bx, by) || 1, bang = Math.atan2(by, bx);
+    for (const o of cfg.offs) for (const p of [0.7, 1]) out.push({ disc: d, ang: bang + o, pull: MAX_PULL * p });
+  }
+  if (cfg.def) {
+    // defesa: põe uma tampinha na linha entre a bola e o próprio gol
+    const px = ball.x + (myGoal - ball.x) * 0.35, py = ball.y + (CY - ball.y) * 0.35;
+    for (const d of me) {
+      const vx = px - d.x, vy = py - d.y, vl = Math.hypot(vx, vy); if (vl < 20) continue;
+      for (const k of [0.8, 1]) out.push({ disc: d, ang: Math.atan2(vy, vx), pull: clamp((vl * 2.2 + 70) * k / PULL_K, 20, MAX_PULL) });
+    }
+  }
+  return out.map(c => ({ disc: c.disc, ux: Math.cos(c.ang), uy: Math.sin(c.ang), pull: c.pull }));
+}
+function aiNoisy(c, dif) {
+  const [ea, ep] = AI_NOISE[dif], mult = G.cfg.aiNoise || 1;
+  const ang = Math.atan2(c.uy, c.ux) + randn() * ea * mult;
+  return { disc: c.disc, ux: Math.cos(ang), uy: Math.sin(ang), pull: clamp(c.pull * (1 + randn() * ep * mult * 0.6), 20, MAX_PULL) };
+}
 function aiTick(dt) {
-  if (!G.ai) { G.ai = { t: 0, plan: null }; }
+  if (!G.ai) G.ai = { t: 0, plan: null };
   const a = G.ai; a.t += dt;
-  if (!a.plan && a.t > 0.8) a.plan = aiPlan(G.turn);
+  const dif = clamp(G.cfg.difficulty != null ? G.cfg.difficulty : 2, 0, 4), cfg = AI_SIM[dif];
+  if (!a.plan && a.t > 0.8) {
+    if (!cfg) a.plan = aiPlanSimple(G.turn);
+    else {
+      if (!a.cands) { a.cands = aiCandidates(G.turn, cfg); a.i = 0; a.best = null; }
+      const t0 = performance.now();   // pensa no máximo ~8 ms por quadro pra não travar a tela
+      for (; a.i < a.cands.length && performance.now() - t0 < 8; a.i++) {
+        const c = a.cands[a.i], sc = aiSimulate(G.turn, c);
+        if (!a.best || sc > a.best.sc) a.best = { c, sc };
+      }
+      if (a.i >= a.cands.length) a.plan = a.best ? aiNoisy(a.best.c, dif) : aiPlanSimple(G.turn);
+    }
+  }
   if (a.plan && a.t > 1.5) { const p = a.plan; shoot(p.disc, p.ux, p.uy, p.pull); }
 }
 
