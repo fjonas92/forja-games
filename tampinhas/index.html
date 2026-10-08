@@ -118,6 +118,12 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 @media (max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}}
 
 .tb tr.rel td:first-child{box-shadow:inset 4px 0 #ff5252}
+.tb tr.p td:first-child{box-shadow:inset 4px 0 #ffd54a}
+.tie{border:1px solid var(--line);border-radius:14px;padding:6px 6px 2px;margin-bottom:10px}
+.tie.mine{border-color:var(--ember)}
+.tie .fx{margin-bottom:4px}
+.agg{font-size:13px;color:var(--muted);padding:2px 6px 6px}
+.agg b{color:var(--fg)}
 .comps{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:8px 0 18px}
 .comp{display:grid;gap:4px;text-align:left;background:var(--surface);border:1px solid var(--line);color:var(--fg);border-radius:14px;padding:14px;cursor:pointer;font-family:var(--font-body)}
 .comp:hover{border-color:var(--ember);background:var(--surface2)}
@@ -179,7 +185,7 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 <li><b>Chutar:</b> toque num bot&atilde;o do seu time, puxe para tr&aacute;s (como um estilingue) e solte. Quanto mais voc&ecirc; puxar, mais forte &eacute; o chute. A seta mostra para onde ele vai.</li>
 <li><b>Vez:</b> cada jogada passa a vez para o outro time, depois que tudo para de se mexer. Voc&ecirc; tem 15 segundos para jogar.</li>
 <li><b>Objetivo:</b> fa&ccedil;a mais gols que o advers&aacute;rio antes do tempo acabar. No mata-mata da Copa, empate vai para a prorroga&ccedil;&atilde;o e, se continuar empatado, para o gol de ouro: quem marcar primeiro vence. No campeonato de pontos corridos, empate vale 1 ponto.</li>
-<li><b>Modos:</b> Amistoso (contra o computador ou em 2 no mesmo aparelho), Copa do Mundo, Champions League e Libertadores (32 times, 8 grupos e mata-mata desde as oitavas), Copa r&aacute;pida (16 times) e Campeonato de pontos corridos (28 ligas e mais de 500 clubes, com os outros jogos simulados). Em Meus times voc&ecirc; cria o seu time de tampinha.</li>
+<li><b>Modos:</b> Amistoso (contra o computador ou em 2 no mesmo aparelho), Copa do Mundo e Libertadores (32 times, 8 grupos e mata-mata desde as oitavas), Champions League no formato atual (fase de liga com 36 clubes, playoff, mata-mata em ida e volta e final única), Copa r&aacute;pida (16 times) e Campeonato de pontos corridos (28 ligas e mais de 500 clubes, com os outros jogos simulados). Em Meus times voc&ecirc; cria o seu time de tampinha.</li>
 <li><b>Bolas:</b> escolha entre 18 bolas (ou uma aleat&oacute;ria a cada partida) nas Configura&ccedil;&otilde;es ou na hora de montar a partida.</li>
 <li><b>Dica:</b> no celular, deixe na horizontal e use o bot&atilde;o de tela cheia.</li>
 </ul>
@@ -642,8 +648,9 @@ function checkGoal() {
   Sound.goal(); if (G.cfg.onGoal) G.cfg.onGoal(scorer);
   return true;
 }
+const aggScore = () => G.cfg.agg ? [G.score[0] + G.cfg.agg[0], G.score[1] + G.cfg.agg[1]] : G.score;
 function checkEnd() {
-  const [a, b] = G.score;
+  const [a, b] = aggScore();
   if (G.golden) { if (a !== b) { endMatch(); return true; } return false; }
   if (G.time <= 0) {
     if (a === b && !G.cfg.allowDraw) {
@@ -657,8 +664,8 @@ function checkEnd() {
 function endMatch() {
   if (G.state === 'end') return;
   G.state = 'end'; G.over = true; Sound.whistle();
-  const [a, b] = G.score;
-  const res = { score: [a, b], winner: a > b ? 0 : (b > a ? 1 : -1), golden: G.golden, extra: G.extra };
+  const [a, b] = G.score, [x, y] = aggScore();
+  const res = { score: [a, b], winner: x > y ? 0 : (y > x ? 1 : -1), golden: G.golden, extra: G.extra, agg: G.cfg.agg ? [x, y] : null };
   if (G.cfg.onEnd) setTimeout(() => G.cfg.onEnd(res), 1400);
 }
 function tickClock(dt) { if (!G.golden && G.time > 0) { G.time = Math.max(0, G.time - dt); } }
@@ -897,6 +904,7 @@ function drawHUD(ctx) {
   ctx.fillStyle = 'rgba(0,0,0,.55)'; roundRectPath(ctx, 452, 62, 96, 22, 11); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.font = '800 14px Figtree, Arial, sans-serif';
   ctx.fillText(G.golden ? 'GOL DE OURO' : (G.extra ? 'PRORR. ' : '') + fmtTime(G.time), 500, 74);
+  if (G.cfg.agg) { const [x, y] = aggScore(); ctx.fillStyle = 'rgba(0,0,0,.6)'; roundRectPath(ctx, 436, 88, 128, 20, 10); ctx.fill(); ctx.fillStyle = '#ffd54a'; ctx.font = '800 12px Figtree, Arial, sans-serif'; ctx.fillText('AGREGADO ' + x + ':' + y, 500, 98); }
   // barra de tempo da jogada
   if (G.state === 'aim') {
     const f = clamp(G.turnT / TURN_TIME, 0, 1), x0 = G.turn === 0 ? 76 : 560;
@@ -1454,13 +1462,13 @@ function renderConfig() {
 const SETUP = { mode: 'friendly', step: 1, vs: 'cpu', tab: 'nat', lg: 'ALL', q: '', first: null, comp: null, dbl: false, size: 8 };
 function startSetup(mode) { Object.assign(SETUP, { mode, step: 1, vs: 'cpu', tab: 'nat', lg: 'ALL', q: '', first: null, comp: null, dbl: false, size: 8 }); renderSetup(); show('sSetup'); }
 /* copas grandes: Copa do Mundo, Champions League e Libertadores (32 times, 8 grupos, oitavas) */
-const CUP_QUOTA = { ucl: { ENG: 6, ESP: 5, ITA: 5, GER: 5, FRA: 3, POR: 3, NED: 2, TUR: 1, BEL: 1, SCO: 1 }, lib: { BRA: 9, ARG: 8, COL: 6, URU: 5, CHI: 4 } };
+const CUP_QUOTA = { ucl: { ENG: 6, ESP: 5, ITA: 5, GER: 5, FRA: 4, POR: 3, NED: 3, TUR: 2, BEL: 2, SCO: 1 }, lib: { BRA: 9, ARG: 8, COL: 6, URU: 5, CHI: 4 } };
 function cupComp(k) {
   if (k === 'wc') return { id: 'wc', cup: true, ng: 8, name: 'Copa do Mundo', desc: '32 seleções em 8 grupos; os 2 primeiros vão às oitavas de final.', teams: NATIONS.slice() };
   const q = CUP_QUOTA[k], teams = [];
   for (const lg in q) teams.push(...CLUBS.filter(c => c.lg === lg).sort((a, b) => b.rating - a.rating).slice(0, q[lg]));
   return { id: k, cup: true, ng: 8, name: k === 'ucl' ? 'Champions League' : 'Libertadores',
-    desc: k === 'ucl' ? '32 clubes europeus em 8 grupos; os 2 primeiros vão às oitavas de final.' : '32 clubes sul-americanos em 8 grupos; os 2 primeiros vão às oitavas de final.',
+    desc: k === 'ucl' ? '36 clubes numa fase de liga: cada um faz 8 jogos contra 8 adversários diferentes. Do 1º ao 8º vão direto às oitavas, do 9º ao 24º disputam o playoff e do 25º ao 36º estão fora. Mata-mata em ida e volta e final em jogo único.' : '32 clubes sul-americanos em 8 grupos; os 2 primeiros vão às oitavas de final.',
     teams, pool: CLUBS.filter(c => q[c.lg] != null) };
 }
 function startCup(k) { startSetup('cup'); SETUP.comp = cupComp(k); SETUP.tab = 'club'; renderSetup(); }
@@ -1648,7 +1656,7 @@ function showEnd(res) {
   let btns;
   if (info.type === 'friendly') btns = '<button class="btn" data-end="again">Jogar de novo</button><button class="btn ghost" data-end="teams">Trocar times</button><button class="btn ghost" data-end="menu">Menu</button>';
   else btns = '<button class="btn" data-end="tour">Continuar</button>';
-  o.innerHTML = '<div class="card"><h2>' + title + '</h2><div class="final"><span>' + esc(G.cfg.teams[0].name) + '</span><strong>' + sa + ' x ' + sb + '</strong><span>' + esc(G.cfg.teams[1].name) + '</span></div>' + (res.golden ? '<p class="sub">Decidido no gol de ouro</p>' : (res.extra ? '<p class="sub">Decidido na prorrogação</p>' : '')) + btns + '</div>';
+  o.innerHTML = '<div class="card"><h2>' + title + '</h2><div class="final"><span>' + esc(G.cfg.teams[0].name) + '</span><strong>' + sa + ' x ' + sb + '</strong><span>' + esc(G.cfg.teams[1].name) + '</span></div>' + (res.agg ? '<p class="sub">Placar agregado: ' + res.agg[0] + ' x ' + res.agg[1] + '</p>' : '') + (res.golden ? '<p class="sub">Decidido no gol de ouro</p>' : (res.extra ? '<p class="sub">Decidido na prorrogação</p>' : '')) + btns + '</div>';
   o.dataset.res = JSON.stringify(res);
 }
 function showPause() {
@@ -1716,6 +1724,7 @@ function standings(teams, fixtures) {
   return [...m.values()].sort((x, y) => y.p - x.p || (y.gp - y.gc) - (x.gp - x.gc) || y.gp - x.gp || y.t.rating - x.t.rating);
 }
 function startTournament(type, user, comp, dbl, size) {
+  if (type === 'cup' && comp && comp.id === 'ucl') { startUCL(user, comp); return; }
   const pool = ALL_TEAMS.filter(t => t.kind === user.kind && t.id !== user.id);
   if (type === 'league') {
     let teams, title;
@@ -1753,9 +1762,143 @@ function startTournament(type, user, comp, dbl, size) {
   TOUR.userOut = false; TOUR.champion = null;
   renderTour(); show('sTour');
 }
+/* ---- Champions League no formato atual: fase de liga (36 clubes, 8 jogos), playoff, mata-mata em ida e volta e final única ---- */
+/* Sorteio da fase de liga: 2 adversários de cada pote, sem clubes do mesmo país (quando der), 8 rodadas em que todo mundo joga uma vez */
+function uclSchedule(teams) {
+  const N = teams.length, P = 9, rnd = n => Math.floor(Math.random() * n);
+  const perm = n => { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const id = (p, i) => p * P + i; // times já ordenados por força: pote = índice / 9
+  const same = E => E.reduce((s, [a, b]) => s + (teams[a].lg && teams[a].lg === teams[b].lg ? 1 : 0), 0);
+  // cada bloco (dentro do pote e entre dois potes) é sorteado várias vezes e fica o que tiver menos jogos entre clubes do mesmo país
+  const bestOf = mk => { let b = null, bs = 1e9; for (let t = 0; t < 60 && bs > 0; t++) { const e = mk(), s = same(e); if (s < bs) { bs = s; b = e; } } return b; };
+  function graph() {
+    const E = [];
+    for (let x = 0; x < 4; x++) {
+      E.push(...bestOf(() => { const r = perm(P), e = []; for (let k = 0; k < P; k++) e.push([id(x, r[k]), id(x, r[(k + 1) % P])]); return e; }));
+      for (let y = x + 1; y < 4; y++) E.push(...bestOf(() => { const q = perm(P), e = []; for (let i = 0; i < P; i++) { e.push([id(x, i), id(y, q[i])]); e.push([id(x, i), id(y, q[(i + 1) % P])]); } return e; }));
+    }
+    return E;
+  }
+  function factor(E) {
+    const adj = Array.from({ length: N }, () => new Set());
+    E.forEach(([a, b]) => { adj[a].add(b); adj[b].add(a); });
+    const rounds = [];
+    for (let r = 0; r < 8; r++) {
+      const mate = new Array(N).fill(-1); let steps = 0;
+      const solve = () => {
+        if (++steps > 4000) return false;
+        let v = -1, best = 99;
+        for (let i = 0; i < N; i++) if (mate[i] < 0) { let c = 0; for (const u of adj[i]) if (mate[u] < 0) c++; if (c < best) { best = c; v = i; } }
+        if (v < 0) return true; if (!best) return false;
+        const cand = [...adj[v]].filter(u => mate[u] < 0).sort(() => Math.random() - 0.5);
+        for (const u of cand) { mate[v] = u; mate[u] = v; if (solve()) return true; mate[v] = mate[u] = -1; }
+        return false;
+      };
+      if (!solve()) return null;
+      const rd = [];
+      for (let i = 0; i < N; i++) if (mate[i] > i) { rd.push([i, mate[i]]); adj[i].delete(mate[i]); adj[mate[i]].delete(i); }
+      rounds.push(rd);
+    }
+    return rounds;
+  }
+  let best = null, bestSame = 1e9;
+  for (let t = 0; t < 40 && bestSame > 0; t++) { const E = graph(), s = same(E); if (s < bestSame) { const f = factor(E); if (f) { best = f; bestSame = s; } } }
+  for (let t = 0; !best && t < 2000; t++) best = factor(graph());
+  // mando de campo: cada time alterna casa/fora o máximo possível
+  const home = new Array(N).fill(0);
+  return best.map(rd => rd.map(([a, b]) => { if (home[a] > home[b]) [a, b] = [b, a]; home[a]++; home[b]--; return { a: teams[a], b: teams[b], done: false }; }));
+}
+function startUCL(user, comp) {
+  const base = comp.teams.filter(t => t.id !== user.id).sort((a, b) => b.rating - a.rating).slice(0, 35);
+  const teams = [user, ...base].sort((a, b) => b.rating - a.rating);
+  const lrounds = uclSchedule(teams);
+  TOUR = { type: 'cup', fmt: 'ucl', user, teams, lrounds, stage: 'league', round: 0, leg: 0, phase: 'ready', ties: [], hist: {}, title: comp.name, comp, cur: lrounds[0], userOut: false, champion: null };
+  renderTour(); show('sTour');
+}
+const mkTie = (h, l) => ({ a: h, b: l, legs: [{ a: l, b: h, done: false }, { a: h, b: l, done: false }] });
+const mkFinal = (h, l) => ({ a: h, b: l, single: true, legs: [{ a: h, b: l, done: false }] });
+function uclSetCur(T) { T.ties.forEach((t, i) => t.legs.forEach(l => { l.ti = i; })); T.cur = T.ties.map(t => t.legs[T.leg]); }
+function tieAgg(t) { let x = 0, y = 0; for (const l of t.legs) if (l.done) { if (l.a === t.a) { x += l.ga; y += l.gb; } else { x += l.gb; y += l.ga; } } return [x, y]; }
+const uclDecisive = T => T.stage === 'final' || T.leg === 1;
+function uclPlay() {
+  const T = TOUR, fx = userFx(); if (!fx) return;
+  const userIsA = fx.a === T.user, opp = userIsA ? fx.b : fx.a, extra = { allowDraw: true };
+  if (T.stage !== 'league' && uclDecisive(T)) {
+    const tie = T.ties[fx.ti]; extra.allowDraw = false;
+    if (!tie.single) { const l1 = tie.legs[0], mineHome = l1.a === T.user; extra.agg = [mineHome ? l1.ga : l1.gb, mineHome ? l1.gb : l1.ga]; }
+  }
+  const cfg = matchBase(T.user, opp, [true, false], [CFG.name, opp.name], Object.assign({ aiNoise: clamp(1.45 - (opp.rating - 55) / 55, 0.55, 1.3) }, extra));
+  T.playing = { fx, userIsA }; T.abort = false;
+  launchMatch(cfg, { type: 'tour' });
+}
+function uclResult(res) {
+  const T = TOUR, { fx, userIsA } = T.playing, [su, so] = res.score;
+  fx.ga = userIsA ? su : so; fx.gb = userIsA ? so : su; fx.done = true;
+  if (T.stage !== 'league' && uclDecisive(T)) { const tie = T.ties[fx.ti]; tie.w = res.winner === 0 ? T.user : (userIsA ? fx.b : fx.a); tie.et = !!(res.extra || res.golden); }
+  T.playing = null;
+}
+function uclFinishRound() {
+  const T = TOUR;
+  for (const f of T.cur) if (!f.done) simFixture(f, false);
+  if (T.stage !== 'league' && uclDecisive(T)) {
+    for (const t of T.ties) if (!t.w) {
+      const [x, y] = tieAgg(t);
+      if (x !== y) t.w = x > y ? t.a : t.b;
+      else { t.pen = true; t.w = Math.random() < 1 / (1 + Math.exp(-(t.a.rating - t.b.rating) / 25)) ? t.a : t.b; }
+    }
+    const mine = T.ties.find(t => t.a === T.user || t.b === T.user);
+    if (mine && mine.w !== T.user) T.userOut = true;
+  }
+  T.phase = 'played';
+}
+function uclAdvance(T) {
+  if (T.stage === 'league') {
+    if (T.round < T.lrounds.length - 1) { T.round++; T.cur = T.lrounds[T.round]; T.phase = 'ready'; return; }
+    const tb = standings(T.teams, [].concat(...T.lrounds)).map(r => r.t);
+    T.rank = tb.map(t => t.id); T.top8 = tb.slice(0, 8);
+    if (tb.indexOf(T.user) >= 24) T.userOut = true;
+    T.ties = []; for (let k = 0; k < 8; k++) T.ties.push(mkTie(tb[8 + k], tb[23 - k]));
+    T.stage = 'po'; T.leg = 0; uclSetCur(T); T.phase = 'ready'; return;
+  }
+  if (T.stage !== 'final' && T.leg === 0) { T.leg = 1; uclSetCur(T); T.phase = 'ready'; return; }
+  T.hist[T.stage] = T.ties;
+  const w = T.ties.map(t => t.w);
+  if (T.stage === 'final') { T.stage = 'done'; T.champion = w[0]; T.phase = 'finished'; return; }
+  const seed = t => T.rank.indexOf(t.id), ties = [];
+  if (T.stage === 'po') { T.stage = 'r16'; [1, 8, 4, 5, 2, 7, 3, 6].forEach(i => ties.push(mkTie(T.top8[i - 1], w[8 - i]))); }
+  else {
+    const next = { r16: 'qf', qf: 'sf', sf: 'final' }[T.stage]; T.stage = next;
+    for (let i = 0; i < w.length; i += 2) { const [h, l] = seed(w[i]) <= seed(w[i + 1]) ? [w[i], w[i + 1]] : [w[i + 1], w[i]]; ties.push(next === 'final' ? mkFinal(h, l) : mkTie(h, l)); }
+  }
+  T.ties = ties; T.leg = 0; uclSetCur(T); T.phase = 'ready';
+}
+function tieHTML(t, uid) {
+  const [x, y] = tieAgg(t), mine = t.a.id === uid || t.b.id === uid;
+  let h = '<div class="tie' + (mine ? ' mine' : '') + '">' + t.legs.map(l => fxRow(l, uid)).join('');
+  const how = t.pen ? ' (nos pênaltis)' : (t.et ? ' (na prorrogação)' : '');
+  if (!t.single && t.legs[0].done) h += '<div class="agg">Agregado: ' + esc(t.a.name) + ' ' + x + ' x ' + y + ' ' + esc(t.b.name) + (t.w ? ' · classificado: <b>' + esc(t.w.name) + '</b>' + how : '') + '</div>';
+  else if (t.single && t.w) h += '<div class="agg">Campeão: <b>' + esc(t.w.name) + '</b>' + how + '</div>';
+  return h + '</div>';
+}
+function uclBody(T, uid) {
+  const lbl = T.stage === 'done' ? 'Fim da Champions League' : T.stage === 'league' ? 'Fase de liga · Rodada ' + (T.round + 1) + ' de ' + T.lrounds.length : STAGE_NAME[T.stage] + (T.stage === 'final' ? ' · jogo único' : ' · jogo de ' + (T.leg ? 'volta' : 'ida'));
+  let h = '<p class="sub">' + lbl + '</p>';
+  const tbl = tableHTML(standings(T.teams, [].concat(...T.lrounds)), uid, 8, 12, 24);
+  if (T.stage === 'league') {
+    h += '<p class="sub">Verde: direto às oitavas (1º ao 8º) · amarelo: playoff (9º ao 24º) · vermelho: eliminado (25º ao 36º)</p>';
+    h += '<h3>Seu jogo da rodada</h3>' + T.cur.filter(f => f.a.id === uid || f.b.id === uid).map(f => fxRow(f, uid)).join('');
+    h += '<details><summary>Todos os jogos da rodada</summary>' + T.cur.map(f => fxRow(f, uid)).join('') + '</details>';
+    h += '<h3>Classificação</h3>' + tbl;
+  } else {
+    ['final', 'sf', 'qf', 'r16', 'po'].forEach(st => { const ties = st === T.stage ? T.ties : (T.hist || {})[st]; if (ties && ties.length) h += '<h3>' + STAGE_NAME[st] + '</h3>' + ties.map(t => tieHTML(t, uid)).join(''); });
+    h += '<details><summary>Classificação final da fase de liga</summary>' + tbl + '</details>';
+  }
+  return h;
+}
 const isKO = () => TOUR.type === 'cup' && TOUR.stage !== 'group';
 function userFx() { return TOUR.cur.find(f => !f.done && (f.a === TOUR.user || f.b === TOUR.user)); }
 function playUserMatch() {
+  if (TOUR.fmt === 'ucl') { uclPlay(); return; }
   const fx = userFx(); if (!fx) return;
   const userIsA = fx.a === TOUR.user, opp = userIsA ? fx.b : fx.a;
   const cfg = matchBase(TOUR.user, opp, [true, false], [CFG.name, opp.name], { allowDraw: !isKO(), aiNoise: clamp(1.45 - (opp.rating - 55) / 55, 0.55, 1.3) });
@@ -1763,6 +1906,7 @@ function playUserMatch() {
   launchMatch(cfg, { type: 'tour' });
 }
 function onTourMatchEnd(res) {
+  if (TOUR.fmt === 'ucl') { uclResult(res); finishRound(); renderTour(); show('sTour'); return; }
   const { fx, userIsA } = TOUR.playing, [su, so] = res.score;
   fx.ga = userIsA ? su : so; fx.gb = userIsA ? so : su; fx.done = true;
   if (isKO()) { fx.w = res.winner === 0 ? TOUR.user : fx.a === TOUR.user ? fx.b : fx.a; if (fx.ga === fx.gb) fx.pen = true; }
@@ -1771,6 +1915,7 @@ function onTourMatchEnd(res) {
   renderTour(); show('sTour');
 }
 function finishRound() {
+  if (TOUR.fmt === 'ucl') { uclFinishRound(); return; }
   for (const f of TOUR.cur) if (!f.done) simFixture(f, isKO());
   TOUR.phase = 'played';
   if (TOUR.type === 'league') TOUR.history.push(...TOUR.cur);
@@ -1779,6 +1924,7 @@ function finishRound() {
 function groupTable(gi) { const fx = []; TOUR.grounds[gi].forEach((r, ri) => { if (ri <= TOUR.round && (TOUR.stage !== 'group' || TOUR.phase === 'played' || ri < TOUR.round)) fx.push(...r); }); return standings(TOUR.groups[gi], fx); }
 function advance() {
   const T = TOUR;
+  if (T.fmt === 'ucl') { uclAdvance(T); return; }
   if (T.type === 'league') {
     if (T.round >= T.rounds.length - 1) { T.phase = 'finished'; T.champion = standings(T.teams, T.history)[0].t; return; }
     T.round++; T.cur = T.rounds[T.round]; T.phase = 'ready'; return;
@@ -1809,9 +1955,9 @@ function fxRow(f, uid) {
   const win = f.done && f.w ? f.w.id : null;
   return '<div class="fx' + (mine ? ' mine' : '') + '"><span class="l' + (win === f.a.id ? ' w' : '') + '">' + esc(f.a.name) + teamChip(f.a, 'sm') + '</span>' + sc + '<span class="r' + (win === f.b.id ? ' w' : '') + '">' + teamChip(f.b, 'sm') + esc(f.b.name) + '</span></div>';
 }
-function tableHTML(rows, uid, qual, rel) {
+function tableHTML(rows, uid, qual, rel, mid) {
   return '<table class="tb"><thead><tr><th></th><th>Time</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th><th>Pts</th></tr></thead><tbody>' +
-    rows.map((r, i) => '<tr class="' + (r.t.id === uid ? 'mine' : '') + (qual && i < qual ? ' q' : '') + (rel && i >= rows.length - rel ? ' rel' : '') + '"><td>' + (i + 1) + '</td><td class="nm">' + teamChip(r.t, 'sm') + esc(r.t.name) + '</td><td>' + r.j + '</td><td>' + r.v + '</td><td>' + r.e + '</td><td>' + r.d + '</td><td>' + (r.gp - r.gc) + '</td><td><b>' + r.p + '</b></td></tr>').join('') + '</tbody></table>';
+    rows.map((r, i) => '<tr class="' + (r.t.id === uid ? 'mine' : '') + (qual && i < qual ? ' q' : '') + (mid && i >= qual && i < mid ? ' p' : '') + (rel && i >= rows.length - rel ? ' rel' : '') + '"><td>' + (i + 1) + '</td><td class="nm">' + teamChip(r.t, 'sm') + esc(r.t.name) + '</td><td>' + r.j + '</td><td>' + r.v + '</td><td>' + r.e + '</td><td>' + r.d + '</td><td>' + (r.gp - r.gc) + '</td><td><b>' + r.p + '</b></td></tr>').join('') + '</tbody></table>';
 }
 /* ---- Salvar e continuar torneio (neste aparelho) ---- */
 const SAVE_KEY = 'tampinhas_save';
@@ -1830,6 +1976,7 @@ function readSave() {
     const T = JSON.parse(raw, (k, v) => { if (v && typeof v === 'object' && v.__t) { const t = TEAM_BY_ID[v.__t]; if (!t) bad = true; return t; } return v; });
     if (bad || !T || !T.user || !T.teams) return null;
     if (T.type === 'league') { if (!T.rounds || !T.rounds[T.round]) return null; T.cur = T.rounds[T.round]; }
+    else if (T.fmt === 'ucl') { T.cur = T.stage === 'league' ? T.lrounds[T.round] : T.ties.map(t => t.legs[T.leg]); if (!T.cur) return null; }
     else if (T.stage === 'group') { T.cur = [].concat(...T.grounds.map((r, gi) => r[T.round].map(f => Object.assign(f, { g: gi })))); }
     return T;
   } catch (e) { return null; }
@@ -1842,7 +1989,7 @@ function refreshResume() {
   b.textContent = 'Continuar: ' + T.title + ' (' + T.user.name + ', ' + st + ')'; b.classList.remove('hidden');
 }
 function resumeTour() { const T = readSave(); if (!T) { refreshResume(); return; } TOUR = T; renderTour(); show('sTour'); }
-const STAGE_NAME = { group: 'Fase de grupos', r16: 'Oitavas de final', qf: 'Quartas de final', sf: 'Semifinais', final: 'Final' };
+const STAGE_NAME = { group: 'Fase de grupos', league: 'Fase de liga', po: 'Playoff', r16: 'Oitavas de final', qf: 'Quartas de final', sf: 'Semifinais', final: 'Final' };
 function renderTour() {
   const T = TOUR; let h = '';
   const uid = T.user.id;
@@ -1855,7 +2002,7 @@ function renderTour() {
     h += '<p class="sub">Rodada ' + (T.round + 1) + ' de ' + T.rounds.length + (T.zones ? ' • verde: vaga no topo, vermelho: zona de rebaixamento' : '') + '</p>';
     h += tableHTML(standings(T.teams, T.history), uid, T.zones ? 4 : 0, T.zones ? 4 : 0);
     h += '<h3>Jogos da rodada</h3>' + T.cur.map(f => fxRow(f, uid)).join('');
-  } else {
+  } else if (T.fmt === 'ucl') { h += uclBody(T, uid); } else {
     h += '<p class="sub">' + (T.stage === 'done' ? 'Fim da Copa' : STAGE_NAME[T.stage] + (T.stage === 'group' ? ' • Rodada ' + (T.round + 1) + ' de 3' : '')) + '</p>';
     if (T.stage === 'group') {
       const gi = T.groups.findIndex(g => g.includes(T.user));
@@ -1871,7 +2018,7 @@ function renderTour() {
   }
   const out = T.userOut && T.phase !== 'finished';
   let btn = '';
-  if (T.phase === 'ready') btn = userFx() ? '<button class="btn big" data-tour="play">Jogar partida</button>' + (T.type === 'league' ? '<button class="btn ghost" data-tour="sim">Simular a rodada inteira</button>' : '') : '<button class="btn big" data-tour="sim">Simular rodada</button>';
+  if (T.phase === 'ready') btn = userFx() ? '<button class="btn big" data-tour="play">Jogar partida</button>' + (T.type === 'league' || T.fmt === 'ucl' ? '<button class="btn ghost" data-tour="sim">Simular a rodada inteira</button>' : '') : '<button class="btn big" data-tour="sim">Simular rodada</button>';
   else if (T.phase === 'played') btn = '<button class="btn big" data-tour="next">Avançar</button>';
   else btn = '<button class="btn big" data-tour="again">Jogar outro torneio</button>';
   if ((out || T.type === 'league') && T.phase !== 'finished') btn += '<button class="btn ghost" data-tour="all">Simular até o fim</button>';
