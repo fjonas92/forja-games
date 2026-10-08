@@ -48,6 +48,12 @@ h4{margin:16px 0 6px;color:var(--muted)}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .chips button{background:var(--surface);border:1px solid var(--line);color:var(--muted);font:600 13px var(--font-body);padding:7px 12px;border-radius:999px;cursor:pointer}
 .chips button.on{background:var(--surface2);color:var(--fg);border-color:var(--ember)}
+.balls{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;margin:0 0 14px}
+.ballopt{display:grid;justify-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);color:var(--fg);border-radius:12px;padding:8px 4px;cursor:pointer;font-family:var(--font-body)}
+.ballopt.on{border-color:var(--ember);background:var(--surface2);box-shadow:0 0 0 2px var(--ember) inset}
+.ballopt canvas{width:52px;height:52px}
+.ballopt small{font-size:11px;line-height:1.2;color:var(--muted);text-align:center}
+.ballopt .rnd{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font:900 26px var(--font-body);background:conic-gradient(#e53935,#fb8c00,#fdd835,#43a047,#1e88e5,#8e24aa,#e53935);color:#fff;text-shadow:0 1px 3px #000}
 .search{width:100%;max-width:420px;display:block;background:var(--surface);border:1px solid var(--line);color:var(--fg);padding:12px 14px;border-radius:12px;font:500 16px var(--font-body);margin:0 0 12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:8px 0 18px}
 .tile{display:grid;justify-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);color:var(--fg);border-radius:14px;padding:14px 8px;cursor:pointer;font-family:var(--font-body);text-align:center}
@@ -151,7 +157,10 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
     <div id="acct" class="acct"></div>
     <button class="btn big hidden" id="btnResume" data-go="resume" style="background:var(--lime)"></button>
     <button class="btn big" data-go="friendly">Amistoso</button>
-    <button class="btn big" data-go="cup">Copa</button>
+    <button class="btn big" data-go="wc">Copa do Mundo</button>
+    <button class="btn big" data-go="ucl">Champions League</button>
+    <button class="btn big" data-go="lib">Libertadores</button>
+    <button class="btn big" data-go="cup">Copa rápida</button>
     <button class="btn big" data-go="league">Campeonato</button>
     <button class="btn" data-go="team" style="background:var(--surface2);color:var(--fg)">Meus times</button>
     <button class="btn ghost" data-go="config">Configura&ccedil;&otilde;es</button>
@@ -170,7 +179,8 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 <li><b>Chutar:</b> toque num bot&atilde;o do seu time, puxe para tr&aacute;s (como um estilingue) e solte. Quanto mais voc&ecirc; puxar, mais forte &eacute; o chute. A seta mostra para onde ele vai.</li>
 <li><b>Vez:</b> cada jogada passa a vez para o outro time, depois que tudo para de se mexer. Voc&ecirc; tem 15 segundos para jogar.</li>
 <li><b>Objetivo:</b> fa&ccedil;a mais gols que o advers&aacute;rio antes do tempo acabar. No mata-mata da Copa, empate vai para a prorroga&ccedil;&atilde;o e, se continuar empatado, para o gol de ouro: quem marcar primeiro vence. No campeonato de pontos corridos, empate vale 1 ponto.</li>
-<li><b>Modos:</b> Amistoso (contra o computador ou em 2 no mesmo aparelho), Copa (grupos e mata-mata) e Campeonato de pontos corridos (Brasileir&atilde;o, Europeu e outras ligas, com os outros jogos simulados). Em Meus times voc&ecirc; cria o seu time de tampinha.</li>
+<li><b>Modos:</b> Amistoso (contra o computador ou em 2 no mesmo aparelho), Copa do Mundo, Champions League e Libertadores (32 times, 8 grupos e mata-mata desde as oitavas), Copa r&aacute;pida (16 times) e Campeonato de pontos corridos (28 ligas e mais de 500 clubes, com os outros jogos simulados). Em Meus times voc&ecirc; cria o seu time de tampinha.</li>
+<li><b>Bolas:</b> escolha entre 18 bolas (ou uma aleat&oacute;ria a cada partida) nas Configura&ccedil;&otilde;es ou na hora de montar a partida.</li>
 <li><b>Dica:</b> no celular, deixe na horizontal e use o bot&atilde;o de tela cheia.</li>
 </ul>
 <p class="sub">Sons: Pixabay (freesound_community e JonasBlakewood).</p><p><button class="btn ghost" data-go="menu">Voltar</button></p></div></section>
@@ -182,7 +192,7 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 </section>
 </main>
 <script>
-const CLUBS_RAW = [["Arsenal","ARS",86,"ef0107","ffffff","ENG"],["Manchester City","MCI",86,"6cabdd","ffffff","ENG"],["Liverpool","LIV",86,"c8102e","ffffff","ENG"],["Chelsea","CHE",82,"034694","ffffff","ENG"],["Tottenham","TOT",80,"ffffff","132257","ENG"],["Manchester United","MUN",80,"da291c","fbe122","ENG"],["Newcastle United","NEW",80,"241f20","ffffff","ENG"],["Aston Villa","AVL",79,"670e36","95bfe5","ENG"],["Brighton","BHA",76,"0057b8","ffffff","ENG"],["Crystal Palace","CRY",76,"1b458f","c4122e","ENG"],["West Ham","WHU",75,"7a263a","1bb1e7","ENG"],["Brentford","BRE",75,"e30613","ffffff","ENG"],["Bournemouth","BOU",75,"da291c","000000","ENG"],["Nottingham Forest","NFO",75,"dd0000","ffffff","ENG"],["Fulham","FUL",74,"ffffff","000000","ENG"],["Everton","EVE",73,"003399","ffffff","ENG"],["Wolverhampton","WOL",73,"fdb913","231f20","ENG"],["Leeds United","LEE",72,"ffffff","1d428a","ENG"],["Sunderland","SUN",71,"eb172b","ffffff","ENG"],["Burnley","BUR",70,"6c1d45","99d6ea","ENG"],["Real Madrid","RMA",87,"ffffff","febe10","ESP"],["Barcelona","BAR",87,"a50044","004d98","ESP"],["Atlético de Madrid","ATM",82,"cb3524","272e61","ESP"],["Athletic Club","ATH",77,"ee2523","ffffff","ESP"],["Villarreal","VIL",77,"fbe10f","005187","ESP"],["Real Sociedad","RSO",76,"0067b1","ffffff","ESP"],["Real Betis","BET",76,"0bb363","ffffff","ESP"],["Sevilla","SEV",74,"ffffff","d4021d","ESP"],["Valencia","VAL",73,"ffffff","000000","ESP"],["Girona","GIR",72,"ce1126","ffffff","ESP"],["Celta de Vigo","CEL",72,"8ac3ee","ffffff","ESP"],["Osasuna","OSA",71,"d91a21","0a346f","ESP"],["Rayo Vallecano","RAY",71,"ffffff","ff0000","ESP"],["Getafe","GET",70,"005999","ffffff","ESP"],["Mallorca","MLL",70,"e20613","000000","ESP"],["Espanyol","ESY",69,"007fc8","ffffff","ESP"],["Alavés","ALA",69,"0761af","ffffff","ESP"],["Levante","LEV",68,"b4053f","004c98","ESP"],["Elche","ELC",68,"ffffff","00703c","ESP"],["Real Oviedo","OVI",67,"0c4da2","ffffff","ESP"],["Inter","INT",85,"0068a8","000000","ITA"],["Napoli","NAP",82,"12a0d7","ffffff","ITA"],["Juventus","JUV",81,"ffffff","000000","ITA"],["Milan","MIL",81,"fb090b","000000","ITA"],["Atalanta","ATA",80,"1e71b8","000000","ITA"],["Roma","ROM",78,"8e1f2f","f0bc42","ITA"],["Lazio","LAZ",77,"87d8f7","ffffff","ITA"],["Fiorentina","FIO",76,"482e92","ffffff","ITA"],["Bologna","BOL",76,"1a2f48","a21c26","ITA"],["Torino","TOR",72,"8a1e41","ffffff","ITA"],["Como","COM",71,"0a4ea3","ffffff","ITA"],["Udinese","UDI",71,"000000","ffffff","ITA"],["Genoa","GEN",70,"a00000","002060","ITA"],["Cagliari","CAG",68,"a51e36","0a2240","ITA"],["Parma","PAR",68,"ffffff","ffd600","ITA"],["Sassuolo","SAS",68,"00a651","000000","ITA"],["Hellas Verona","VER",67,"0b2a6b","ffd600","ITA"],["Lecce","LEC",67,"f7d117","c8102e","ITA"],["Cremonese","CRE",65,"c8102e","9b9b9b","ITA"],["Pisa","PIS",65,"1a1a1a","0a66c2","ITA"],["Bayern de Munique","BAY",88,"dc052d","ffffff","GER"],["Bayer Leverkusen","B04",83,"e32221","000000","GER"],["Borussia Dortmund","BVB",82,"fde100","000000","GER"],["RB Leipzig","RBL",80,"dd0741","ffffff","GER"],["Stuttgart","VFB",77,"e32219","ffffff","GER"],["Eintracht Frankfurt","SGE",76,"e1000f","000000","GER"],["Freiburg","SCF",73,"000000","ffffff","GER"],["Hoffenheim","TSG",72,"1961b5","ffffff","GER"],["Wolfsburg","WOB",72,"65b32e","ffffff","GER"],["Gladbach","BMG",71,"000000","00a651","GER"],["Werder Bremen","SVW",71,"1d9053","ffffff","GER"],["Mainz 05","M05",70,"c3141e","ffffff","GER"],["Union Berlin","FCU",70,"eb1923","ffffff","GER"],["Augsburg","FCA",68,"ba3733","046530","GER"],["Heidenheim","HDH",67,"e2001a","0a3a8c","GER"],["St. Pauli","STP",67,"6f3a2a","ffffff","GER"],["Colônia","KOE",67,"ffffff","e2001a","GER"],["Hamburgo","HSV",67,"0a3a8c","ffffff","GER"],["Paris Saint-Germain","PSG",85,"004170","da291c","FRA"],["Marseille","OM",79,"2faee0","ffffff","FRA"],["Monaco","MON",78,"e51b23","ffffff","FRA"],["Lille","LIL",77,"e01e13","22337c","FRA"],["Lyon","LYO",77,"ffffff","0a3a8c","FRA"],["Nice","NIC",75,"000000","e51b23","FRA"],["Lens","LEN",75,"ffe200","e51b23","FRA"],["Rennes","REN",74,"e13327","000000","FRA"],["Strasbourg","STR",72,"0a5ab6","ffffff","FRA"],["Brest","BRS",70,"e2001a","ffffff","FRA"],["Toulouse","TOU",70,"4b2a7a","ffffff","FRA"],["Nantes","NAN",69,"ffe400","0a7a33","FRA"],["Lorient","LOR",67,"f58220","000000","FRA"],["Angers","ANG",66,"000000","ffffff","FRA"],["Auxerre","AUX",66,"ffffff","0a4ea3","FRA"],["Le Havre","HAC",65,"6ec1e4","0a3a7a","FRA"],["Metz","MET",65,"7a1a2a","ffffff","FRA"],["Paris FC","PFC",65,"0a3a8c","ffffff","FRA"],["Sporting","SCP",80,"00a650","ffffff","POR"],["Benfica","SLB",79,"e30613","ffffff","POR"],["Porto","FCP",79,"00479d","ffffff","POR"],["Braga","SCB",75,"e2001a","ffffff","POR"],["Vitória de Guimarães","VSC",70,"ffffff","000000","POR"],["Famalicão","FAM",68,"0a3a8c","ffffff","POR"],["Estoril","EST",66,"ffe600","0a3a8c","POR"],["Gil Vicente","GIL",66,"c8102e","0a3a8c","POR"],["Moreirense","MOR",64,"0a7a33","ffffff","POR"],["Arouca","ARO",64,"ffe600","0a3a8c","POR"],["Casa Pia","CPI",64,"000000","ffffff","POR"],["Rio Ave","RAV",64,"0a7a33","ffffff","POR"],["Santa Clara","SCL",64,"c8102e","ffffff","POR"],["Nacional da Madeira","NAC",63,"000000","ffffff","POR"],["Estrela da Amadora","AMA",63,"0a7a33","c8102e","POR"],["Farense","FAR",62,"000000","ffffff","POR"],["AVS","AVS",62,"0a3a8c","ffffff","POR"],["Alverca","ALV",61,"c8102e","ffe600","POR"],["Flamengo","FLA",80,"d0021b","000000","BRA"],["Palmeiras","PAL",80,"0a7a33","ffffff","BRA"],["Botafogo","BOT",77,"000000","ffffff","BRA"],["Cruzeiro","CRU",76,"0a4ea3","ffffff","BRA"],["Corinthians","COR",75,"000000","ffffff","BRA"],["Fluminense","FLU",74,"8a1538","0a7a33","BRA"],["São Paulo","SAO",74,"d0021b","000000","BRA"],["Atlético Mineiro","CAM",74,"000000","ffffff","BRA"],["Internacional","INTER",74,"d0021b","ffffff","BRA"],["Grêmio","GRE",73,"0d80bf","000000","BRA"],["Bahia","BAH",73,"0a4ea3","d0021b","BRA"],["Vasco da Gama","VAS",72,"000000","ffffff","BRA"],["Fortaleza","FOR2",72,"0a4ea3","d0021b","BRA"],["Santos","SAN",71,"ffffff","000000","BRA"],["Red Bull Bragantino","RBB",70,"ffffff","d0021b","BRA"],["Mirassol","MIR",67,"ffe600","0a7a33","BRA"],["Ceará","CEA",67,"000000","ffffff","BRA"],["Vitória","VIT",66,"d0021b","000000","BRA"],["Sport Recife","SPT",66,"d0021b","000000","BRA"],["Juventude","JUV2",64,"0a7a33","ffffff","BRA"],["River Plate","RIV",77,"ffffff","d0021b","ARG"],["Boca Juniors","BOC",76,"0a3a8c","ffd600","ARG"],["Racing Club","RAC",74,"7ac7f0","ffffff","ARG"],["Estudiantes","EDLP",73,"d0021b","ffffff","ARG"],["Independiente","IND",72,"d0021b","ffffff","ARG"],["Vélez Sarsfield","VEL",72,"ffffff","0a3a8c","ARG"],["Talleres","TAL",71,"0a3a8c","ffffff","ARG"],["San Lorenzo","SLO",70,"0a3a8c","d0021b","ARG"],["Lanús","LAN",70,"7a1a2a","ffffff","ARG"],["Rosario Central","ROS",70,"ffd600","0a3a8c","ARG"],["Argentinos Juniors","ARJ",69,"d0021b","ffffff","ARG"],["Belgrano","BEL",69,"7ac7f0","ffffff","ARG"],["Defensa y Justicia","DYJ",68,"ffe600","0a7a33","ARG"],["Huracán","HUR",68,"ffffff","d0021b","ARG"],["Godoy Cruz","GOD",66,"0a3a8c","ffffff","ARG"],["Newell's Old Boys","NOB",66,"d0021b","000000","ARG"]];
+const CLUBS_RAW = [["Arsenal","ARS",86,"ef0107","ffffff","ENG"],["Manchester City","MCI",86,"6cabdd","ffffff","ENG"],["Liverpool","LIV",86,"c8102e","ffffff","ENG"],["Chelsea","CHE",82,"034694","ffffff","ENG"],["Tottenham","TOT",80,"ffffff","132257","ENG"],["Manchester United","MUN",80,"da291c","fbe122","ENG"],["Newcastle United","NEW",80,"241f20","ffffff","ENG"],["Aston Villa","AVL",79,"670e36","95bfe5","ENG"],["Brighton","BHA",76,"0057b8","ffffff","ENG"],["Crystal Palace","CRY",76,"1b458f","c4122e","ENG"],["West Ham","WHU",75,"7a263a","1bb1e7","ENG"],["Brentford","BRE",75,"e30613","ffffff","ENG"],["Bournemouth","BOU",75,"da291c","000000","ENG"],["Nottingham Forest","NFO",75,"dd0000","ffffff","ENG"],["Fulham","FUL",74,"ffffff","000000","ENG"],["Everton","EVE",73,"003399","ffffff","ENG"],["Wolverhampton","WOL",73,"fdb913","231f20","ENG"],["Leeds United","LEE",72,"ffffff","1d428a","ENG"],["Sunderland","SUN",71,"eb172b","ffffff","ENG"],["Burnley","BUR",70,"6c1d45","99d6ea","ENG"],["Real Madrid","RMA",87,"ffffff","febe10","ESP"],["Barcelona","BAR",87,"a50044","004d98","ESP"],["Atlético de Madrid","ATM",82,"cb3524","272e61","ESP"],["Athletic Club","ATH",77,"ee2523","ffffff","ESP"],["Villarreal","VIL",77,"fbe10f","005187","ESP"],["Real Sociedad","RSO",76,"0067b1","ffffff","ESP"],["Real Betis","BET",76,"0bb363","ffffff","ESP"],["Sevilla","SEV",74,"ffffff","d4021d","ESP"],["Valencia","VAL",73,"ffffff","000000","ESP"],["Girona","GIR",72,"ce1126","ffffff","ESP"],["Celta de Vigo","CEL",72,"8ac3ee","ffffff","ESP"],["Osasuna","OSA",71,"d91a21","0a346f","ESP"],["Rayo Vallecano","RAY",71,"ffffff","ff0000","ESP"],["Getafe","GET",70,"005999","ffffff","ESP"],["Mallorca","MLL",70,"e20613","000000","ESP"],["Espanyol","ESY",69,"007fc8","ffffff","ESP"],["Alavés","ALA",69,"0761af","ffffff","ESP"],["Levante","LEV",68,"b4053f","004c98","ESP"],["Elche","ELC",68,"ffffff","00703c","ESP"],["Real Oviedo","OVI",67,"0c4da2","ffffff","ESP"],["Inter","INT",85,"0068a8","000000","ITA"],["Napoli","NAP",82,"12a0d7","ffffff","ITA"],["Juventus","JUV",81,"ffffff","000000","ITA"],["Milan","MIL",81,"fb090b","000000","ITA"],["Atalanta","ATA",80,"1e71b8","000000","ITA"],["Roma","ROM",78,"8e1f2f","f0bc42","ITA"],["Lazio","LAZ",77,"87d8f7","ffffff","ITA"],["Fiorentina","FIO",76,"482e92","ffffff","ITA"],["Bologna","BOL",76,"1a2f48","a21c26","ITA"],["Torino","TOR",72,"8a1e41","ffffff","ITA"],["Como","COM",71,"0a4ea3","ffffff","ITA"],["Udinese","UDI",71,"000000","ffffff","ITA"],["Genoa","GEN",70,"a00000","002060","ITA"],["Cagliari","CAG",68,"a51e36","0a2240","ITA"],["Parma","PAR",68,"ffffff","ffd600","ITA"],["Sassuolo","SAS",68,"00a651","000000","ITA"],["Hellas Verona","VER",67,"0b2a6b","ffd600","ITA"],["Lecce","LEC",67,"f7d117","c8102e","ITA"],["Cremonese","CRE",65,"c8102e","9b9b9b","ITA"],["Pisa","PIS",65,"1a1a1a","0a66c2","ITA"],["Bayern de Munique","BAY",88,"dc052d","ffffff","GER"],["Bayer Leverkusen","B04",83,"e32221","000000","GER"],["Borussia Dortmund","BVB",82,"fde100","000000","GER"],["RB Leipzig","RBL",80,"dd0741","ffffff","GER"],["Stuttgart","VFB",77,"e32219","ffffff","GER"],["Eintracht Frankfurt","SGE",76,"e1000f","000000","GER"],["Freiburg","SCF",73,"000000","ffffff","GER"],["Hoffenheim","TSG",72,"1961b5","ffffff","GER"],["Wolfsburg","WOB",72,"65b32e","ffffff","GER"],["Gladbach","BMG",71,"000000","00a651","GER"],["Werder Bremen","SVW",71,"1d9053","ffffff","GER"],["Mainz 05","M05",70,"c3141e","ffffff","GER"],["Union Berlin","FCU",70,"eb1923","ffffff","GER"],["Augsburg","FCA",68,"ba3733","046530","GER"],["Heidenheim","HDH",67,"e2001a","0a3a8c","GER"],["St. Pauli","STP",67,"6f3a2a","ffffff","GER"],["Colônia","KOE",67,"ffffff","e2001a","GER"],["Hamburgo","HSV",67,"0a3a8c","ffffff","GER"],["Paris Saint-Germain","PSG",85,"004170","da291c","FRA"],["Marseille","OM",79,"2faee0","ffffff","FRA"],["Monaco","MON",78,"e51b23","ffffff","FRA"],["Lille","LIL",77,"e01e13","22337c","FRA"],["Lyon","LYO",77,"ffffff","0a3a8c","FRA"],["Nice","NIC",75,"000000","e51b23","FRA"],["Lens","LEN",75,"ffe200","e51b23","FRA"],["Rennes","REN",74,"e13327","000000","FRA"],["Strasbourg","STR",72,"0a5ab6","ffffff","FRA"],["Brest","BRS",70,"e2001a","ffffff","FRA"],["Toulouse","TOU",70,"4b2a7a","ffffff","FRA"],["Nantes","NAN",69,"ffe400","0a7a33","FRA"],["Lorient","LOR",67,"f58220","000000","FRA"],["Angers","ANG",66,"000000","ffffff","FRA"],["Auxerre","AUX",66,"ffffff","0a4ea3","FRA"],["Le Havre","HAC",65,"6ec1e4","0a3a7a","FRA"],["Metz","MET",65,"7a1a2a","ffffff","FRA"],["Paris FC","PFC",65,"0a3a8c","ffffff","FRA"],["Sporting","SCP",80,"00a650","ffffff","POR"],["Benfica","SLB",79,"e30613","ffffff","POR"],["Porto","FCP",79,"00479d","ffffff","POR"],["Braga","SCB",75,"e2001a","ffffff","POR"],["Vitória de Guimarães","VSC",70,"ffffff","000000","POR"],["Famalicão","FAM",68,"0a3a8c","ffffff","POR"],["Estoril","EST",66,"ffe600","0a3a8c","POR"],["Gil Vicente","GIL",66,"c8102e","0a3a8c","POR"],["Moreirense","MOR",64,"0a7a33","ffffff","POR"],["Arouca","ARO",64,"ffe600","0a3a8c","POR"],["Casa Pia","CPI",64,"000000","ffffff","POR"],["Rio Ave","RAV",64,"0a7a33","ffffff","POR"],["Santa Clara","SCL",64,"c8102e","ffffff","POR"],["Nacional da Madeira","NAC",63,"000000","ffffff","POR"],["Estrela da Amadora","AMA",63,"0a7a33","c8102e","POR"],["Farense","FAR",62,"000000","ffffff","POR"],["AVS","AVS",62,"0a3a8c","ffffff","POR"],["Alverca","ALV",61,"c8102e","ffe600","POR"],["PSV","PSV",79,"ed1c24","ffffff","NED"],["Ajax","AJA",77,"d2122e","ffffff","NED"],["Feyenoord","FEY",77,"ed1c24","ffffff","NED"],["AZ Alkmaar","AZ",74,"d2122e","ffffff","NED"],["Twente","TWE",72,"d2122e","ffffff","NED"],["Utrecht","UTR",70,"d2122e","ffffff","NED"],["Heerenveen","HEE",66,"0a4ea3","ffffff","NED"],["Go Ahead Eagles","GAE",66,"d2122e","ffe600","NED"],["Sparta Roterdã","SPA",66,"d2122e","ffffff","NED"],["NEC Nijmegen","NEC",66,"d2122e","0a7a33","NED"],["Groningen","GRO",65,"0a7a33","ffffff","NED"],["PEC Zwolle","ZWO",63,"0a4ea3","ffffff","NED"],["Fortuna Sittard","FOR",63,"ffe600","0a7a33","NED"],["Heracles","HER",63,"000000","ffffff","NED"],["NAC Breda","NAC2",62,"ffe600","000000","NED"],["Excelsior","EXC",62,"d2122e","000000","NED"],["Telstar","TEL",61,"ffffff","000000","NED"],["Volendam","VOL",60,"ff6a00","ffffff","NED"],["Flamengo","FLA",80,"d0021b","000000","BRA"],["Palmeiras","PAL",80,"0a7a33","ffffff","BRA"],["Botafogo","BOT",77,"000000","ffffff","BRA"],["Cruzeiro","CRU",76,"0a4ea3","ffffff","BRA"],["Corinthians","COR",75,"000000","ffffff","BRA"],["Fluminense","FLU",74,"8a1538","0a7a33","BRA"],["São Paulo","SAO",74,"d0021b","000000","BRA"],["Atlético Mineiro","CAM",74,"000000","ffffff","BRA"],["Internacional","INTER",74,"d0021b","ffffff","BRA"],["Grêmio","GRE",73,"0d80bf","000000","BRA"],["Bahia","BAH",73,"0a4ea3","d0021b","BRA"],["Vasco da Gama","VAS",72,"000000","ffffff","BRA"],["Fortaleza","FOR2",72,"0a4ea3","d0021b","BRA"],["Santos","SAN",71,"ffffff","000000","BRA"],["Red Bull Bragantino","RBB",70,"ffffff","d0021b","BRA"],["Mirassol","MIR",67,"ffe600","0a7a33","BRA"],["Ceará","CEA",67,"000000","ffffff","BRA"],["Vitória","VIT",66,"d0021b","000000","BRA"],["Sport Recife","SPT",66,"d0021b","000000","BRA"],["Juventude","JUV2",64,"0a7a33","ffffff","BRA"],["River Plate","RIV",77,"ffffff","d0021b","ARG"],["Boca Juniors","BOC",76,"0a3a8c","ffd600","ARG"],["Racing Club","RAC",74,"7ac7f0","ffffff","ARG"],["Estudiantes","EDLP",73,"d0021b","ffffff","ARG"],["Independiente","IND",72,"d0021b","ffffff","ARG"],["Vélez Sarsfield","VEL",72,"ffffff","0a3a8c","ARG"],["Talleres","TAL",71,"0a3a8c","ffffff","ARG"],["San Lorenzo","SLO",70,"0a3a8c","d0021b","ARG"],["Lanús","LAN",70,"7a1a2a","ffffff","ARG"],["Rosario Central","ROS",70,"ffd600","0a3a8c","ARG"],["Argentinos Juniors","ARJ",69,"d0021b","ffffff","ARG"],["Belgrano","BEL",69,"7ac7f0","ffffff","ARG"],["Defensa y Justicia","DYJ",68,"ffe600","0a7a33","ARG"],["Huracán","HUR",68,"ffffff","d0021b","ARG"],["Godoy Cruz","GOD",66,"0a3a8c","ffffff","ARG"],["Newell's Old Boys","NOB",66,"d0021b","000000","ARG"],["Shakhtar Donetsk","SHK",72,"ff6a00","000000","EUR"],["Red Bull Salzburg","RBS",71,"d0021b","ffffff","EUR"],["Olympiacos","OLY",70,"d0021b","ffffff","EUR"],["Slavia Praga","SLA",69,"d0021b","ffffff","EUR"],["Dínamo Zagreb","DZG",68,"0a3a8c","ffffff","EUR"],["Sparta Praga","SPR",68,"7a1a2a","0a3a8c","EUR"],["Copenhague","FCK",68,"ffffff","0a3a8c","EUR"],["PAOK","PAOK",67,"000000","ffffff","EUR"],["Estrela Vermelha","CZV",67,"d0021b","ffffff","EUR"],["Young Boys","YB",66,"ffe600","000000","EUR"],["Liga de Quito","LDU",67,"ffffff","0a3a8c","SAM"],["Independiente del Valle","IDV",66,"000000","0a3a8c","SAM"],["Barcelona SC","BSC",64,"ffe600","d0021b","SAM"],["Olimpia","OLI",64,"ffffff","000000","SAM"],["Cerro Porteño","CER",64,"0a3a8c","d0021b","SAM"],["Universitario","UNI",64,"ffe9a8","7a1a2a","SAM"],["Libertad","LIB",63,"000000","ffffff","SAM"],["Alianza Lima","ALI",63,"0a3a8c","ffffff","SAM"],["Sporting Cristal","SCR",62,"7ac7f0","ffffff","SAM"],["Bolívar","BLV",62,"7ac7f0","ffffff","SAM"],["Caracas","CCS",58,"d0021b","ffffff","SAM"],["Galatasaray","GAL",75,"ffa000","d0021b","TUR"],["Fenerbahçe","FEN",75,"ffe600","0a2a6a","TUR"],["Beşiktaş","BJK",71,"000000","ffffff","TUR"],["Trabzonspor","TRA",69,"7a1a2a","0a9fd8","TUR"],["Başakşehir","IBB",65,"ff6a00","0a2a6a","TUR"],["Samsunspor","SAM2",63,"d0021b","ffffff","TUR"],["Göztepe","GOZ",62,"ffe600","d0021b","TUR"],["Kasımpaşa","KAS",58,"0a2a6a","ffffff","TUR"],["Konyaspor","KON",58,"0a7a33","ffffff","TUR"],["Alanyaspor","ALX",59,"ff8a00","0a7a33","TUR"],["Antalyaspor","ANT",57,"d0021b","ffffff","TUR"],["Çaykur Rizespor","RIZ",58,"0a7a33","0a3a8c","TUR"],["Eyüpspor","EYU",57,"7a1a8a","ffe600","TUR"],["Kayserispor","KAY",56,"d0021b","ffe600","TUR"],["Gaziantep FK","GFK",56,"d0021b","000000","TUR"],["Kocaelispor","KOC",55,"0a7a33","000000","TUR"],["Gençlerbirliği","GEN2",54,"d0021b","000000","TUR"],["Fatih Karagümrük","FKG",55,"d0021b","000000","TUR"],["Club Brugge","BRU",73,"0a3a8c","000000","BEL"],["Anderlecht","AND",68,"5a2a8a","ffffff","BEL"],["Union Saint-Gilloise","USG",68,"ffe600","0a2a6a","BEL"],["Genk","GNK",66,"0a3a8c","ffffff","BEL"],["Gent","GNT",65,"0a3a8c","ffffff","BEL"],["Antwerp","ANW",64,"d0021b","ffffff","BEL"],["Standard Liège","STL",62,"d0021b","ffffff","BEL"],["KV Mechelen","MEC",60,"ffe600","d0021b","BEL"],["Cercle Brugge","CER2",60,"0a7a33","000000","BEL"],["Westerlo","WES",58,"ffe600","0a2a6a","BEL"],["OH Leuven","OHL",57,"ffffff","0a7a33","BEL"],["Sint-Truiden","STV",57,"ffe600","0a3a8c","BEL"],["Zulte Waregem","ZUL",55,"d0021b","0a7a33","BEL"],["Charleroi","CHA",56,"000000","ffffff","BEL"],["Dender","DEN",54,"d0021b","ffffff","BEL"],["Beerschot","BEE",53,"5a2a8a","ffffff","BEL"],["Celtic","CEL2",72,"0a7a33","ffffff","SCO"],["Rangers","RAN",70,"0a3a8c","ffffff","SCO"],["Heart of Midlothian","HEA",62,"7a1a2a","ffffff","SCO"],["Aberdeen","ABE",60,"d0021b","ffffff","SCO"],["Hibernian","HIB",59,"0a7a33","ffffff","SCO"],["Dundee United","DUU",56,"ff6a00","000000","SCO"],["Motherwell","MOT",55,"ffe600","d0021b","SCO"],["Kilmarnock","KIL",53,"0a3a8c","ffffff","SCO"],["St Mirren","STM",53,"000000","ffffff","SCO"],["Dundee","DUN",53,"0a2a6a","ffffff","SCO"],["Livingston","LIV2",51,"ffe600","000000","SCO"],["Falkirk","FAL",50,"0a2a6a","d0021b","SCO"],["Monterrey","MTY",68,"0a3a8c","ffffff","MEX"],["Club América","AME",70,"ffe600","0a3a8c","MEX"],["Tigres UANL","TIG",69,"ffe600","0a3a8c","MEX"],["Cruz Azul","CAZ",67,"0a3a8c","ffffff","MEX"],["Pachuca","PAC",65,"0a3a8c","ffffff","MEX"],["Guadalajara","GDL",64,"d0021b","ffffff","MEX"],["Toluca","TOL",66,"d0021b","ffffff","MEX"],["UNAM Pumas","PUM",62,"0a2a6a","ffe600","MEX"],["Santos Laguna","SLA2",58,"0a7a33","ffffff","MEX"],["León","LEO",61,"0a7a33","ffe600","MEX"],["Atlas","ATL",58,"d0021b","000000","MEX"],["Necaxa","NEX",55,"d0021b","ffffff","MEX"],["Querétaro","QRO",54,"0a3a8c","000000","MEX"],["Puebla","PUE",54,"0a3a8c","ffffff","MEX"],["Mazatlán","MAZ",53,"5a2a8a","ffffff","MEX"],["Juárez","JUA",53,"0a7a33","ffffff","MEX"],["Tijuana","TIJ",56,"d0021b","000000","MEX"],["San Luis","SLU",54,"ffe600","0a2a6a","MEX"],["Inter Miami","MIA",66,"f7b5cd","000000","USA"],["LAFC","LAF",66,"000000","c39e6d","USA"],["Seattle Sounders","SEA",63,"5d9732","0a2a6a","USA"],["LA Galaxy","LAG",62,"0a2a6a","ffe600","USA"],["Columbus Crew","CLB",63,"ffe600","000000","USA"],["Philadelphia Union","PHI",61,"0a2a6a","ffe600","USA"],["New York City FC","NYC",60,"7ac7f0","0a2a6a","USA"],["Atlanta United","ATU",61,"7a1a2a","000000","USA"],["Cincinnati","CIN",62,"ff6a00","0a2a6a","USA"],["Orlando City","ORL",59,"5a2a8a","ffffff","USA"],["Charlotte FC","CHA2",58,"7ac7f0","000000","USA"],["Nashville SC","NSH",59,"ffe600","0a2a6a","USA"],["Real Salt Lake","RSL",57,"7a1a2a","ffe600","USA"],["Portland Timbers","POR2",57,"0a7a33","ffe600","USA"],["New York Red Bulls","NYR",57,"d0021b","ffffff","USA"],["FC Dallas","DAL",56,"d0021b","0a3a8c","USA"],["Austin FC","AUS2",56,"0a7a33","000000","USA"],["Minnesota United","MIN",56,"7ac7f0","000000","USA"],["Sporting Kansas City","SKC",55,"7ac7f0","0a2a6a","USA"],["Vancouver Whitecaps","VAN",56,"0a2a6a","ffffff","USA"],["Al Hilal","HIL",74,"0a3a8c","ffffff","SAU"],["Al Nassr","NAS",72,"ffd600","0a3a8c","SAU"],["Al Ittihad","ITT",70,"ffe600","000000","SAU"],["Al Ahli Saudi","AHL2",69,"0a7a33","ffffff","SAU"],["Al Qadsiah","QAD",62,"d0021b","ffffff","SAU"],["Al Shabab","SHB",60,"ffffff","000000","SAU"],["Al Taawoun","TAA",58,"ffe600","0a7a33","SAU"],["Al Fateh","FAT",57,"0a7a33","ffffff","SAU"],["Al Ettifaq","ETT",60,"0a7a33","ffffff","SAU"],["Al Fayha","FAY",56,"ffe600","0a2a6a","SAU"],["Damac","DAM",55,"d0021b","ffffff","SAU"],["Al Khaleej","KHA",54,"d0021b","ffffff","SAU"],["Al Okhdood","OKH",52,"0a2a6a","ffffff","SAU"],["Al Riyadh","RIY",53,"0a7a33","ffffff","SAU"],["Al Raed","RAE",52,"d0021b","ffffff","SAU"],["Neom","NEO",55,"0a7a33","7ac7f0","SAU"],["Al Hazem","HAZ",51,"d0021b","ffffff","SAU"],["Al Najma","NAJ",50,"ffe600","d0021b","SAU"],["Urawa Reds","URA",66,"d0021b","000000","JPN"],["Vissel Kobe","VIS",66,"7a1a2a","ffffff","JPN"],["Yokohama F. Marinos","YFM",65,"0a3a8c","ffffff","JPN"],["Kawasaki Frontale","KAW",64,"7ac7f0","000000","JPN"],["Sanfrecce Hiroshima","HIR",63,"5a2a8a","ffffff","JPN"],["Kashima Antlers","KAS2",63,"d0021b","0a2a6a","JPN"],["Gamba Osaka","GAM",60,"0a3a8c","000000","JPN"],["Cerezo Osaka","CER3",59,"ff6a00","0a2a6a","JPN"],["FC Tokyo","FCT",59,"0a3a8c","d0021b","JPN"],["Nagoya Grampus","NAG",58,"d0021b","ffe600","JPN"],["Kyoto Sanga","KYO",56,"5a2a8a","ffffff","JPN"],["Avispa Fukuoka","AVI",55,"0a2a6a","7a1a2a","JPN"],["Machida Zelvia","MAC",59,"0a3a8c","ffe600","JPN"],["Tokyo Verdy","TOK",55,"0a7a33","ffffff","JPN"],["Shimizu S-Pulse","SHI",55,"ff6a00","ffffff","JPN"],["Kashiwa Reysol","KRE",57,"ffe600","000000","JPN"],["Albirex Niigata","ALB",53,"ff6a00","0a3a8c","JPN"],["Shonan Bellmare","SHO",53,"0a7a33","ffffff","JPN"],["Fagiano Okayama","FAG",52,"7a1a2a","0a3a8c","JPN"],["Júbilo Iwata","JUB",52,"7ac7f0","ffffff","JPN"],["Ulsan HD","ULS",64,"0a3a8c","ffd600","KOR"],["Jeonbuk Hyundai","JEO",63,"0a7a33","ffffff","KOR"],["Pohang Steelers","POH",59,"d0021b","000000","KOR"],["FC Seoul","SEO",60,"d0021b","000000","KOR"],["Daegu FC","DAE",53,"7ac7f0","0a2a6a","KOR"],["Gangwon FC","GAN",54,"ff6a00","0a7a33","KOR"],["Incheon United","INC",53,"0a3a8c","000000","KOR"],["Suwon FC","SUW",52,"0a3a8c","ffffff","KOR"],["Jeju United","JEJ",52,"ff6a00","ffffff","KOR"],["Gimcheon Sangmu","GIM",55,"d0021b","0a2a6a","KOR"],["Daejeon Hana","DJN",55,"7a1a2a","0a7a33","KOR"],["Gwangju FC","GWA",53,"ffe600","0a7a33","KOR"],["Melbourne City","MCY",58,"7ac7f0","ffffff","AUS"],["Melbourne Victory","MVI",56,"0a2a6a","ffffff","AUS"],["Sydney FC","SYD",57,"7ac7f0","0a2a6a","AUS"],["Central Coast Mariners","CCM",54,"ffe600","0a2a6a","AUS"],["Brisbane Roar","BRI",53,"ff6a00","0a2a6a","AUS"],["Western Sydney Wanderers","WSW",54,"d0021b","000000","AUS"],["Adelaide United","ADE",54,"d0021b","ffe600","AUS"],["Perth Glory","PER",52,"5a2a8a","ffffff","AUS"],["Wellington Phoenix","WEL",53,"ffe600","000000","AUS"],["Macarthur FC","MAC2",51,"0a2a6a","ffffff","AUS"],["Newcastle Jets","NJE",51,"0a2a6a","d0021b","AUS"],["Auckland FC","AKF",55,"0a7a7a","0a2a6a","AUS"],["Atlético Nacional","ANA",66,"0a7a33","ffffff","COL"],["Millonarios","MIL2",64,"0a3a8c","ffffff","COL"],["Junior","JUN",62,"d0021b","ffffff","COL"],["América de Cali","AMC",60,"d0021b","ffffff","COL"],["Deportivo Cali","DCA",58,"0a7a33","ffffff","COL"],["Independiente Santa Fe","ISF",59,"d0021b","ffffff","COL"],["Once Caldas","OCA",56,"ffffff","000000","COL"],["Deportes Tolima","TOL2",58,"7a1a2a","ffe600","COL"],["Atlético Bucaramanga","BUC",56,"ffe600","0a7a33","COL"],["Independiente Medellín","DIM",58,"d0021b","0a2a6a","COL"],["Águilas Doradas","AGU",53,"ffe600","000000","COL"],["Deportivo Pasto","PAS",52,"ffe600","d0021b","COL"],["Envigado","ENV",50,"ff6a00","0a2a6a","COL"],["Alianza FC","ALI2",51,"ffe600","0a2a6a","COL"],["Llaneros","LLA",49,"d0021b","ffffff","COL"],["Fortaleza CEIF","FOC",50,"0a2a6a","ffffff","COL"],["Boyacá Chicó","BOY",50,"0a3a8c","ffe600","COL"],["Jaguares","JAG",49,"ffe600","0a3a8c","COL"],["Cúcuta Deportivo","CUC",50,"d0021b","000000","COL"],["Internacional de Bogotá","INB",49,"0a3a8c","d0021b","COL"],["Colo-Colo","COL",65,"ffffff","000000","CHI"],["Universidad de Chile","UCH",64,"0a3a8c","d0021b","CHI"],["Universidad Católica","UCA",62,"0a3a8c","ffffff","CHI"],["Huachipato","HUA",55,"0a3a8c","000000","CHI"],["Cobresal","COB",54,"ff6a00","ffffff","CHI"],["Palestino","PAX",54,"d0021b","0a7a33","CHI"],["Unión La Calera","ULC",52,"d0021b","ffffff","CHI"],["Audax Italiano","AUD",52,"0a7a33","ffffff","CHI"],["Ñublense","NUB",52,"d0021b","000000","CHI"],["Coquimbo Unido","COQ",55,"ffe600","0a2a6a","CHI"],["O'Higgins","OHI",53,"7ac7f0","ffffff","CHI"],["Everton de Viña","EVI",52,"ffe600","0a3a8c","CHI"],["Deportes Iquique","IQU",50,"7ac7f0","ffffff","CHI"],["Unión Española","UES",51,"d0021b","ffffff","CHI"],["Deportes La Serena","SER",50,"7a1a2a","ffe600","CHI"],["Deportes Limache","LIM",50,"ffe600","0a7a33","CHI"],["Peñarol","PEN",66,"000000","ffe600","URU"],["Nacional (URU)","NAU",66,"0a3a8c","ffffff","URU"],["Defensor Sporting","DEF2",56,"5a2a8a","ffffff","URU"],["Liverpool (URU)","LIU",56,"0a2a6a","000000","URU"],["Danubio","DAN",54,"ffffff","000000","URU"],["Montevideo Wanderers","MWA",54,"ffffff","000000","URU"],["Cerro Largo","CLA",52,"0a3a8c","ffffff","URU"],["Montevideo City Torque","MCT",53,"7ac7f0","ffffff","URU"],["Boston River","BOS",50,"0a7a33","ffffff","URU"],["Racing (URU)","RAU",51,"0a3a8c","d0021b","URU"],["River Plate (URU)","RPU",51,"ffffff","d0021b","URU"],["Cerro","CRO",50,"7ac7f0","0a3a8c","URU"],["Juventud","JUV3",49,"d0021b","ffffff","URU"],["Progreso","PRO",49,"ffe600","0a3a8c","URU"],["Plaza Colonia","PCO",48,"0a2a6a","ffffff","URU"],["Miramar Misiones","MIM",48,"0a2a6a","d0021b","URU"],["Leicester City","LEI",68,"0a3a8c","ffffff","ENC"],["Southampton","SOU",67,"d0021b","ffffff","ENC"],["Ipswich Town","IPS",67,"0a3a8c","ffffff","ENC"],["Sheffield United","SHU",66,"d0021b","ffffff","ENC"],["Middlesbrough","MID",66,"d0021b","ffffff","ENC"],["Norwich City","NOR",65,"ffe600","0a7a33","ENC"],["West Bromwich Albion","WBA",65,"0a2a6a","ffffff","ENC"],["Coventry City","COV",65,"7ac7f0","ffffff","ENC"],["Watford","WAT",63,"ffe600","d0021b","ENC"],["Stoke City","STK",62,"d0021b","ffffff","ENC"],["Swansea City","SWA",62,"ffffff","000000","ENC"],["Hull City","HUL",61,"ff8a00","000000","ENC"],["Preston North End","PNE",60,"ffffff","0a2a6a","ENC"],["Millwall","MIX",61,"0a2a6a","ffffff","ENC"],["Blackburn Rovers","BLB",61,"0a3a8c","ffffff","ENC"],["Bristol City","BRC2",61,"d0021b","ffffff","ENC"],["Queens Park Rangers","QPR",60,"0a3a8c","ffffff","ENC"],["Derby County","DER",60,"ffffff","000000","ENC"],["Birmingham City","BIR",62,"0a3a8c","ffffff","ENC"],["Portsmouth","POM",59,"0a3a8c","ffffff","ENC"],["Racing Santander","RAS",62,"0a7a33","ffffff","ESB"],["Deportivo La Coruña","DEP",62,"0a3a8c","ffffff","ESB"],["Málaga","MAL",61,"0a3a8c","ffffff","ESB"],["Real Zaragoza","ZAR",60,"ffffff","0a3a8c","ESB"],["Almería","ALM",63,"d0021b","ffffff","ESB"],["Granada","GRA",63,"d0021b","ffffff","ESB"],["Las Palmas","LPA",64,"ffe600","0a3a8c","ESB"],["Cádiz","CAD",60,"ffe600","0a3a8c","ESB"],["Eibar","EIB",60,"7a1a2a","0a3a8c","ESB"],["Sporting de Gijón","GIJ",60,"d0021b","ffffff","ESB"],["Leganés","LEG",62,"0a3a8c","ffffff","ESB"],["Burgos","BUR2",56,"ffffff","000000","ESB"],["Albacete","ALB2",56,"ffffff","000000","ESB"],["Castellón","CAS",60,"000000","ffffff","ESB"],["Mirandés","MIR2",55,"d0021b","000000","ESB"],["Huesca","HUE",56,"0a3a8c","7a1a2a","ESB"],["Tenerife","TEN",57,"0a3a8c","ffffff","ESB"],["Córdoba","CR",56,"0a7a33","ffffff","ESB"],["Cultural Leonesa","CUL",54,"ffffff","d0021b","ESB"],["Real Sociedad B","RSB",54,"0a3a8c","ffffff","ESB"],["Sampdoria","SAM3",64,"0a3a8c","ffffff","ITB"],["Palermo","PAL2",65,"ffa0c8","000000","ITB"],["Venezia","VEN",63,"0a7a33","ff6a00","ITB"],["Bari","BAR2",60,"d0021b","ffffff","ITB"],["Cesena","CES",57,"000000","ffffff","ITB"],["Modena","MOD",58,"ffe600","0a3a8c","ITB"],["Spezia","SPE",59,"ffffff","000000","ITB"],["Juve Stabia","JST",55,"ffe600","0a3a8c","ITB"],["Empoli","EMP",60,"0a3a8c","ffffff","ITB"],["Frosinone","FRO",58,"ffe600","0a3a8c","ITB"],["Reggiana","REG",56,"7a1a2a","ffffff","ITB"],["Catanzaro","CZ",57,"d0021b","ffe600","ITB"],["Mantova","MAN2",54,"d0021b","ffffff","ITB"],["Cittadella","CIT",55,"7a1a2a","ffffff","ITB"],["Avellino","AVE",56,"0a7a33","ffffff","ITB"],["Carrarese","CAR2",54,"ffe600","0a3a8c","ITB"],["Südtirol","SUD",54,"d0021b","ffffff","ITB"],["Padova","PAD",55,"d0021b","ffffff","ITB"],["Pescara","PES",54,"7ac7f0","ffffff","ITB"],["Monza","MOX",62,"d0021b","ffffff","ITB"],["Bochum","BOX",62,"0a3a8c","ffffff","GEB"],["Schalke 04","S04",65,"0a3a8c","ffffff","GEB"],["Hertha Berlim","HEB",64,"0a3a8c","ffffff","GEB"],["Hannover 96","H96",60,"0a7a33","000000","GEB"],["Fortuna Düsseldorf","F95",61,"d0021b","ffffff","GEB"],["Karlsruher SC","KSC",59,"0a3a8c","ffffff","GEB"],["Hannover II","HAN2",50,"0a7a33","ffffff","GEB"],["Greuther Fürth","FUR",57,"0a7a33","ffffff","GEB"],["1. FC Nürnberg","NUR",60,"d0021b","000000","GEB"],["Paderborn","PAD2",60,"0a3a8c","ffffff","GEB"],["Kaiserslautern","FCK2",60,"d0021b","ffffff","GEB"],["Magdeburg","MAG",58,"0a3a8c","ffffff","GEB"],["Eintracht Braunschweig","EBS",56,"ffe600","0a3a8c","GEB"],["Preußen Münster","MUN2",57,"0a7a33","000000","GEB"],["SV Elversberg","ELV",58,"000000","ffffff","GEB"],["Darmstadt 98","DAR",59,"0a3a8c","ffffff","GEB"],["Arminia Bielefeld","BIE",57,"0a3a8c","000000","GEB"],["Dynamo Dresden","DYN",57,"ffe600","000000","GEB"],["Saint-Étienne","STE",63,"0a7a33","ffffff","FRB"],["Caen","CAE",56,"0a3a8c","d0021b","FRB"],["Nancy","NAX",54,"d0021b","ffffff","FRB"],["Troyes","TRO",57,"0a3a8c","ffffff","FRB"],["Guingamp","GUI",56,"d0021b","000000","FRB"],["Quevilly Rouen","QRM",52,"d0021b","000000","FRB"],["Le Mans","LMA",56,"d0021b","ffe600","FRB"],["Pau FC","PAU",54,"ffe600","0a3a8c","FRB"],["Amiens","AMI",56,"ffffff","000000","FRB"],["Rodez","ROD",54,"d0021b","ffe600","FRB"],["Annecy","ANN",54,"d0021b","ffffff","FRB"],["Dunkerque","DUN2",53,"0a3a8c","d0021b","FRB"],["Red Star","RED",54,"0a7a33","ffffff","FRB"],["Laval","LAV",53,"ff6a00","000000","FRB"],["Grenoble","GRX",53,"0a3a8c","ffffff","FRB"],["Montpellier","MPL",62,"ff6a00","0a3a8c","FRB"],["Clermont Foot","CLF",56,"d0021b","0a3a8c","FRB"],["Bastia","BAS",55,"0a3a8c","ffffff","FRB"],["Goiás","GOI",62,"0a7a33","ffffff","BRB"],["Vila Nova","VNO",57,"d0021b","ffffff","BRB"],["Novorizontino","NVH",58,"ffe600","000000","BRB"],["Criciúma","CRI",58,"ffe600","000000","BRB"],["Cuiabá","CUI",58,"ffe600","0a7a33","BRB"],["América-MG","AMG",59,"0a7a33","000000","BRB"],["Operário-PR","OPE",55,"000000","ffffff","BRB"],["Botafogo-SP","BSP",56,"d0021b","000000","BRB"],["Avaí","AVA",57,"0a3a8c","ffffff","BRB"],["Paysandu","PAY",56,"7ac7f0","0a2a6a","BRB"],["Amazonas","AMZ",53,"ffe600","0a7a33","BRB"],["Ferroviária","FER",54,"7a1a2a","ffffff","BRB"],["Volta Redonda","VOR",53,"ffe600","ffffff","BRB"],["CRB","CRB",58,"d0021b","ffffff","BRB"],["Athletic Club (MG)","ATM2",53,"d0021b","ffffff","BRB"],["Londrina","LON",54,"0a3a8c","ffffff","BRB"],["Ponte Preta","PON",56,"000000","ffffff","BRB"],["Brusque","BRQ",54,"ffe600","0a7a33","BRB"],["Náutico","NAU2",57,"d0021b","ffffff","BRB"],["Atlético Goianiense","ATG",57,"d0021b","000000","BRB"],["Figueirense","FIG",53,"000000","ffffff","BRC"],["Ypiranga","YPI",48,"ffe600","0a7a33","BRC"],["Confiança","CNF",50,"0a3a8c","ffffff","BRC"],["Caxias","CAX",49,"0a7a33","ffe600","BRC"],["ABC","ABC",50,"000000","ffffff","BRC"],["Floresta","FLO",47,"0a2a6a","ffffff","BRC"],["Maranhão","MAR",46,"d0021b","ffffff","BRC"],["Botafogo-PB","BPB",51,"000000","ffffff","BRC"],["Tombense","TOM",50,"ffe600","d0021b","BRC"],["São Bernardo","SBE",51,"ffe600","0a3a8c","BRC"],["Mirassol B","MIB",46,"ffe600","0a7a33","BRC"],["Remo B","REM",47,"0a2a6a","ffffff","BRC"],["Santa Cruz","SCZ",50,"d0021b","000000","BRC"],["Sampaio Corrêa","SAC",49,"ffe600","d0021b","BRC"],["Treze","TRZ",46,"000000","ffffff","BRC"],["CSA","CSA",52,"0a3a8c","ffffff","BRC"],["Guarani","GUA",52,"0a7a33","ffffff","BRC"],["Paraná","PRN",48,"0a3a8c","d0021b","BRC"],["Inter de Limeira","INL",48,"d0021b","000000","BRC"],["Anápolis","ANA2",45,"ffe600","0a3a8c","BRC"],["Al Ain","AIN",65,"7a2a8a","ffffff","ASI"],["Al Sadd","SAD",64,"ffffff","7a1a2a","ASI"],["Al Duhail","DUH",62,"7a1a2a","ffffff","ASI"],["Persepolis","PRS",62,"d0021b","ffffff","ASI"],["Shabab Al Ahli","SAH",61,"d0021b","0a2a6a","ASI"],["Sepahan","SEP",60,"ffe600","d0021b","ASI"],["Saprissa","SAP",58,"5a2a8a","ffffff","CAC"],["Alajuelense","ALJ",57,"d0021b","000000","CAC"],["Olimpia (HON)","OLH",56,"ffffff","0a3a8c","CAC"],["Comunicaciones","COX",55,"ffffff","0a7a33","CAC"],["Al Ahly","AHL",69,"d0021b","ffffff","AFR"],["Zamalek","ZAM",65,"ffffff","d0021b","AFR"],["Pyramids","PYR",65,"7ac7f0","0a2a6a","AFR"],["Mamelodi Sundowns","SUN2",66,"ffe600","0a7a33","AFR"],["Orlando Pirates","ORP",62,"000000","ffffff","AFR"],["Kaizer Chiefs","KAC",58,"ffe600","000000","AFR"],["Wydad Casablanca","WYD",64,"d0021b","ffffff","AFR"],["Raja Casablanca","RAJ",62,"0a7a33","ffffff","AFR"],["Espérance de Tunis","EST2",63,"ffe600","d0021b","AFR"],["Étoile du Sahel","ETS",56,"d0021b","ffffff","AFR"],["TP Mazembe","TPM",58,"000000","ffffff","AFR"],["Petro de Luanda","PTL",55,"ffe600","0a7a33","AFR"],["Simba SC","SIM",55,"d0021b","ffffff","AFR"],["Young Africans","YOA",56,"0a7a33","ffe600","AFR"],["CR Belouizdad","BEL2",55,"d0021b","ffffff","AFR"],["RS Berkane","BER",58,"ff6a00","000000","AFR"],["Auckland City","AKL",52,"0a3a8c","ffffff","OFC"]];
 /* ===== DADOS DOS TIMES ===== */
 const NAT_RAW = [
 ['ar','Argentina','ARG',88,'75aadb','ffffff'],['fr','França','FRA',88,'0a3a8c','ffffff'],['es','Espanha','ESP',88,'c8102e','ffd600'],
@@ -206,11 +216,94 @@ const NAT_RAW = [
 ['qa','Catar','QAT',66,'7a1a2a','ffffff'],['hn','Honduras','HON',64,'0a3a8c','ffffff'],['jm','Jamaica','JAM',64,'ffd600','0a7a33'],
 ['nz','Nova Zelândia','NZL',63,'000000','ffffff'],['bo','Bolívia','BOL',62,'0a7a33','c8102e']
 ];
-const LEAGUE_NAMES = {BRA:'Brasileirão',ENG:'Premier League',ESP:'La Liga',ITA:'Serie A',GER:'Bundesliga',FRA:'Ligue 1',POR:'Liga Portugal',ARG:'Liga Argentina'};
+const LEAGUE_NAMES = {"ENG":"Premier League","ESP":"La Liga","ITA":"Serie A","GER":"Bundesliga","FRA":"Ligue 1","POR":"Liga Portugal","NED":"Eredivisie","TUR":"Süper Lig","BEL":"Pro League","SCO":"Premiership Escocesa","BRA":"Brasileirão Série A","ARG":"Liga Profesional","COL":"Liga BetPlay","CHI":"Primera División (Chile)","URU":"Primera División (Uruguai)","USA":"MLS","MEX":"Liga MX","SAU":"Saudi Pro League","JPN":"J1 League","KOR":"K League 1","AUS":"A-League","ENC":"Championship","ESB":"La Liga 2","ITB":"Serie B","GEB":"2. Bundesliga","FRB":"Ligue 2","BRB":"Brasileirão Série B","BRC":"Brasileirão Série C"};
+const LEAGUE_COUNTRY = {"ENG":"Inglaterra","ESP":"Espanha","ITA":"Itália","GER":"Alemanha","FRA":"França","POR":"Portugal","NED":"Holanda","TUR":"Turquia","BEL":"Bélgica","SCO":"Escócia","BRA":"Brasil","ARG":"Argentina","COL":"Colômbia","CHI":"Chile","URU":"Uruguai","USA":"Estados Unidos","MEX":"México","SAU":"Arábia Saudita","JPN":"Japão","KOR":"Coreia do Sul","AUS":"Austrália","ENC":"Inglaterra","ESB":"Espanha","ITB":"Itália","GEB":"Alemanha","FRB":"França","BRB":"Brasil","BRC":"Brasil"};
 const NATIONS = NAT_RAW.map(([iso,name,short,rating,c1,c2]) => ({id:'n_'+iso, kind:'nat', iso, name, short, rating, c1:'#'+c1, c2:'#'+c2}));
 const CLUBS = CLUBS_RAW.map(([name,short,rating,c1,c2,lg]) => ({id:'c_'+short, kind:'club', name, short:short.replace(/\d/g,'').slice(0,3), rating, c1:'#'+c1, c2:'#'+c2, lg}));
 const ALL_TEAMS = NATIONS.concat(CLUBS);
 const TEAM_BY_ID = {}; ALL_TEAMS.forEach(t => TEAM_BY_ID[t.id] = t);
+
+/* ---------- Bolas: desenhos próprios em textura equirretangular (512x256) ---------- */
+const BALL_W = 512, BALL_H = 256;
+const ICO = (() => { const p = (1 + Math.sqrt(5)) / 2; return [[-1, p, 0], [1, p, 0], [-1, -p, 0], [1, -p, 0], [0, -1, p], [0, 1, p], [0, -1, -p], [0, 1, -p], [p, 0, -1], [p, 0, 1], [-p, 0, -1], [-p, 0, 1]]; })();
+const DODE = (() => { const p = (1 + Math.sqrt(5)) / 2, q = 1 / p, o = []; for (const a of [-1, 1]) for (const b of [-1, 1]) { for (const c of [-1, 1]) o.push([a, b, c]); o.push([0, a * q, b * p], [a * q, b * p, 0], [a * p, 0, b * q]); } return o; })();
+const llOf = ([x, y, z]) => { const l = Math.hypot(x, y, z); return [Math.asin(y / l), Math.atan2(z, x)]; };
+const llXY = (lat, lon) => [(lon / (2 * Math.PI) + 0.5) * BALL_W, (0.5 - lat / Math.PI) * BALL_H];
+function bShape(g, pts, size, sides, rot, star) {
+  for (const v of pts) {
+    const [lat, lon] = llOf(v), [cx, cy] = llXY(lat, lon), sx = 1 / Math.max(0.3, Math.cos(lat));
+    for (const off of [-BALL_W, 0, BALL_W]) {
+      g.beginPath();
+      const n = star ? sides * 2 : sides;
+      for (let i = 0; i < n; i++) { const a = rot + i * 2 * Math.PI / n, r = star && i % 2 ? size * 0.45 : size; g.lineTo(cx + off + Math.cos(a) * r * sx, cy + Math.sin(a) * r); }
+      g.closePath(); g.fill();
+    }
+  }
+}
+function bWaves(g, cols, n, amp, th, freq, ph) {
+  for (let i = 0; i < n; i++) {
+    g.strokeStyle = cols[i % cols.length]; g.lineWidth = th; g.lineCap = 'round';
+    const y0 = BALL_H * (i + 1) / (n + 1);
+    g.beginPath();
+    for (let x = -10; x <= BALL_W + 10; x += 6) { const y = y0 + Math.sin(x / BALL_W * Math.PI * 2 * freq + (ph || 0) + i * 1.3) * amp; x < 0 ? g.moveTo(x, y) : g.lineTo(x, y); }
+    g.stroke();
+  }
+}
+function bSeams(g, col, w) { g.strokeStyle = col; g.lineWidth = w || 1.5; for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(i * BALL_W / 6, 0); g.bezierCurveTo(i * BALL_W / 6 + 40, BALL_H * 0.33, i * BALL_W / 6 - 40, BALL_H * 0.66, i * BALL_W / 6, BALL_H); g.stroke(); } g.beginPath(); g.moveTo(0, BALL_H / 2); g.lineTo(BALL_W, BALL_H / 2); g.stroke(); }
+const BALLS = [
+  { id: 'classica', nome: 'Clássica', paint: g => { g.fillStyle = '#f6f7fa'; g.fillRect(0, 0, BALL_W, BALL_H); g.fillStyle = '#1b1f2a'; bShape(g, ICO, 21, 5, -Math.PI / 2); } },
+  { id: 'estrelas', nome: 'Noite de Estrelas', paint: g => { g.fillStyle = '#f4f5f9'; g.fillRect(0, 0, BALL_W, BALL_H); g.fillStyle = '#12224d'; bShape(g, ICO, 24, 5, -Math.PI / 2, true); g.fillStyle = '#c8102e'; bShape(g, DODE, 7, 5, -Math.PI / 2, true); } },
+  { id: 'final', nome: 'Final Dourada', paint: g => { const gr = g.createLinearGradient(0, 0, 0, BALL_H); gr.addColorStop(0, '#fff7da'); gr.addColorStop(1, '#f1d27a'); g.fillStyle = gr; g.fillRect(0, 0, BALL_W, BALL_H); bWaves(g, ['#b8860b', '#7a5a10', '#d4a017'], 4, 26, 14, 2); g.fillStyle = '#7a5a10'; bShape(g, ICO, 9, 3, 0); } },
+  { id: 'inverno', nome: 'Laranja de Inverno', paint: g => { g.fillStyle = '#ff6a13'; g.fillRect(0, 0, BALL_W, BALL_H); bWaves(g, ['#111', '#ffd400'], 4, 22, 12, 3); g.fillStyle = '#111'; bShape(g, ICO, 12, 4, 0.4); } },
+  { id: 'rosa', nome: 'Rosa Neon', paint: g => { g.fillStyle = '#ff2f92'; g.fillRect(0, 0, BALL_W, BALL_H); bWaves(g, ['#1b1f2a', '#ffffff'], 3, 30, 10, 2, 1); g.fillStyle = '#ffffff'; bShape(g, DODE, 6, 3, 0); } },
+  { id: 'rubro', nome: 'Rubro', paint: g => { g.fillStyle = '#c8102e'; g.fillRect(0, 0, BALL_W, BALL_H); g.fillStyle = '#ffffff'; bShape(g, ICO, 22, 3, -Math.PI / 2); g.fillStyle = '#ffd400'; bShape(g, DODE, 5, 4, 0); } },
+  { id: 'tricolor', nome: 'Tricolor', paint: g => { g.fillStyle = '#f6f7fa'; g.fillRect(0, 0, BALL_W, BALL_H); bWaves(g, ['#0a3a8c', '#c8102e', '#0a3a8c', '#c8102e'], 4, 18, 13, 3); } },
+  { id: 'arcoiris', nome: 'Arco-íris', paint: g => { g.fillStyle = '#f6f7fa'; g.fillRect(0, 0, BALL_W, BALL_H); bWaves(g, ['#e53935', '#fb8c00', '#fdd835', '#43a047', '#1e88e5', '#8e24aa'], 6, 16, 9, 2); } },
+  { id: 'couro', nome: 'Couro Retrô', paint: g => { g.fillStyle = '#8a4b22'; g.fillRect(0, 0, BALL_W, BALL_H); for (let i = 0; i < 1800; i++) { g.fillStyle = Math.random() < 0.5 ? 'rgba(0,0,0,.12)' : 'rgba(255,220,180,.1)'; g.fillRect(Math.random() * BALL_W, Math.random() * BALL_H, 2, 2); } bSeams(g, '#3b1d0b', 3); } },
+  { id: 'royal', nome: 'Azul Royal', paint: g => { g.fillStyle = '#ffffff'; g.fillRect(0, 0, BALL_W, BALL_H); g.fillStyle = '#1d3fbf'; g.fillRect(0, BALL_H * 0.35, BALL_W, BALL_H * 0.3); bWaves(g, ['#0b1f66'], 2, 24, 8, 3); g.fillStyle = '#ffd400'; bShape(g, ICO, 6, 5, 0, true); } },
+  { id: 'verdeamarela', nome: 'Verde-Amarela', paint: g => { g.fillStyle = '#f7d117'; g.fillRect(0, 0, BALL_W, BALL_H); bWaves(g, ['#0a7a33', '#0a3a8c'], 4, 24, 12, 2); g.fillStyle = '#0a7a33'; bShape(g, ICO, 10, 4, 0.78); } },
+  { id: 'celeste', nome: 'Celeste', paint: g => { g.fillStyle = '#ffffff'; g.fillRect(0, 0, BALL_W, BALL_H); for (let i = 0; i < 8; i += 2) { g.fillStyle = '#75aadb'; g.fillRect(i * BALL_W / 8, 0, BALL_W / 8, BALL_H); } g.fillStyle = '#f2b400'; bShape(g, ICO, 9, 8, 0, true); } },
+  { id: 'fogo', nome: 'Fogo', paint: g => { const gr = g.createLinearGradient(0, 0, 0, BALL_H); gr.addColorStop(0, '#ffd23f'); gr.addColorStop(0.5, '#ff5a1f'); gr.addColorStop(1, '#b0101a'); g.fillStyle = gr; g.fillRect(0, 0, BALL_W, BALL_H); bWaves(g, ['#2b0a05'], 3, 34, 7, 4); } },
+  { id: 'gelo', nome: 'Gelo', paint: g => { g.fillStyle = '#eef9ff'; g.fillRect(0, 0, BALL_W, BALL_H); g.fillStyle = '#2bb5e8'; bShape(g, ICO, 18, 3, 0); g.fillStyle = '#0b5c86'; bShape(g, DODE, 8, 3, Math.PI); } },
+  { id: 'noite', nome: 'Neon Noturna', paint: g => { g.fillStyle = '#141820'; g.fillRect(0, 0, BALL_W, BALL_H); bWaves(g, ['#39ff7a', '#00e5ff'], 4, 22, 8, 3); g.fillStyle = '#39ff7a'; bShape(g, ICO, 7, 5, 0); } },
+  { id: 'xadrez', nome: 'Xadrez', paint: g => { const n = 16, m = 8; for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) { g.fillStyle = (i + j) % 2 ? '#c8102e' : '#ffffff'; g.fillRect(i * BALL_W / n, j * BALL_H / m, BALL_W / n + 1, BALL_H / m + 1); } } },
+  { id: 'confete', nome: 'Confete', paint: g => { g.fillStyle = '#ffffff'; g.fillRect(0, 0, BALL_W, BALL_H); const c = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '#fb8c00']; for (let i = 0; i < 260; i++) { g.fillStyle = c[i % c.length]; g.beginPath(); g.arc(Math.random() * BALL_W, Math.random() * BALL_H, 3 + Math.random() * 6, 0, 7); g.fill(); } } },
+  { id: 'listrada', nome: 'Listrada', paint: g => { for (let j = 0; j < 10; j++) { g.fillStyle = j % 2 ? '#1b1f2a' : '#ffffff'; g.fillRect(0, j * BALL_H / 10, BALL_W, BALL_H / 10 + 1); } g.fillStyle = '#ff2f2f'; bShape(g, ICO, 8, 5, 0); } }
+];
+const BALL_BY_ID = {}; BALLS.forEach(b => BALL_BY_ID[b.id] = b);
+const ballTexCache = {};
+function ballCanvas(id) {
+  if (ballTexCache[id]) return ballTexCache[id];
+  const c = document.createElement('canvas'); c.width = BALL_W; c.height = BALL_H;
+  const g = c.getContext('2d'); (BALL_BY_ID[id] || BALLS[0]).paint(g);
+  return (ballTexCache[id] = c);
+}
+/* bola vista de frente (2D): projeta a textura numa esfera */
+const ballFaceCache = {};
+function ballFace(id, S) {
+  S = S || 96; const key = id + '_' + S;
+  if (ballFaceCache[key]) return ballFaceCache[key];
+  const src = ballCanvas(id).getContext('2d').getImageData(0, 0, BALL_W, BALL_H).data;
+  const c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d'), im = g.createImageData(S, S), r = S / 2 - 1;
+  for (let py = 0; py < S; py++) for (let px = 0; px < S; px++) {
+    const x = (px + 0.5 - S / 2) / r, y = (S / 2 - py - 0.5) / r, d = x * x + y * y; if (d > 1) continue;
+    const z = Math.sqrt(1 - d), lat = Math.asin(y), lon = Math.atan2(z, x) - Math.PI / 2;
+    const u = Math.floor(((lon / (2 * Math.PI) + 0.5 + 1) % 1) * BALL_W), v = Math.floor((0.5 - lat / Math.PI) * (BALL_H - 1));
+    const si = (v * BALL_W + u) * 4, o = (py * S + px) * 4, sh = 0.55 + 0.45 * (z * 0.75 + (-x * 0.3 + y * 0.35) * 0.6 + 0.25);
+    im.data[o] = Math.min(255, src[si] * sh); im.data[o + 1] = Math.min(255, src[si + 1] * sh); im.data[o + 2] = Math.min(255, src[si + 2] * sh); im.data[o + 3] = d > 0.96 ? 200 : 255;
+  }
+  g.putImageData(im, 0, 0);
+  return (ballFaceCache[key] = c);
+}
+/* bola da partida: escolhida nas configurações ou sorteada */
+function matchBallId() { return CFG.ball === 'random' || !BALL_BY_ID[CFG.ball] ? BALLS[Math.floor(Math.random() * BALLS.length)].id : CFG.ball; }
+function ballBlock() {
+  const cur = BALL_BY_ID[CFG.ball] ? CFG.ball : (CFG.ball === 'random' ? 'random' : 'classica');
+  return '<h3>Bola</h3><div class="balls">' +
+    '<button class="ballopt' + (cur === 'random' ? ' on' : '') + '" data-ball="random"><span class="rnd">?</span><small>Aleatória</small></button>' +
+    BALLS.map(b => '<button class="ballopt' + (cur === b.id ? ' on' : '') + '" data-ball="' + b.id + '"><canvas class="ballcv" data-b="' + b.id + '" width="72" height="72"></canvas><small>' + esc(b.nome) + '</small></button>').join('') + '</div>';
+}
+function drawBallPreviews(root) { (root || document).querySelectorAll('canvas.ballcv').forEach(c => { const g = c.getContext('2d'); g.clearRect(0, 0, 72, 72); g.drawImage(ballFace(c.dataset.b, 72), 0, 0); }); }
 
 /* ===== MOTOR DO JOGO: física, regras, IA e desenho ===== */
 const W = 1000, H = 640;
@@ -345,7 +438,8 @@ function clubArt(g, t, Rr, ir) {
   g.fillStyle = '#fff'; g.fillText(txt, Rr, Rr + 2);
 }
 let ballSprite = null;
-function getBallSprite() {
+function getBallSprite() { return ballFace((G && G.ballId) || 'classica', 96); }
+function getBallSpriteOld() {
   if (ballSprite) return ballSprite;
   const s = document.createElement('canvas'); s.width = s.height = 96; const g = s.getContext('2d'), c = 48;
   const gr = g.createRadialGradient(34, 30, 4, c, c, 46); gr.addColorStop(0, '#fff'); gr.addColorStop(1, '#cfd6e0');
@@ -498,7 +592,7 @@ function newMatch(cfg) {
   G.ball = mkBody('ball', W / 2, CY, -1, 0); G.bodies.push(G.ball);
   resetKickoff();
   G.turn = cfg.firstTurn != null ? cfg.firstTurn : (Math.random() < 0.5 ? 0 : 1);
-  G.state = 'intro'; G.stateT = 1.3; G.turnT = TURN_TIME; G.anim = 0; G.drag = null; G.ai = null; G.msg = null; G.moveT = 0; G.timeUp = false;
+  G.ballId = cfg.ball || matchBallId(); G.state = 'intro'; G.stateT = 1.3; G.turnT = TURN_TIME; G.anim = 0; G.drag = null; G.ai = null; G.msg = null; G.moveT = 0; G.timeUp = false;
   Sound.whistle();
 }
 function isHuman(t) { return G.cfg.humans[t]; }
@@ -1086,7 +1180,9 @@ function init3D(THREE) {
     });
     return canvasTex(c);
   })();
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 32, 20), new THREE.MeshStandardMaterial({ map: ballTex, roughness: 0.35 }));
+  const ballMat = new THREE.MeshStandardMaterial({ map: ballTex, roughness: 0.35 });
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 32, 20), ballMat);
+  const ballMaps = {};
   ball.castShadow = true; scene.add(ball);
   let prevBall = null;
 
@@ -1108,6 +1204,7 @@ function init3D(THREE) {
     }
     flagMats.forEach((m, i) => { const c = TEAM_RING[i % 2]; m.color.set(c); m.emissive.set(c); });
     paintCrowd(G.cfg.teams); prevBall = null; V3.texDirty = false;
+    const bid = G.ballId || 'classica'; ballMat.map = ballMaps[bid] || (ballMaps[bid] = canvasTex(ballCanvas(bid))); ballMat.needsUpdate = true;
     V3.camCur = null;
   }
   function refreshTextures() {
@@ -1246,7 +1343,7 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const pick = (a, n) => shuffle(a).slice(0, n);
 
 /* ---------- Configurações salvas ---------- */
-const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true, form: '2-2', customForm: null };
+const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true, form: '2-2', customForm: null, ball: 'classica' };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('tampinhas_cfg') || '{}')); } catch (e) {}
 delete CFG.form2; delete CFG.customForm2;
 if (CFG.form !== 'custom' && !FORMS[CFG.form]) CFG.form = '2-2';
@@ -1323,6 +1420,7 @@ function initMenu() {
     Sound.init();
     const g = b.dataset.go;
     if (g === 'friendly' || g === 'cup' || g === 'league') startSetup(g);
+    else if (g === 'wc' || g === 'ucl' || g === 'lib') startCup(g);
     else if (g === 'config') { renderConfig(); show('sConfig'); }
     else if (g === 'resume') resumeTour();
     else if (g === 'auth') { window._authDraw && window._authDraw(); show('sAuth'); }
@@ -1341,8 +1439,10 @@ function renderConfig() {
   $('cfgBody').innerHTML =
     '<h3>Duração da partida</h3>' + seg('duration', [[60, '1:00'], [90, '1:30'], [120, '2:00'], [180, '3:00']]) +
     '<h3>Dificuldade do computador</h3>' + seg('level', LEVELS) +
-    '<h3>Som</h3>' + seg('sound', [[true, 'Ligado'], [false, 'Desligado']]);
+    '<h3>Som</h3>' + seg('sound', [[true, 'Ligado'], [false, 'Desligado']]) + ballBlock();
+  drawBallPreviews($('cfgBody'));
   $('cfgBody').onclick = e => {
+    const bb = e.target.closest('button[data-ball]'); if (bb) { CFG.ball = bb.dataset.ball; saveCfg(); renderConfig(); return; }
     const b = e.target.closest('button[data-k]'); if (!b) return;
     const k = b.dataset.k, v = b.dataset.v;
     CFG[k] = (k === 'sound') ? v === 'true' : Number(v); if (k === 'sound') { Sound.setOn(CFG.sound); if (CFG.sound && current !== 'sMatch') Sound.startMusic(); $('btnSound').textContent = Sound.on ? '🔊' : '🔇'; }
@@ -1353,13 +1453,25 @@ function renderConfig() {
 /* ---------- Escolha de times ---------- */
 const SETUP = { mode: 'friendly', step: 1, vs: 'cpu', tab: 'nat', lg: 'ALL', q: '', first: null, comp: null, dbl: false, size: 8 };
 function startSetup(mode) { Object.assign(SETUP, { mode, step: 1, vs: 'cpu', tab: 'nat', lg: 'ALL', q: '', first: null, comp: null, dbl: false, size: 8 }); renderSetup(); show('sSetup'); }
+/* copas grandes: Copa do Mundo, Champions League e Libertadores (32 times, 8 grupos, oitavas) */
+const CUP_QUOTA = { ucl: { ENG: 6, ESP: 5, ITA: 5, GER: 5, FRA: 3, POR: 3, NED: 2, TUR: 1, BEL: 1, SCO: 1 }, lib: { BRA: 9, ARG: 8, COL: 6, URU: 5, CHI: 4 } };
+function cupComp(k) {
+  if (k === 'wc') return { id: 'wc', cup: true, ng: 8, name: 'Copa do Mundo', desc: '32 seleções em 8 grupos; os 2 primeiros vão às oitavas de final.', teams: NATIONS.slice() };
+  const q = CUP_QUOTA[k], teams = [];
+  for (const lg in q) teams.push(...CLUBS.filter(c => c.lg === lg).sort((a, b) => b.rating - a.rating).slice(0, q[lg]));
+  return { id: k, cup: true, ng: 8, name: k === 'ucl' ? 'Champions League' : 'Libertadores',
+    desc: k === 'ucl' ? '32 clubes europeus em 8 grupos; os 2 primeiros vão às oitavas de final.' : '32 clubes sul-americanos em 8 grupos; os 2 primeiros vão às oitavas de final.',
+    teams, pool: CLUBS.filter(c => q[c.lg] != null) };
+}
+function startCup(k) { startSetup('cup'); SETUP.comp = cupComp(k); SETUP.tab = 'club'; renderSetup(); }
+const koStages = T => T.koStages || ['qf', 'sf', 'final'];
 /* competições de pontos corridos */
 function compList() {
   const eur = CLUBS.filter(c => ['ENG', 'ESP', 'ITA', 'GER', 'FRA', 'POR'].includes(c.lg)).sort((a, b) => b.rating - a.rating).slice(0, 20);
   const list = [{ id: 'free', name: 'Pontos corridos livre', desc: 'Você escolhe o time e o tamanho do campeonato', free: true }];
   list.push({ id: 'BRA', name: 'Campeonato Brasileiro', desc: '20 clubes brasileiros', teams: CLUBS.filter(c => c.lg === 'BRA') });
   list.push({ id: 'EUR', name: 'Campeonato Europeu', desc: 'Os 20 melhores clubes da Europa', teams: eur });
-  ['ENG', 'ESP', 'ITA', 'GER', 'FRA', 'POR', 'ARG'].forEach(k => list.push({ id: k, name: LEAGUE_NAMES[k], desc: CLUBS.filter(c => c.lg === k).length + ' clubes', teams: CLUBS.filter(c => c.lg === k) }));
+  Object.keys(LEAGUE_NAMES).filter(k => k !== 'BRA').forEach(k => list.push({ id: k, name: LEAGUE_NAMES[k], desc: LEAGUE_COUNTRY[k] + ' · ' + CLUBS.filter(c => c.lg === k).length + ' clubes', teams: CLUBS.filter(c => c.lg === k) }));
   return list;
 }
 const levelSeg = () => '<h3>Nível do computador</h3><div class="seg">' + LEVELS.map(([v, l]) => '<button data-level="' + v + '" class="' + (CFG.level === v ? 'on' : '') + '">' + l + '</button>').join('') + '</div>';
@@ -1424,39 +1536,40 @@ function renderSetup() {
   if (S.mode === 'league' && !S.comp) {
     let h = '<h2>Campeonato</h2><p class="sub">Pontos corridos: todos contra todos. Os outros jogos são simulados pelo computador e os resultados aparecem a cada rodada.</p>';
     h += '<div class="seg"><button data-dbl="0" class="' + (!S.dbl ? 'on' : '') + '">Turno único</button><button data-dbl="1" class="' + (S.dbl ? 'on' : '') + '">Ida e volta</button></div>';
-    h += levelSeg() + formBlock(1);
+    h += levelSeg() + formBlock(1) + ballBlock();
     h += '<h3>Escolha o campeonato</h3><div class="comps">' + compList().map(c => '<button class="comp" data-comp="' + c.id + '"><b>' + esc(c.name) + '</b><small>' + esc(c.desc) + '</small></button>').join('') + '</div><button class="btn ghost" data-back="1">Voltar</button>';
-    $('setupBody').innerHTML = h; drawFormCanvases(); return;
+    $('setupBody').innerHTML = h; drawFormCanvases(); drawBallPreviews($('setupBody')); return;
   }
   const comp = S.comp && !S.comp.free ? S.comp : null;
-  const titles = { friendly: S.step === 1 ? 'Escolha seu time' : (S.vs === 'two' ? 'Time do Jogador 2' : 'Escolha o adversário'), cup: 'Copa: escolha seu time', league: (S.comp ? S.comp.name : 'Campeonato') + ': escolha seu time' };
+  const titles = { friendly: S.step === 1 ? 'Escolha seu time' : (S.vs === 'two' ? 'Time do Jogador 2' : 'Escolha o adversário'), cup: (S.comp ? S.comp.name : 'Copa') + ': escolha seu time', league: (S.comp ? S.comp.name : 'Campeonato') + ': escolha seu time' };
   let h = '<h2>' + titles[S.mode] + '</h2>';
   if (S.mode === 'friendly' && S.step === 1) h += '<div class="seg"><button data-vs="cpu" class="' + (S.vs === 'cpu' ? 'on' : '') + '">Contra o computador</button><button data-vs="two" class="' + (S.vs === 'two' ? 'on' : '') + '">2 jogadores</button></div>';
   if (S.mode === 'friendly' && S.step === 1 && S.vs === 'cpu') h += levelSeg();
-  if (S.mode === 'friendly' && S.step === 1) h += formBlock(1);
-  if (S.mode === 'cup') h += '<p class="sub">16 times, fase de grupos e mata-mata. Você joga as partidas do seu time.</p>' + levelSeg() + formBlock(1);
+  if (S.mode === 'friendly' && S.step === 1) h += formBlock(1) + ballBlock();
+  if (S.mode === 'cup') h += '<p class="sub">' + (S.comp ? esc(S.comp.desc) : '16 times, fase de grupos e mata-mata.') + ' Você joga as partidas do seu time.</p>' + levelSeg() + formBlock(1) + ballBlock();
   if (S.mode === 'league') {
     if (comp) h += '<p class="sub">' + comp.teams.length + ' times, ' + (S.dbl ? 'ida e volta' : 'turno único') + '. Quem somar mais pontos é o campeão.</p>';
     else h += '<p class="sub">Escolha seu time e o tamanho do campeonato. Os rivais são sorteados.</p><div class="seg">' + [4, 8, 12, 16, 20].map(n => '<button data-size="' + n + '" class="' + (S.size === n ? 'on' : '') + '">' + n + ' times</button>').join('') + '</div>';
   }
   if (!comp) {
     h += '<div class="seg"><button data-tab="nat" class="' + (S.tab === 'nat' ? 'on' : '') + '">Seleções</button><button data-tab="club" class="' + (S.tab === 'club' ? 'on' : '') + '">Clubes</button><button data-tab="mine" class="' + (S.tab === 'mine' ? 'on' : '') + '">Meus times</button></div>';
-    if (S.tab === 'club') h += '<div class="chips"><button data-lg="ALL" class="' + (S.lg === 'ALL' ? 'on' : '') + '">Todos</button>' + Object.keys(LEAGUE_NAMES).map(k => '<button data-lg="' + k + '" class="' + (S.lg === k ? 'on' : '') + '">' + LEAGUE_NAMES[k] + '</button>').join('') + '</div>';
+    if (S.tab === 'club') h += '<select id="selLg" class="search" aria-label="Liga"><option value="ALL">Todas as ligas (' + CLUBS.length + ' clubes)</option>' + Object.keys(LEAGUE_NAMES).map(k => '<option value="' + k + '"' + (S.lg === k ? ' selected' : '') + '>' + esc(LEAGUE_NAMES[k] + ' · ' + LEAGUE_COUNTRY[k]) + '</option>').join('') + '</select>';
   } else if (USER_TEAMS.length) h += '<p class="sub">Dica: seu time personalizado entra no lugar do mais fraco do campeonato (aba abaixo).</p><div class="seg"><button data-tab="club" class="' + (S.tab !== 'mine' ? 'on' : '') + '">' + esc(comp.name) + '</button><button data-tab="mine" class="' + (S.tab === 'mine' ? 'on' : '') + '">Meus times</button></div>';
   h += '<input id="inSearch" class="search" type="search" placeholder="Buscar time" value="' + esc(S.q) + '" autocomplete="off">';
   if (S.mode === 'friendly' && S.step === 2) h += '<button class="btn ghost" data-random="1">Escolher aleatório</button>';
   h += '<div id="grid" class="grid"></div><button class="btn ghost" data-back="1">Voltar</button>';
   $('setupBody').innerHTML = h;
-  drawFormCanvases();
+  drawFormCanvases(); drawBallPreviews($('setupBody'));
   fillGrid();
+  const sl = $('selLg'); if (sl) sl.addEventListener('change', e => { S.lg = e.target.value; fillGrid(); });
   const si = $('inSearch'); si.addEventListener('input', e => { S.q = e.target.value; fillGrid(); });
 }
 function teamList() {
   const S = SETUP, q = norm(SETUP.q.trim());
-  const comp = S.mode === 'league' && S.comp && !S.comp.free ? S.comp : null;
+  const comp = (S.mode === 'league' || S.mode === 'cup') && S.comp && !S.comp.free ? S.comp : null;
   let list;
   if (S.tab === 'mine') list = USER_TEAMS.slice();
-  else if (comp) list = comp.teams.slice().sort((a, b) => b.rating - a.rating);
+  else if (comp) list = (comp.pool || comp.teams).slice().sort((a, b) => b.rating - a.rating);
   else list = S.tab === 'nat' ? NATIONS.slice().sort((a, b) => b.rating - a.rating) : CLUBS.filter(c => S.lg === 'ALL' || c.lg === S.lg).sort((a, b) => b.rating - a.rating);
   if (q) list = list.filter(t => norm(t.name).includes(q) || norm(t.short).includes(q));
   return list;
@@ -1472,6 +1585,7 @@ function initSetup() {
     Sound.init();
     if (t.dataset.go === 'team') { TEAMED.cur = null; renderTeam(); show('sTeam'); }
     else if (t.dataset.level) { CFG.level = Number(t.dataset.level); saveCfg(); renderSetup(); }
+    else if (t.dataset.ball) { CFG.ball = t.dataset.ball; saveCfg(); renderSetup(); }
     else if (t.dataset.form) {
       const slot = Number(t.dataset.slot), f = t.dataset.form; CFG[formKey(slot)] = f;
       if (f === 'custom' && !CFG[customKey(slot)]) CFG[customKey(slot)] = FORMS['2-2'].p.map(q => q.slice());
@@ -1617,12 +1731,23 @@ function startTournament(type, user, comp, dbl, size) {
     if (dbl) rounds = rounds.concat(rounds.map(r => r.map(f => ({ a: f.b, b: f.a, done: false }))));
     TOUR = { type, user, teams, rounds, round: 0, cur: rounds[0], phase: 'ready', history: [], title, comp, dbl, size, zones: teams.length >= 16 };
   } else {
-    const strong = pool.slice().sort((a, b) => b.rating - a.rating).slice(0, 26);
-    const teams = [user, ...pick(strong, 15)].sort((a, b) => b.rating - a.rating);
-    const pots = [0, 1, 2, 3].map(p => shuffle(teams.slice(p * 4, p * 4 + 4)));
-    const groups = [0, 1, 2, 3].map(g => pots.map(pot => pot[g]));
+    const cc = comp && comp.cup ? comp : null, NG = cc ? cc.ng : 4, N = NG * 4;
+    let teams;
+    if (cc && cc.id === 'wc') { const strong = cc.teams.filter(t => t.id !== user.id).sort((a, b) => b.rating - a.rating).slice(0, 44); teams = [user, ...pick(strong, N - 1)]; }
+    else if (cc) { const base = cc.teams.filter(t => t.id !== user.id).sort((a, b) => b.rating - a.rating).slice(0, N - 1); teams = [user, ...base]; }
+    else { const strong = pool.slice().sort((a, b) => b.rating - a.rating).slice(0, 26); teams = [user, ...pick(strong, 15)]; }
+    teams.sort((a, b) => b.rating - a.rating);
+    // sorteio por potes; tenta evitar dois clubes da mesma liga no mesmo grupo
+    let groups = null, bestBad = 1e9;
+    for (let tr = 0; tr < 80 && bestBad > 0; tr++) {
+      const pots = [0, 1, 2, 3].map(p => shuffle(teams.slice(p * NG, p * NG + NG)));
+      const gs = Array.from({ length: NG }, (_, g) => pots.map(pot => pot[g]));
+      const bad = gs.reduce((s, g) => s + g.reduce((c, t, i) => c + g.slice(i + 1).filter(u => t.lg && u.lg === t.lg).length, 0), 0);
+      if (bad < bestBad) { bestBad = bad; groups = gs; }
+    }
     const grounds = groups.map(g => roundRobin(shuffle(g)));
-    TOUR = { type, user, teams, groups, grounds, stage: 'group', round: 0, phase: 'ready', ko: { qf: [], sf: [], final: [] }, title: user.kind === 'club' ? 'Copa dos Clubes' : 'Copa do Mundo' };
+    const stages = NG === 8 ? ['r16', 'qf', 'sf', 'final'] : ['qf', 'sf', 'final'];
+    TOUR = { type, user, teams, groups, grounds, stage: 'group', round: 0, phase: 'ready', koStages: stages, ko: { r16: [], qf: [], sf: [], final: [] }, title: cc ? cc.name : (user.kind === 'club' ? 'Copa dos Clubes' : 'Copa das Seleções') };
     TOUR.cur = [].concat(...grounds.map((r, gi) => r[0].map(f => Object.assign(f, { g: gi }))));
   }
   TOUR.userOut = false; TOUR.champion = null;
@@ -1663,14 +1788,16 @@ function advance() {
     const q = T.groups.map((_, gi) => groupTable(gi).slice(0, 2).map(r => r.t));
     T.qualified = q;
     T.userOut = !q.some(g => g.includes(T.user));
-    T.stage = 'qf';
-    T.cur = [{ a: q[0][0], b: q[1][1] }, { a: q[2][0], b: q[3][1] }, { a: q[1][0], b: q[0][1] }, { a: q[3][0], b: q[2][1] }].map(f => Object.assign(f, { done: false }));
+    T.stage = koStages(T)[0];
+    const pairs = [];
+    for (let i = 0; i < q.length; i += 2) pairs.push([i, i + 1]);
+    T.cur = pairs.map(([x, y]) => ({ a: q[x][0], b: q[y][1] })).concat(pairs.map(([x, y]) => ({ a: q[y][0], b: q[x][1] }))).map(f => Object.assign(f, { done: false }));
     T.phase = 'ready'; return;
   }
-  const w = T.cur.map(f => f.w);
-  if (T.stage === 'qf') { T.stage = 'sf'; T.cur = [{ a: w[0], b: w[1], done: false }, { a: w[2], b: w[3], done: false }]; }
-  else if (T.stage === 'sf') { T.stage = 'final'; T.cur = [{ a: w[0], b: w[1], done: false }]; }
-  else { T.stage = 'done'; T.champion = w[0]; T.phase = 'finished'; return; }
+  const w = T.cur.map(f => f.w), st = koStages(T), si = st.indexOf(T.stage);
+  if (si >= st.length - 1) { T.stage = 'done'; T.champion = w[0]; T.phase = 'finished'; return; }
+  T.stage = st[si + 1]; T.cur = [];
+  for (let i = 0; i < w.length; i += 2) T.cur.push({ a: w[i], b: w[i + 1], done: false });
   T.phase = 'ready';
 }
 function simulateAll() { let guard = 0; while (TOUR.phase !== 'finished' && guard++ < 40) { if (TOUR.phase === 'ready') finishRound(); advance(); } }
@@ -1715,7 +1842,7 @@ function refreshResume() {
   b.textContent = 'Continuar: ' + T.title + ' (' + T.user.name + ', ' + st + ')'; b.classList.remove('hidden');
 }
 function resumeTour() { const T = readSave(); if (!T) { refreshResume(); return; } TOUR = T; renderTour(); show('sTour'); }
-const STAGE_NAME = { group: 'Fase de grupos', qf: 'Quartas de final', sf: 'Semifinais', final: 'Final' };
+const STAGE_NAME = { group: 'Fase de grupos', r16: 'Oitavas de final', qf: 'Quartas de final', sf: 'Semifinais', final: 'Final' };
 function renderTour() {
   const T = TOUR; let h = '';
   const uid = T.user.id;
@@ -1732,12 +1859,12 @@ function renderTour() {
     h += '<p class="sub">' + (T.stage === 'done' ? 'Fim da Copa' : STAGE_NAME[T.stage] + (T.stage === 'group' ? ' • Rodada ' + (T.round + 1) + ' de 3' : '')) + '</p>';
     if (T.stage === 'group') {
       const gi = T.groups.findIndex(g => g.includes(T.user));
-      h += '<h3>Seu grupo (' + 'ABCD'[gi] + ')</h3>' + tableHTML(groupTable(gi), uid, 2);
+      h += '<h3>Seu grupo (' + 'ABCDEFGH'[gi] + ')</h3>' + tableHTML(groupTable(gi), uid, 2);
       h += '<h3>Jogos da rodada</h3>' + T.cur.filter(f => f.g === gi).map(f => fxRow(f, uid)).join('');
-      h += '<details><summary>Outros grupos</summary>' + T.groups.map((_, g) => g === gi ? '' : '<h4>Grupo ' + 'ABCD'[g] + '</h4>' + tableHTML(groupTable(g), uid, 2) + T.cur.filter(f => f.g === g).map(f => fxRow(f, uid)).join('')).join('') + '</details>';
+      h += '<details><summary>Outros grupos</summary>' + T.groups.map((_, g) => g === gi ? '' : '<h4>Grupo ' + 'ABCDEFGH'[g] + '</h4>' + tableHTML(groupTable(g), uid, 2) + T.cur.filter(f => f.g === g).map(f => fxRow(f, uid)).join('')).join('') + '</details>';
     } else {
-      ['qf', 'sf', 'final'].forEach(st => {
-        const list = st === T.stage && T.stage !== 'done' ? T.cur : T.ko[st];
+      koStages(T).forEach(st => {
+        const list = st === T.stage && T.stage !== 'done' ? T.cur : (T.ko || {})[st];
         if (list && list.length) h += '<h3>' + STAGE_NAME[st] + '</h3>' + list.map(f => fxRow(f, uid)).join('');
       });
     }
