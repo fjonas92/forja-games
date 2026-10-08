@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1016">
+<title>Xadrez 3D | Falzinho Games</title>
+<meta name="description" content="Xadrez 3D no navegador: jogue contra o computador em três níveis ou com duas pessoas no mesmo dispositivo. Tabuleiro em 3D que gira, histórico de lances e PGN.">
+<link rel="canonical" href="https://falzinhogames.com.br/xadrez/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Figtree:wght@400;500;600;700;800&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<style>
+:root{--bg:#0d1016;--surface:#161b25;--surface2:#1d2431;--line:#2a3344;--fg:#eef1f7;--muted:#9aa5ba;--gold:#e9b45a;--gold-ink:#1a1206;--green:#39d98a;--red:#ff5a5a;--gutter:16px;
+--font-display:'Cinzel',Georgia,serif;--font-body:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:radial-gradient(900px 500px at 30% -10%,rgba(233,180,90,.12),transparent 70%),var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.5;padding-inline:var(--gutter);-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:8px}
+h1,h2,h3{margin:0}
+.bar{max-width:1240px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px}
+.bar .back{text-decoration:none;color:var(--muted);font-weight:600;font-size:14px}
+.bar .back:hover{color:var(--fg)}
+.bar .logo{font-family:var(--font-display);font-weight:900;font-size:19px;letter-spacing:2px;color:var(--gold);white-space:nowrap}
+.iconbtn{background:var(--surface);border:1px solid var(--line);color:var(--fg);width:42px;height:42px;border-radius:12px;font-size:18px;cursor:pointer;display:grid;place-items:center}
+.iconbtn:hover{border-color:var(--gold)}
+main{max-width:1240px;margin-inline:auto;padding-bottom:30px}
+.game{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+.stage{position:relative;width:100%;height:min(78vh,780px);min-height:420px;border-radius:18px;overflow:hidden;background:#0d1016;border:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.45);touch-action:none;user-select:none;-webkit-user-select:none}
+.stage canvas{display:block;width:100%;height:100%;outline:none}
+.stage:fullscreen{border-radius:0;height:100vh;border:0}
+.hud{position:absolute;left:12px;display:flex;align-items:center;gap:10px;background:rgba(13,16,22,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:12px;padding:7px 12px 7px 8px;pointer-events:none;max-width:calc(100% - 150px)}
+.hud.top{top:12px}.hud.bottom{bottom:12px}
+.hud .av{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:20px;line-height:1}
+.hud.top .av{background:#26222a;color:#f3ead7}.hud.bottom .av{background:#f3ead7;color:#1d1a1f}
+.hud strong{display:block;font-size:14px;line-height:1.1}
+.hud span.sub{display:block;font-size:12px;color:var(--muted)}
+.hud .caps{font-size:15px;letter-spacing:-1px;color:var(--muted);margin-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud .dot{width:10px;height:10px;border-radius:50%;background:transparent;border:2px solid var(--line);flex:none}
+.hud.turn{border-color:var(--gold)}
+.hud.turn .dot{background:var(--gold);border-color:var(--gold);box-shadow:0 0 10px var(--gold)}
+.tools{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:8px}
+.tools .iconbtn{background:rgba(13,16,22,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.banner{position:absolute;left:50%;top:18%;transform:translate(-50%,-10px);background:rgba(13,16,22,.85);border:1px solid var(--gold);color:var(--fg);font-family:var(--font-display);font-weight:900;letter-spacing:2px;font-size:clamp(20px,4vw,32px);padding:10px 26px;border-radius:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
+.banner.show{opacity:1;transform:translate(-50%,0)}
+.banner.red{border-color:var(--red);color:#ffd6d6}
+.loading{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted);font-weight:600;background:#0d1016}
+.thinking{position:absolute;right:12px;bottom:12px;background:rgba(13,16,22,.8);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.thinking i{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.hint{color:var(--muted);font-size:14px;margin:10px 4px 0;min-height:21px}
+.panel{display:grid;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card h2{font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:1.5px;color:var(--gold);margin-bottom:12px;display:flex;gap:8px;align-items:center}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0 6px}
+label:first-of-type{margin-top:0}
+select,input[type=text]{width:100%;font:inherit;font-size:15px;background:var(--surface2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px}
+select:disabled{opacity:.45}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin-top:10px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--gold)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:700 15px var(--font-body);border-radius:10px;padding:11px 14px;min-height:44px;cursor:pointer;border:1px solid var(--line);background:var(--surface2);color:var(--fg);text-decoration:none}
+.btn:hover:not(:disabled){border-color:var(--gold)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:linear-gradient(180deg,#f2c46e,#c98f33);color:var(--gold-ink);border:0;width:100%;margin-top:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.btn.primary:hover{filter:brightness(1.07)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.pill{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-weight:700;text-align:center}
+.pill.alert{border-color:var(--red);color:#ffd6d6}
+.pill.done{border-color:var(--gold);color:var(--gold)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;text-align:center}
+.stats div{background:var(--surface2);border-radius:10px;padding:8px 4px}
+.stats span{display:block;font-size:12px;color:var(--muted)}
+.stats strong{font-size:20px}
+.textbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;margin-top:10px;padding:4px 0}
+.moves{max-height:220px;overflow:auto;background:var(--surface2);border-radius:10px;padding:6px;font-variant-numeric:tabular-nums;font-size:14px}
+.mv{display:grid;grid-template-columns:34px 1fr 1fr;gap:4px;padding:3px 6px;border-radius:6px}
+.mv:nth-child(odd){background:rgba(255,255,255,.03)}
+.mv .n{color:var(--muted)}
+.mv .last{color:var(--gold);font-weight:800}
+.empty{color:var(--muted);margin:6px;font-size:14px}
+.typed{display:flex;gap:8px;margin-top:10px}
+.typed input{flex:1;min-width:0}
+.about{max-width:820px;margin-top:34px}
+.about h2{font-family:var(--font-display);font-size:24px;margin:26px 0 8px}
+.about p,.about li{color:var(--muted)}
+.about strong{color:var(--fg)}
+footer{max-width:1240px;margin-inline:auto;border-top:1px solid var(--line);margin-top:30px;padding-block:24px 34px;display:flex;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+footer nav{display:flex;gap:18px;flex-wrap:wrap}
+footer a{text-decoration:none}
+footer a:hover{color:var(--fg)}
+dialog{background:var(--surface);color:var(--fg);border:1px solid var(--gold);border-radius:18px;padding:22px;max-width:min(420px,calc(100vw - 32px));text-align:center}
+dialog::backdrop{background:rgba(5,7,10,.7);backdrop-filter:blur(3px)}
+dialog h2{font-family:var(--font-display);font-size:24px;color:var(--gold);margin-bottom:6px}
+dialog p{color:var(--muted);margin:0 0 16px}
+.promo{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.promo button{font-size:42px;line-height:1;padding:12px 0;border-radius:12px;border:1px solid var(--line);background:var(--surface2);color:var(--fg);cursor:pointer}
+.promo button:hover{border-color:var(--gold)}
+.over-actions{display:grid;gap:8px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--surface);border:1px solid var(--line);padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:60;font-weight:600;font-size:14px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:960px){
+  .game{grid-template-columns:1fr}
+  .stage{height:auto;aspect-ratio:1/1.08;min-height:0;max-height:82vh;border-radius:14px}
+  .panel{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+}
+@media (max-width:520px){
+  body{padding-inline:0}
+  .bar,.hint,.panel,.about,footer{padding-inline:var(--gutter)}
+  .stage{border-radius:0;border-inline:0}
+  .hud{padding:5px 10px 5px 6px;gap:8px}
+  .hud .av{width:26px;height:26px;font-size:17px}
+  .bar .logo{font-size:16px;letter-spacing:1px}
+  .tools .iconbtn{width:38px;height:38px;font-size:16px}
+}
+</style>
+</head>
+<body>
+<div id="redes" style="margin-inline:calc(var(--gutter) * -1);padding:10px var(--gutter);background:#FF8A3D;color:#1A1209;font-size:14px;font-weight:600;text-align:center;display:flex;gap:6px 16px;justify-content:center;align-items:center;flex-wrap:wrap"><span>Siga a gente nas redes: dicas, novidades e feedbacks</span><a href="https://www.instagram.com/falzingames" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Instagram</a><a href="https://x.com/falzinhogames" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">X (Twitter)</a></div>
+<header class="bar"><a class="back" href="/">&larr; Falzinho Games</a><span class="logo">&#9822; XADREZ 3D</span><button class="iconbtn" id="btnSound" aria-label="Desligar som" title="Som">&#128266;</button></header>
+<main>
+<section class="game" aria-label="Jogo de xadrez">
+  <div>
+    <div class="stage" id="stage">
+      <div class="hud top" id="hudTop"><span class="dot"></span><div class="av">&#9818;</div><div><strong id="topName">Computador</strong><span class="sub">Pretas</span></div><span class="caps" id="capsTop"></span></div>
+      <div class="hud bottom" id="hudBottom"><span class="dot"></span><div class="av">&#9812;</div><div><strong id="bottomName">Você</strong><span class="sub">Brancas</span></div><span class="caps" id="capsBottom"></span></div>
+      <div class="tools">
+        <button class="iconbtn" id="btnFlip" title="Girar tabuleiro" aria-label="Girar tabuleiro">&#8645;</button>
+        <button class="iconbtn" id="btnCam" title="Centralizar câmera" aria-label="Centralizar câmera">&#8982;</button>
+        <button class="iconbtn" id="btnFull" title="Tela cheia" aria-label="Tela cheia">&#9974;</button>
+      </div>
+      <div class="banner" id="banner"></div>
+      <div class="thinking" id="thinking" hidden><i></i>Computador pensando…</div>
+      <div class="loading" id="loading">Montando o tabuleiro 3D…</div>
+    </div>
+    <p class="hint" id="hint">Toque numa peça para ver os lances. Arraste para girar a câmera, use dois dedos ou a roda do mouse para zoom.</p>
+  </div>
+
+  <aside class="panel">
+    <div class="card">
+      <h2>&#9820; Nova partida</h2>
+      <label for="mode">Modo de jogo</label>
+      <select id="mode">
+        <option value="computer">Contra o computador</option>
+        <option value="local">Dois jogadores neste dispositivo</option>
+      </select>
+      <div id="cpuOpts">
+        <label for="difficulty">Dificuldade</label>
+        <select id="difficulty">
+          <option value="easy">Fácil</option>
+          <option value="medium" selected>Médio</option>
+          <option value="hard">Difícil</option>
+        </select>
+        <label for="color">Jogar com</label>
+        <select id="color">
+          <option value="w">Brancas</option>
+          <option value="b">Pretas</option>
+          <option value="r">Sortear</option>
+        </select>
+      </div>
+      <label class="check" id="autoRotWrap" hidden><input type="checkbox" id="autoRot" checked> Girar a câmera a cada jogada</label>
+      <button class="btn primary" id="btnNew">&#65291; Nova partida</button>
+    </div>
+
+    <div class="card">
+      <h2>&#9673; Situação</h2>
+      <div class="pill" id="status">Sua vez de jogar</div>
+      <div class="stats">
+        <div><span>Vitórias</span><strong id="wins">0</strong></div>
+        <div><span>Derrotas</span><strong id="losses">0</strong></div>
+        <div><span>Empates</span><strong id="draws">0</strong></div>
+      </div>
+      <div class="row">
+        <button class="btn" id="btnUndo">&#8630; Desfazer</button>
+        <button class="btn" id="btnResign">&#9873; Desistir</button>
+      </div>
+      <button class="textbtn" id="btnResetStats">Zerar estatísticas</button>
+    </div>
+
+    <div class="card">
+      <h2>&#9783; Lances</h2>
+      <div class="moves" id="moves"><p class="empty">Os lances aparecem aqui.</p></div>
+      <form class="typed" id="typedForm" autocomplete="off">
+        <input type="text" id="typed" placeholder="Digitar lance (ex.: e2e4)" aria-label="Digitar lance">
+        <button class="btn" type="submit">Jogar</button>
+      </form>
+      <div class="row">
+        <button class="btn" id="btnCopy">Copiar PGN</button>
+        <button class="btn" id="btnDownload">Baixar PGN</button>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<section class="about">
+  <h2>Como jogar</h2>
+  <p>Toque ou clique numa peça sua: os pontos verdes mostram as casas para onde ela pode ir, e os anéis mostram capturas. Depois toque na casa de destino. Arraste o tabuleiro para girar a câmera e use a roda do mouse ou dois dedos para aproximar.</p>
+  <ul>
+    <li><strong>Contra o computador:</strong> três níveis. O Fácil erra de propósito, o Médio pensa dois lances à frente e o Difícil calcula mais fundo.</li>
+    <li><strong>Dois jogadores:</strong> joguem no mesmo aparelho. A câmera gira sozinha para o lado de quem joga (dá para desligar).</li>
+    <li><strong>Regras completas:</strong> roque, en passant, promoção, xeque-mate, afogamento, repetição e material insuficiente.</li>
+    <li><strong>PGN:</strong> copie ou baixe a partida para analisar em outros programas de xadrez.</li>
+  </ul>
+  <p>Suas vitórias, derrotas e empates contra o computador ficam salvos neste navegador.</p>
+</section>
+</main>
+<footer>
+  <span>&copy; <span id="ano"></span> Falzinho Games. Todos os direitos reservados.</span>
+  <nav aria-label="Rodapé"><a href="/privacidade.html">Política de Privacidade e Cookies</a><a href="/sobre.html">Sobre</a><a href="/contato.html">Contato</a></nav>
+</footer>
+
+<dialog id="promoDlg">
+  <h2>Promover peão</h2>
+  <p>Escolha a nova peça:</p>
+  <div class="promo">
+    <button type="button" data-p="q" aria-label="Dama">&#9813;</button>
+    <button type="button" data-p="r" aria-label="Torre">&#9814;</button>
+    <button type="button" data-p="b" aria-label="Bispo">&#9815;</button>
+    <button type="button" data-p="n" aria-label="Cavalo">&#9816;</button>
+  </div>
+</dialog>
+<dialog id="overDlg">
+  <h2 id="overTitle">Xeque-mate!</h2>
+  <p id="overText"></p>
+  <div class="over-actions">
+    <button class="btn primary" id="overNew" type="button" style="margin-top:0">&#65291; Nova partida</button>
+    <button class="btn" id="overClose" type="button">Ver o tabuleiro</button>
+  </div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* Motor do computador. Fica todo dentro de uma função para poder rodar num Web Worker (via toString). */
+function aiSearch(fen, level) {
+  var game = new Chess(fen);
+  var V = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
+  var PST = {
+    p: [0,0,0,0,0,0,0,0, 50,50,50,50,50,50,50,50, 10,10,20,30,30,20,10,10, 5,5,10,25,25,10,5,5, 0,0,0,20,20,0,0,0, 5,-5,-10,0,0,-10,-5,5, 5,10,10,-20,-20,10,10,5, 0,0,0,0,0,0,0,0],
+    n: [-50,-40,-30,-30,-30,-30,-40,-50, -40,-20,0,0,0,0,-20,-40, -30,0,10,15,15,10,0,-30, -30,5,15,20,20,15,5,-30, -30,0,15,20,20,15,0,-30, -30,5,10,15,15,10,5,-30, -40,-20,0,5,5,0,-20,-40, -50,-40,-30,-30,-30,-30,-40,-50],
+    b: [-20,-10,-10,-10,-10,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,10,10,5,0,-10, -10,5,5,10,10,5,5,-10, -10,0,10,10,10,10,0,-10, -10,10,10,10,10,10,10,-10, -10,5,0,0,0,0,5,-10, -20,-10,-10,-10,-10,-10,-10,-20],
+    r: [0,0,0,0,0,0,0,0, 5,10,10,10,10,10,10,5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, 0,0,0,5,5,0,0,0],
+    q: [-20,-10,-10,-5,-5,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,5,5,5,0,-10, -5,0,5,5,5,5,0,-5, 0,0,5,5,5,5,0,-5, -10,5,5,5,5,5,0,-10, -10,0,5,0,0,0,0,-10, -20,-10,-10,-5,-5,-10,-10,-20],
+    k: [-30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -20,-30,-30,-40,-40,-30,-30,-20, -10,-20,-20,-20,-20,-20,-20,-10, 20,20,0,0,0,0,20,20, 20,30,10,0,0,10,30,20]
+  };
+  var cfg = level === 'easy' ? { depth: 1, q: 1, time: 400, noise: 60 }
+          : level === 'hard' ? { depth: 4, q: 3, time: 2600, noise: 0 }
+          : { depth: 2, q: 2, time: 1200, noise: 15 };
+  var start = Date.now(), aborted = false, nodes = 0;
+  function evaluate() {
+    var b = game.board(), s = 0;
+    for (var r = 0; r < 8; r++) for (var c = 0; c < 8; c++) {
+      var p = b[r][c]; if (!p) continue;
+      var v = V[p.type] + PST[p.type][p.color === 'w' ? r * 8 + c : (7 - r) * 8 + c];
+      s += p.color === 'w' ? v : -v;
+    }
+    return game.turn() === 'w' ? s : -s;
+  }
+  function score(m) {
+    var s = 0;
+    if (m.captured) s += 10 * V[m.captured] + 100 - V[m.piece] / 10;
+    if (m.promotion) s += V[m.promotion];
+    if (m.san.indexOf('+') >= 0) s += 50;
+    return s;
+  }
+  function ordered(moves) { for (var i = 0; i < moves.length; i++) moves[i]._s = score(moves[i]); return moves.sort(function (a, b) { return b._s - a._s; }); }
+  function play(m) { game.move({ from: m.from, to: m.to, promotion: m.promotion }); }
+  function timeUp() { if ((++nodes & 63) === 0 && Date.now() - start > cfg.time) aborted = true; return aborted; }
+  function quiesce(alpha, beta, qd) {
+    var stand = evaluate();
+    if (qd <= 0 || stand >= beta) return stand;
+    if (stand > alpha) alpha = stand;
+    var moves = game.moves({ verbose: true }).filter(function (m) { return m.captured || m.promotion; });
+    ordered(moves);
+    for (var i = 0; i < moves.length; i++) {
+      play(moves[i]); var v = -quiesce(-beta, -alpha, qd - 1); game.undo();
+      if (v >= beta) return v;
+      if (v > alpha) alpha = v;
+      if (timeUp()) break;
+    }
+    return alpha;
+  }
+  function negamax(depth, alpha, beta, ply) {
+    if (timeUp()) return 0;
+    var moves = game.moves({ verbose: true });
+    if (!moves.length) return game.in_check() ? -100000 + ply : 0;
+    if (game.insufficient_material()) return 0;
+    if (depth <= 0) return quiesce(alpha, beta, cfg.q);
+    ordered(moves);
+    var best = -Infinity;
+    for (var i = 0; i < moves.length; i++) {
+      play(moves[i]); var v = -negamax(depth - 1, -beta, -alpha, ply + 1); game.undo();
+      if (aborted) return 0;
+      if (v > best) best = v;
+      if (v > alpha) alpha = v;
+      if (alpha >= beta) break;
+    }
+    return best;
+  }
+  var root = game.moves({ verbose: true });
+  if (!root.length) return null;
+  if (level === 'easy' && Math.random() < 0.3) { var r0 = root[Math.floor(Math.random() * root.length)]; return { from: r0.from, to: r0.to, promotion: r0.promotion }; }
+  ordered(root);
+  var bestMove = root[0];
+  for (var d = 1; d <= cfg.depth; d++) {
+    var iterBest = null, iterScore = -Infinity, alpha = -Infinity;
+    for (var i = 0; i < root.length; i++) {
+      play(root[i]); var v = -negamax(d - 1, -Infinity, -alpha, 1); game.undo();
+      if (aborted) break;
+      v += cfg.noise ? (Math.random() - 0.5) * cfg.noise : 0;
+      root[i]._v = v;
+      if (v > iterScore) { iterScore = v; iterBest = root[i]; }
+      if (v > alpha) alpha = v;
+    }
+    if (aborted) { if (iterBest && d > 1 && iterScore > (bestMove._v || -Infinity)) bestMove = iterBest; break; }
+    bestMove = iterBest || bestMove;
+    root.sort(function (a, b) { return b._v - a._v; });
+    if (iterScore > 90000) break;
+  }
+  return { from: bestMove.from, to: bestMove.to, promotion: bestMove.promotion };
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const $ = (id) => document.getElementById(id);
+const CHESS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js';
+const GLYPH = { wk: '♔', wq: '♕', wr: '♖', wb: '♗', wn: '♘', wp: '♙', bk: '♚', bq: '♛', br: '♜', bb: '♝', bn: '♞', bp: '♟' };
+const ORDER = { q: 0, r: 1, b: 2, n: 3, p: 4 };
+$('ano').textContent = new Date().getFullYear();
+
+/* ---------- Estado ---------- */
+let game = null, selected = null, targets = [], lastMove = null, busy = false, thinking = false, over = false;
+let humanColor = 'w', viewSide = 'w', aiToken = 0, pendingPromo = null, hoverSq = null;
+let soundOn = true, stats = loadStats(), toastT = null, bannerT = null;
+try { soundOn = localStorage.getItem('falzinho_chess_sound') !== '0'; } catch (e) {}
+
+function loadStats() {
+  try { return Object.assign({ wins: 0, losses: 0, draws: 0 }, JSON.parse(localStorage.getItem('falzinho_chess_stats') || '{}')); }
+  catch (e) { return { wins: 0, losses: 0, draws: 0 }; }
+}
+function saveStats() {
+  try { localStorage.setItem('falzinho_chess_stats', JSON.stringify(stats)); } catch (e) {}
+  $('wins').textContent = stats.wins; $('losses').textContent = stats.losses; $('draws').textContent = stats.draws;
+}
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400); }
+function banner(msg, red) { const b = $('banner'); b.textContent = msg; b.classList.toggle('red', !!red); b.classList.add('show'); clearTimeout(bannerT); bannerT = setTimeout(() => b.classList.remove('show'), 1500); }
+const mode = () => $('mode').value;
+const isCpuTurn = () => mode() === 'computer' && game && game.turn() !== humanColor;
+
+/* ---------- Som (sintetizado, sem arquivos) ---------- */
+let actx = null;
+function sound(kind) {
+  if (!soundOn) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const now = actx.currentTime;
+    const knock = (t, freq, gain) => {
+      const len = Math.floor(actx.sampleRate * 0.07), buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 4);
+      const src = actx.createBufferSource(); src.buffer = buf;
+      const f = actx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 3;
+      const g = actx.createGain(); g.gain.value = gain;
+      src.connect(f).connect(g).connect(actx.destination); src.start(now + t);
+    };
+    const beep = (t, freq) => {
+      const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = freq; o.type = 'triangle';
+      g.gain.setValueAtTime(0.0001, now + t); g.gain.exponentialRampToValueAtTime(0.12, now + t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, now + t + 0.25);
+      o.connect(g).connect(actx.destination); o.start(now + t); o.stop(now + t + 0.3);
+    };
+    if (kind === 'move') knock(0, 1100, 1.4);
+    else if (kind === 'capture') { knock(0, 800, 1.6); knock(0.07, 1300, 1.1); }
+    else if (kind === 'check') { knock(0, 1100, 1.3); beep(0.05, 880); }
+    else if (kind === 'end') { beep(0, 523); beep(0.16, 659); beep(0.32, 784); }
+    else if (kind === 'select') knock(0, 1800, 0.35);
+  } catch (e) {}
+}
+function setSoundBtn() { $('btnSound').innerHTML = soundOn ? '&#128266;' : '&#128263;'; $('btnSound').setAttribute('aria-label', soundOn ? 'Desligar som' : 'Ligar som'); }
+
+/* ---------- Cena 3D ---------- */
+const stage = $('stage');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+} catch (e) {
+  $('loading').textContent = 'Seu navegador não conseguiu iniciar o 3D (WebGL). Tente atualizar o navegador ou ativar a aceleração de hardware.';
+  throw e;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#0d1016');
+scene.fog = new THREE.Fog('#0d1016', 22, 46);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 120);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.enablePan = false; controls.minDistance = 7; controls.maxDistance = 28;
+controls.maxPolarAngle = 1.32; controls.minPolarAngle = 0.12;
+controls.target.set(0, 0, 0);
+
+scene.add(new THREE.HemisphereLight('#dfe8ff', '#3a2a1a', 0.55));
+const sun = new THREE.DirectionalLight('#fff4e0', 2.4);
+sun.position.set(5, 13, 7); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8, near: 2, far: 35 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+scene.add(sun);
+const rim = new THREE.DirectionalLight('#9fb8ff', 0.7); rim.position.set(-8, 6, -9); scene.add(rim);
+
+function woodTexture(base, grain, w = 512, h = 512, rings = 34, seed = 1) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); g.fillStyle = base; g.fillRect(0, 0, w, h);
+  let s = seed; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < rings; i++) {
+    const y0 = rnd() * h, amp = 4 + rnd() * 14, f = 0.004 + rnd() * 0.01, ph = rnd() * 6;
+    g.strokeStyle = grain; g.globalAlpha = 0.12 + rnd() * 0.22; g.lineWidth = 1 + rnd() * 3;
+    g.beginPath();
+    for (let x = 0; x <= w; x += 8) { const y = y0 + Math.sin(x * f + ph) * amp + Math.sin(x * f * 3.1) * amp * 0.25; x ? g.lineTo(x, y) : g.moveTo(x, y); }
+    g.stroke();
+  }
+  g.globalAlpha = 1;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+  return t;
+}
+
+/* Mesa, moldura e casas */
+const tableMat = new THREE.MeshStandardMaterial({ map: woodTexture('#2b1a10', '#140b05', 1024, 1024, 70, 7), roughness: 0.7 });
+tableMat.map.repeat.set(3, 3);
+const table = new THREE.Mesh(new THREE.CylinderGeometry(12, 12, 0.5, 72), tableMat);
+table.position.y = -0.6; table.receiveShadow = true; scene.add(table);
+
+const frameMat = new THREE.MeshStandardMaterial({ map: woodTexture('#4a2a16', '#1f0f06', 512, 512, 40, 3), roughness: 0.45, metalness: 0.05 });
+const frame = new THREE.Mesh(new THREE.BoxGeometry(9.5, 0.34, 9.5), frameMat);
+frame.position.y = -0.18; frame.castShadow = true; frame.receiveShadow = true; scene.add(frame);
+const trim = new THREE.Mesh(new THREE.BoxGeometry(8.16, 0.3, 8.16), new THREE.MeshStandardMaterial({ color: '#c99a4a', metalness: 0.8, roughness: 0.3 }));
+trim.position.y = -0.16; scene.add(trim);
+
+const lightTex = woodTexture('#e8d3ab', '#b98f5c', 256, 256, 22, 11);
+const darkTex = woodTexture('#7a4a2a', '#3d200e', 256, 256, 22, 5);
+const lightMat = new THREE.MeshStandardMaterial({ map: lightTex, roughness: 0.38 });
+const darkMat = new THREE.MeshStandardMaterial({ map: darkTex, roughness: 0.38 });
+const tileGeo = new THREE.BoxGeometry(1, 0.1, 1);
+const tiles = [];
+const sqPos = (sq) => new THREE.Vector3('abcdefgh'.indexOf(sq[0]) - 3.5, 0, 4.5 - Number(sq[1]));
+const SQUARES = [];
+for (let r = 1; r <= 8; r++) for (let f = 0; f < 8; f++) SQUARES.push('abcdefgh'[f] + r);
+for (const sq of SQUARES) {
+  const f = 'abcdefgh'.indexOf(sq[0]), r = Number(sq[1]);
+  const m = new THREE.Mesh(tileGeo, (f + r) % 2 === 0 ? darkMat : lightMat);
+  m.position.copy(sqPos(sq)); m.position.y = -0.05; m.receiveShadow = true; m.userData.sq = sq;
+  scene.add(m); tiles.push(m);
+}
+
+/* Coordenadas desenhadas na moldura */
+(function labels() {
+  const S = 9.5, px = 1024, k = px / S, c = document.createElement('canvas'); c.width = c.height = px;
+  const g = c.getContext('2d'); g.fillStyle = '#e9c98a'; g.font = '700 38px Figtree, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const put = (x, z, txt, flip) => { g.save(); g.translate((x + S / 2) * k, (z + S / 2) * k); if (flip) g.rotate(Math.PI); g.fillText(txt, 0, 0); g.restore(); };
+  for (let i = 0; i < 8; i++) {
+    const L = 'abcdefgh'[i], x = i - 3.5, z = 4.5 - (i + 1);
+    put(x, 4.42, L, false); put(x, -4.42, L, true);
+    put(-4.42, z, String(i + 1), false); put(4.42, z, String(i + 1), true);
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  const p = new THREE.Mesh(new THREE.PlaneGeometry(S, S), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+  p.rotation.x = -Math.PI / 2; p.position.y = -0.008; scene.add(p);
+})();
+
+/* Marcadores: seleção, último lance, xeque, destinos */
+const hlGeo = new THREE.PlaneGeometry(0.98, 0.98); hlGeo.rotateX(-Math.PI / 2);
+const mk = (color, opacity) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
+const HL = { sel: mk('#ffd25e', 0.55), last: mk('#f0a93a', 0.32), check: mk('#ff3030', 0.6), hover: mk('#ffffff', 0.14) };
+const highlight = {};
+for (const sq of SQUARES) {
+  const m = new THREE.Mesh(hlGeo, HL.last); m.position.copy(sqPos(sq)); m.position.y = 0.003; m.visible = false; m.renderOrder = 2;
+  scene.add(m); highlight[sq] = m;
+}
+const dotGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.03, 28);
+const ringGeo = new THREE.TorusGeometry(0.42, 0.045, 10, 40); ringGeo.rotateX(-Math.PI / 2);
+const markMat = new THREE.MeshStandardMaterial({ color: '#39d98a', emissive: '#1d8f55', emissiveIntensity: 0.6, roughness: 0.4, transparent: true, opacity: 0.9 });
+const dots = {}, rings = {};
+for (const sq of SQUARES) {
+  const d = new THREE.Mesh(dotGeo, markMat); d.position.copy(sqPos(sq)); d.position.y = 0.02; d.visible = false; scene.add(d); dots[sq] = d;
+  const r = new THREE.Mesh(ringGeo, markMat); r.position.copy(sqPos(sq)); r.position.y = 0.03; r.visible = false; scene.add(r); rings[sq] = r;
+}
+
+/* ---------- Peças (torneadas) ---------- */
+const MAT = {
+  w: new THREE.MeshPhysicalMaterial({ color: '#f1e6cf', roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.25 }),
+  b: new THREE.MeshPhysicalMaterial({ color: '#221d24', roughness: 0.28, metalness: 0.05, clearcoat: 0.8, clearcoatRoughness: 0.2 })
+};
+const ACCENT = { w: new THREE.MeshStandardMaterial({ color: '#b08f5a', roughness: 0.4, metalness: 0.3 }), b: new THREE.MeshStandardMaterial({ color: '#c99a4a', roughness: 0.35, metalness: 0.8 }) };
+const V2 = (pts) => pts.map(([x, y]) => new THREE.Vector2(x, y));
+const base = (w) => [[0, 0], [w, 0], [w, 0.06], [w - 0.03, 0.09], [w - 0.02, 0.12], [w - 0.07, 0.15], [w - 0.13, 0.19]];
+const lathe = (pts) => new THREE.LatheGeometry(V2(pts), 40);
+
+const GEO = {
+  p: [lathe([...base(0.34), [0.17, 0.24], [0.12, 0.42], [0.1, 0.47], [0.19, 0.5], [0.19, 0.53], [0.1, 0.56], [0, 0.56]])],
+  r: [lathe([...base(0.38), [0.25, 0.24], [0.22, 0.58], [0.28, 0.62], [0.28, 0.72], [0.2, 0.72], [0.2, 0.66], [0, 0.66]])],
+  b: [lathe([...base(0.36), [0.2, 0.24], [0.1, 0.55], [0.2, 0.58], [0.2, 0.61], [0.1, 0.63], [0.15, 0.69], [0.18, 0.78], [0.15, 0.88], [0.09, 0.95], [0.04, 0.99], [0, 1.0]])],
+  q: [lathe([...base(0.4), [0.24, 0.24], [0.12, 0.66], [0.23, 0.7], [0.23, 0.74], [0.13, 0.77], [0.16, 0.88], [0.25, 1.03], [0.2, 1.04], [0.1, 1.0], [0, 1.02]])],
+  k: [lathe([...base(0.41), [0.25, 0.24], [0.13, 0.7], [0.24, 0.74], [0.24, 0.78], [0.14, 0.81], [0.17, 0.94], [0.23, 1.1], [0.16, 1.14], [0, 1.16]])],
+  n: [lathe([...base(0.38), [0.25, 0.25], [0.24, 0.3], [0, 0.3]])]
+};
+const sphere = (r) => new THREE.SphereGeometry(r, 24, 16);
+const pawnHead = sphere(0.155); pawnHead.translate(0, 0.69, 0);
+GEO.p.push(pawnHead);
+const bishopBall = sphere(0.05); bishopBall.translate(0, 1.04, 0); GEO.b.push(bishopBall);
+const queenBall = sphere(0.075); queenBall.translate(0, 1.12, 0); GEO.q.push(queenBall);
+for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2, s = sphere(0.045); s.translate(Math.cos(a) * 0.22, 1.05, Math.sin(a) * 0.22); GEO.q.push(s); }
+for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2, bx = new THREE.BoxGeometry(0.13, 0.13, 0.09); bx.rotateY(-a); bx.translate(Math.cos(a) * 0.235, 0.78, Math.sin(a) * 0.235); GEO.r.push(bx); }
+const crossV = new THREE.BoxGeometry(0.07, 0.28, 0.07); crossV.translate(0, 1.3, 0);
+const crossH = new THREE.BoxGeometry(0.22, 0.07, 0.07); crossH.translate(0, 1.32, 0);
+GEO.k.push(crossV, crossH);
+(function knightHead() {
+  const s = new THREE.Shape();
+  const pts = [[-0.22, 0.28], [0.18, 0.28], [0.1, 0.5], [0.28, 0.6], [0.36, 0.7], [0.33, 0.78], [0.22, 0.86], [0.08, 0.96], [0.05, 1.06], [-0.03, 0.98], [-0.13, 0.92], [-0.23, 0.74], [-0.27, 0.52]];
+  s.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) s.lineTo(pts[i][0], pts[i][1]); s.closePath();
+  const g = new THREE.ExtrudeGeometry(s, { depth: 0.2, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.04, bevelSegments: 4, curveSegments: 8 });
+  g.translate(0, 0, -0.1); g.computeVertexNormals(); GEO.n.push(g);
+  const mane = new THREE.BoxGeometry(0.06, 0.5, 0.06); mane.rotateZ(0.35); mane.translate(-0.2, 0.74, 0); GEO.n.push(mane);
+})();
+const ACCENT_GEO = {};
+{ const t = new THREE.TorusGeometry(0.3, 0.018, 8, 40); t.rotateX(Math.PI / 2); t.translate(0, 0.075, 0); ACCENT_GEO.ring = t; }
+{ const t = new THREE.BoxGeometry(0.03, 0.12, 0.3); t.rotateZ(-0.5); t.translate(0.05, 0.86, 0); ACCENT_GEO.slit = t; }
+{ const e1 = sphere(0.035); e1.translate(0.16, 0.8, 0.13); const e2 = sphere(0.035); e2.translate(0.16, 0.8, -0.13); ACCENT_GEO.eyes = [e1, e2]; }
+
+function makePiece(color, type) {
+  const g = new THREE.Group();
+  for (const geo of GEO[type]) { const m = new THREE.Mesh(geo, MAT[color]); m.castShadow = true; m.receiveShadow = true; g.add(m); }
+  const ring = new THREE.Mesh(ACCENT_GEO.ring, ACCENT[color]); ring.scale.setScalar((type === 'p' ? 0.34 : type === 'k' ? 0.41 : type === 'q' ? 0.4 : 0.37) / 0.33); g.add(ring);
+  if (type === 'b') g.add(new THREE.Mesh(ACCENT_GEO.slit, color === 'w' ? MAT.b : ACCENT.b));
+  if (type === 'n') for (const e of ACCENT_GEO.eyes) g.add(new THREE.Mesh(e, color === 'w' ? MAT.b : ACCENT.b));
+  if (type === 'n') g.rotation.y = color === 'w' ? Math.PI / 2 : -Math.PI / 2;
+  g.userData = { color, type };
+  return g;
+}
+
+const piecesRoot = new THREE.Group(); scene.add(piecesRoot);
+let bySq = {};
+function gravePos(color, idx) {
+  const side = color === 'b' ? 1 : -1, col = Math.floor(idx / 8), row = idx % 8;
+  return new THREE.Vector3(side * (5.45 + col * 0.75), 0, side * (3.5 - row * 0.95));
+}
+function capturedLists() {
+  const caps = { w: [], b: [] };
+  for (const m of game.history({ verbose: true })) if (m.captured) caps[m.color === 'w' ? 'b' : 'w'].push(m.captured);
+  return caps;
+}
+function syncPieces() {
+  while (piecesRoot.children.length) piecesRoot.remove(piecesRoot.children[0]);
+  bySq = {};
+  const b = game.board();
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const p = b[r][c]; if (!p) continue;
+    const sq = 'abcdefgh'[c] + (8 - r), m = makePiece(p.color, p.type);
+    m.position.copy(sqPos(sq)); m.userData.sq = sq; piecesRoot.add(m); bySq[sq] = m;
+  }
+  const caps = capturedLists();
+  for (const color of ['w', 'b']) caps[color].sort((a, z) => ORDER[a] - ORDER[z]).forEach((t, i) => {
+    const m = makePiece(color, t); m.scale.setScalar(0.72); m.position.copy(gravePos(color, i)); m.position.y = -0.35; piecesRoot.add(m);
+  });
+  $('capsTop').textContent = caps[humanSideColor()].map(t => GLYPH[humanSideColor() + t]).join('');
+  $('capsBottom').textContent = caps[otherColor(humanSideColor())].map(t => GLYPH[otherColor(humanSideColor()) + t]).join('');
+}
+const otherColor = (c) => (c === 'w' ? 'b' : 'w');
+const humanSideColor = () => viewSide; // cor mostrada embaixo
+
+/* ---------- Animação ---------- */
+const tweens = [];
+const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+function tween(dur, fn) { return new Promise((res) => tweens.push({ t0: performance.now(), dur, fn, res })); }
+function arc(obj, to, dur, lift) {
+  const from = obj.position.clone();
+  return tween(dur, (k) => { obj.position.lerpVectors(from, to, ease(k)); obj.position.y = from.y + (to.y - from.y) * k + Math.sin(Math.PI * k) * lift; });
+}
+async function animateMove(move) {
+  const mover = bySq[move.from];
+  const jobs = [];
+  const caps = capturedLists();
+  if (move.captured) {
+    const capSq = move.flags.includes('e') ? move.to[0] + move.from[1] : move.to;
+    const victim = bySq[capSq], vColor = otherColor(move.color);
+    if (victim) {
+      const idx = caps[vColor].sort((a, z) => ORDER[a] - ORDER[z]).indexOf(move.captured);
+      const dest = gravePos(vColor, Math.max(0, idx)); dest.y = -0.35;
+      jobs.push(tween(420, (k) => victim.scale.setScalar(1 - 0.28 * ease(k))));
+      jobs.push(new Promise((r) => setTimeout(r, 160)).then(() => arc(victim, dest, 520, 1.4)));
+    }
+  }
+  if (move.flags.includes('k') || move.flags.includes('q')) {
+    const rank = move.from[1], kside = move.flags.includes('k');
+    const rook = bySq[(kside ? 'h' : 'a') + rank];
+    if (rook) jobs.push(arc(rook, sqPos((kside ? 'f' : 'd') + rank), 480, 0.55));
+  }
+  if (mover) {
+    const dist = sqPos(move.from).distanceTo(sqPos(move.to));
+    jobs.push(arc(mover, sqPos(move.to), 260 + dist * 55, mover.userData.type === 'n' ? 0.9 : 0.25 + dist * 0.04));
+  }
+  await Promise.all(jobs);
+}
+
+/* ---------- Câmera ---------- */
+let camAnim = null;
+function fitDistance() {
+  const aspect = stage.clientWidth / Math.max(1, stage.clientHeight);
+  const v = THREE.MathUtils.degToRad(camera.fov / 2), h = Math.atan(Math.tan(v) * aspect);
+  const halfW = aspect > 1.15 ? 6.4 : 5.15;
+  return THREE.MathUtils.clamp(Math.max(5.4 / Math.tan(v), halfW / Math.tan(h)), 9, 26);
+}
+function cameraSpot(side) {
+  const d = fitDistance(), el = THREE.MathUtils.degToRad(aspectIsTall() ? 58 : 50);
+  return new THREE.Vector3(0, Math.sin(el) * d, (side === 'w' ? 1 : -1) * Math.cos(el) * d);
+}
+const aspectIsTall = () => stage.clientWidth / Math.max(1, stage.clientHeight) < 1.15;
+function moveCamera(side, dur = 900) {
+  const from = camera.position.clone(), to = cameraSpot(side);
+  const s0 = new THREE.Spherical().setFromVector3(from), s1 = new THREE.Spherical().setFromVector3(to);
+  let dTheta = s1.theta - s0.theta; while (dTheta > Math.PI) dTheta -= 2 * Math.PI; while (dTheta < -Math.PI) dTheta += 2 * Math.PI;
+  if (Math.abs(Math.abs(dTheta) - Math.PI) < 0.01) dTheta = side === 'b' ? Math.PI : -Math.PI;
+  const token = (camAnim = {});
+  return tween(dur, (k) => {
+    if (camAnim !== token) return;
+    const e = ease(k), s = new THREE.Spherical(s0.radius + (s1.radius - s0.radius) * e, s0.phi + (s1.phi - s0.phi) * e, s0.theta + dTheta * e);
+    camera.position.setFromSpherical(s); camera.lookAt(controls.target);
+  });
+}
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+resize();
+camera.position.copy(cameraSpot('w'));
+
+/* ---------- Seleção por toque/clique ---------- */
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+function pickSquare(ev) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const hits = ray.intersectObjects([...piecesRoot.children, ...tiles], true);
+  for (const h of hits) { let o = h.object; while (o && !o.userData.sq) o = o.parent; if (o) return o.userData.sq; }
+  return null;
+}
+let down = null;
+renderer.domElement.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (!down) return;
+  const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), dt = performance.now() - down.t; down = null;
+  if (moved > 8 || dt > 700) return;
+  const sq = pickSquare(e); if (sq) onSquare(sq);
+});
+renderer.domElement.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse' || down) return;
+  const sq = pickSquare(e);
+  if (sq !== hoverSq) { hoverSq = sq; paintMarks(); }
+  const p = sq && game ? game.get(sq) : null;
+  renderer.domElement.style.cursor = sq && canAct() && ((p && p.color === game.turn()) || targets.includes(sq)) ? 'pointer' : 'grab';
+});
+renderer.domElement.addEventListener('pointerleave', () => { hoverSq = null; paintMarks(); });
+
+function canAct() { return game && !over && !busy && !thinking && !isCpuTurn(); }
+
+function onSquare(sq) {
+  if (!canAct()) return;
+  const p = game.get(sq);
+  if (selected && targets.includes(sq)) { tryMove(selected, sq); return; }
+  if (p && p.color === game.turn()) {
+    if (selected === sq) { selected = null; targets = []; }
+    else { selected = sq; targets = game.moves({ square: sq, verbose: true }).map((m) => m.to); sound('select'); }
+  } else { selected = null; targets = []; }
+  paintMarks();
+}
+
+function kingInCheck() {
+  if (!game.in_check()) return null;
+  const b = game.board();
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) { const p = b[r][c]; if (p && p.type === 'k' && p.color === game.turn()) return 'abcdefgh'[c] + (8 - r); }
+  return null;
+}
+function paintMarks() {
+  const chk = game ? kingInCheck() : null;
+  for (const sq of SQUARES) {
+    const h = highlight[sq]; let mat = null;
+    if (sq === hoverSq && canAct()) mat = HL.hover;
+    if (lastMove && (sq === lastMove.from || sq === lastMove.to)) mat = HL.last;
+    if (sq === chk) mat = HL.check;
+    if (sq === selected) mat = HL.sel;
+    h.visible = !!mat; if (mat) h.material = mat;
+    const isT = targets.includes(sq), occ = isT && (game.get(sq) || (game.get(selected)?.type === 'p' && sq[0] !== selected[0]));
+    dots[sq].visible = isT && !occ; rings[sq].visible = isT && !!occ;
+  }
+  for (const sq in bySq) bySq[sq].position.y = 0;
+}
+
+/* ---------- Fluxo do jogo ---------- */
+function tryMove(from, to, promo) {
+  const p = game.get(from);
+  if (p && p.type === 'p' && (to[1] === '8' || to[1] === '1') && !promo) { pendingPromo = { from, to }; openPromo(p.color); return; }
+  const move = game.move({ from, to, promotion: promo || 'q' });
+  selected = null; targets = [];
+  if (!move) { paintMarks(); return; }
+  playMove(move);
+}
+async function playMove(move) {
+  busy = true; paintMarks();
+  await animateMove(move);
+  lastMove = { from: move.from, to: move.to };
+  syncPieces();
+  busy = false;
+  sound(game.in_check() ? 'check' : move.captured ? 'capture' : 'move');
+  if (game.in_check() && !game.in_checkmate()) banner('XEQUE!', true);
+  refreshUI();
+  if (game.game_over()) { finish(); return; }
+  if (mode() === 'local' && $('autoRot').checked) { viewSide = game.turn(); moveCamera(viewSide); syncPieces(); refreshUI(); }
+  if (isCpuTurn()) askCpu();
+}
+
+let worker = null;
+function getWorker() {
+  if (worker !== null) return worker;
+  try {
+    const src = `importScripts(${JSON.stringify(CHESS_URL)});\n${aiSearch.toString()}\nonmessage=function(e){postMessage({id:e.data.id,move:aiSearch(e.data.fen,e.data.level)});};`;
+    worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    worker.onerror = () => { worker = false; };
+  } catch (e) { worker = false; }
+  return worker;
+}
+function askCpu() {
+  thinking = true; refreshUI();
+  const id = ++aiToken, fen = game.fen(), level = $('difficulty').value, t0 = performance.now();
+  const done = (mv) => {
+    if (id !== aiToken || !game || game.fen() !== fen) return;
+    const wait = Math.max(0, 450 - (performance.now() - t0));
+    setTimeout(() => {
+      if (id !== aiToken) return;
+      thinking = false;
+      let move = mv ? game.move(mv) : null;
+      if (!move) { const all = game.moves({ verbose: true }); if (all.length) move = game.move(all[Math.floor(Math.random() * all.length)]); }
+      if (move) playMove(move); else refreshUI();
+    }, wait);
+  };
+  const w = getWorker();
+  if (w) {
+    const fallback = setTimeout(() => { if (id === aiToken && thinking) { worker = false; done(aiSearch(fen, level)); } }, 9000);
+    w.onmessage = (e) => { if (e.data.id === id) { clearTimeout(fallback); done(e.data.move); } };
+    w.onerror = () => { clearTimeout(fallback); worker = false; done(aiSearch(fen, level)); };
+    w.postMessage({ id, fen, level });
+  } else setTimeout(() => done(aiSearch(fen, level)), 30);
+}
+
+function finish(resignedColor) {
+  over = true; thinking = false;
+  let title, text, result = null;
+  const cpu = mode() === 'computer';
+  if (resignedColor) {
+    const winner = otherColor(resignedColor);
+    title = 'Desistência'; text = cpu ? 'Você desistiu. O computador venceu esta.' : `As ${resignedColor === 'w' ? 'brancas' : 'pretas'} desistiram. Vitória das ${winner === 'w' ? 'brancas' : 'pretas'}.`;
+    result = winner;
+  } else if (game.in_checkmate()) {
+    const winner = otherColor(game.turn()); result = winner;
+    title = 'Xeque-mate!';
+    text = cpu ? (winner === humanColor ? 'Parabéns, você venceu o computador!' : 'O computador deu xeque-mate. Tente de novo!') : `Vitória das ${winner === 'w' ? 'brancas' : 'pretas'}.`;
+  } else {
+    title = 'Empate';
+    text = game.in_stalemate() ? 'Empate por afogamento: o rei não está em xeque, mas não há lance legal.'
+      : game.in_threefold_repetition() ? 'Empate por repetição tripla da posição.'
+      : game.insufficient_material() ? 'Empate: não há material suficiente para dar mate.'
+      : 'Empate pela regra dos 50 lances.';
+  }
+  if (cpu) { if (result === null) stats.draws++; else if (result === humanColor) stats.wins++; else stats.losses++; saveStats(); }
+  sound('end'); refreshUI();
+  $('status').textContent = title === 'Empate' ? 'Empate' : title + (result ? ` ${result === 'w' ? 'Brancas' : 'Pretas'} vencem` : '');
+  $('overTitle').textContent = title; $('overText').textContent = text;
+  setTimeout(() => { try { $('overDlg').showModal(); } catch (e) { $('overDlg').setAttribute('open', ''); } }, 500);
+}
+
+function refreshUI() {
+  if (!game) return;
+  const cpu = mode() === 'computer', turn = game.turn();
+  const bottom = viewSide, top = otherColor(viewSide);
+  const nameOf = (c) => (cpu ? (c === humanColor ? 'Você' : 'Computador') : c === 'w' ? 'Jogador 1' : 'Jogador 2');
+  $('bottomName').textContent = nameOf(bottom); $('topName').textContent = nameOf(top);
+  document.querySelector('#hudBottom .sub').textContent = bottom === 'w' ? 'Brancas' : 'Pretas';
+  document.querySelector('#hudTop .sub').textContent = top === 'w' ? 'Brancas' : 'Pretas';
+  document.querySelector('#hudBottom .av').textContent = bottom === 'w' ? '♔' : '♚';
+  document.querySelector('#hudTop .av').textContent = top === 'w' ? '♔' : '♚';
+  document.querySelector('#hudBottom .av').style.cssText = bottom === 'w' ? 'background:#f3ead7;color:#1d1a1f' : 'background:#26222a;color:#f3ead7';
+  document.querySelector('#hudTop .av').style.cssText = top === 'w' ? 'background:#f3ead7;color:#1d1a1f' : 'background:#26222a;color:#f3ead7';
+  $('hudBottom').classList.toggle('turn', !over && turn === bottom);
+  $('hudTop').classList.toggle('turn', !over && turn === top);
+  $('thinking').hidden = !thinking;
+  const st = $('status'); st.className = 'pill';
+  if (over) st.classList.add('done');
+  else if (game.in_check()) { st.classList.add('alert'); st.textContent = turn === 'w' ? 'Rei branco em xeque!' : 'Rei preto em xeque!'; }
+  else if (thinking) st.textContent = 'Computador pensando…';
+  else st.textContent = cpu ? (turn === humanColor ? 'Sua vez de jogar' : 'Vez do computador') : turn === 'w' ? 'Vez das brancas' : 'Vez das pretas';
+  $('hint').textContent = over ? 'Partida encerrada. Comece uma nova quando quiser.'
+    : thinking ? 'O computador está analisando a posição…'
+    : game.in_check() ? 'Seu rei está em xeque: escolha um lance que tire o rei do perigo.'
+    : 'Toque numa peça para ver os lances. Arraste para girar a câmera, use dois dedos ou a roda do mouse para zoom.';
+  const n = game.history().length;
+  $('btnUndo').disabled = !n || thinking || busy;
+  $('btnResign').disabled = over || !n || thinking;
+  $('btnCopy').disabled = $('btnDownload').disabled = !n;
+  renderMoves();
+  paintMarks();
+}
+function renderMoves() {
+  const h = game.history(), el = $('moves');
+  if (!h.length) { el.innerHTML = '<p class="empty">Os lances aparecem aqui.</p>'; return; }
+  let html = '';
+  for (let i = 0; i < h.length; i += 2) {
+    const a = h[i], b = h[i + 1] || '';
+    html += `<div class="mv"><span class="n">${i / 2 + 1}.</span><span class="${i === h.length - 1 ? 'last' : ''}">${a}</span><span class="${i + 1 === h.length - 1 ? 'last' : ''}">${b}</span></div>`;
+  }
+  el.innerHTML = html; el.scrollTop = el.scrollHeight;
+}
+
+function newGame() {
+  aiToken++; tweens.length = 0;
+  try { $('overDlg').close(); } catch (e) {}
+  game = new Chess(); selected = null; targets = []; lastMove = null; busy = false; thinking = false; over = false;
+  const cpu = mode() === 'computer';
+  const c = $('color').value; humanColor = cpu ? (c === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : c) : 'w';
+  viewSide = humanColor;
+  $('cpuOpts').hidden = !cpu; $('autoRotWrap').hidden = cpu;
+  syncPieces(); refreshUI(); moveCamera(viewSide, 800);
+  if (cpu && humanColor === 'b') { toast('Você joga de pretas. O computador começa.'); setTimeout(() => { if (isCpuTurn() && !thinking) askCpu(); }, 900); }
+}
+
+function undo() {
+  if (!game || thinking || busy || !game.history().length) return;
+  aiToken++;
+  const wasOver = over;
+  game.undo();
+  if (mode() === 'computer' && game.turn() !== humanColor && game.history().length) game.undo();
+  if (mode() === 'computer' && game.turn() !== humanColor) { /* computador começou e voltou ao início */ }
+  over = false; selected = null; targets = [];
+  const h = game.history({ verbose: true }); const p = h[h.length - 1]; lastMove = p ? { from: p.from, to: p.to } : null;
+  if (mode() === 'local' && $('autoRot').checked && viewSide !== game.turn()) { viewSide = game.turn(); moveCamera(viewSide); }
+  syncPieces(); refreshUI();
+  toast(wasOver ? 'Lance desfeito. A partida continua.' : 'Lance desfeito.');
+  if (isCpuTurn()) askCpu();
+}
+
+function openPromo(color) {
+  const dlg = $('promoDlg');
+  dlg.querySelectorAll('button').forEach((b) => {
+    b.textContent = GLYPH[color + b.dataset.p];
+    b.onclick = () => { const p = pendingPromo; pendingPromo = null; dlg.close(); if (p) tryMove(p.from, p.to, b.dataset.p); };
+  });
+  dlg.onclose = () => { if (pendingPromo) { pendingPromo = null; selected = null; targets = []; paintMarks(); } };
+  dlg.showModal();
+}
+
+function exportPGN(download) {
+  if (!game || !game.history().length) return;
+  game.header('Event', 'Falzinho Games — Xadrez 3D', 'Site', 'falzinhogames.com.br', 'Date', new Date().toISOString().slice(0, 10).replace(/-/g, '.'));
+  const pgn = game.pgn();
+  if (download) {
+    const url = URL.createObjectURL(new Blob([pgn], { type: 'application/x-chess-pgn;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = 'partida-falzinho.pgn'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000); toast('PGN baixado.');
+  } else if (navigator.clipboard?.writeText) navigator.clipboard.writeText(pgn).then(() => toast('Partida copiada!'), () => toast('Não foi possível copiar.'));
+  else toast('Seu navegador não permite copiar automaticamente.');
+}
+
+/* ---------- Botões ---------- */
+$('btnNew').addEventListener('click', newGame);
+$('overNew').addEventListener('click', newGame);
+$('overClose').addEventListener('click', () => $('overDlg').close());
+$('mode').addEventListener('change', newGame);
+$('color').addEventListener('change', () => toast('A cor vale a partir da próxima partida.'));
+$('difficulty').addEventListener('change', () => toast('Dificuldade atualizada.'));
+$('btnUndo').addEventListener('click', undo);
+$('btnResign').addEventListener('click', () => {
+  if (!game || over || !game.history().length) return;
+  if (!confirm('Deseja mesmo desistir desta partida?')) return;
+  aiToken++; finish(mode() === 'computer' ? humanColor : game.turn());
+});
+$('btnResetStats').addEventListener('click', () => { if (confirm('Zerar vitórias, derrotas e empates?')) { stats = { wins: 0, losses: 0, draws: 0 }; saveStats(); toast('Estatísticas zeradas.'); } });
+$('btnCopy').addEventListener('click', () => exportPGN(false));
+$('btnDownload').addEventListener('click', () => exportPGN(true));
+$('btnFlip').addEventListener('click', () => { viewSide = otherColor(viewSide); moveCamera(viewSide); syncPieces(); refreshUI(); });
+$('btnCam').addEventListener('click', () => moveCamera(viewSide, 600));
+$('btnFull').addEventListener('click', () => {
+  if (document.fullscreenElement) document.exitFullscreen?.();
+  else (stage.requestFullscreen || stage.webkitRequestFullscreen)?.call(stage);
+});
+document.addEventListener('fullscreenchange', () => setTimeout(() => { resize(); moveCamera(viewSide, 400); }, 120));
+$('btnSound').addEventListener('click', () => { soundOn = !soundOn; try { localStorage.setItem('falzinho_chess_sound', soundOn ? '1' : '0'); } catch (e) {} setSoundBtn(); if (soundOn) sound('select'); });
+$('typedForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const txt = $('typed').value.trim(); if (!txt) return;
+  if (!canAct()) { toast('Aguarde a sua vez.'); return; }
+  const clean = txt.replace(/\s|-/g, '');
+  let move = null;
+  const m = clean.toLowerCase().match(/^([a-h][1-8])([a-h][1-8])([qrbn])?$/);
+  if (m) {
+    const p = game.get(m[1]);
+    if (p && p.type === 'p' && (m[2][1] === '8' || m[2][1] === '1') && !m[3]) { $('typed').value = ''; selected = m[1]; targets = game.moves({ square: m[1], verbose: true }).map((x) => x.to); tryMove(m[1], m[2]); return; }
+    move = game.move({ from: m[1], to: m[2], promotion: m[3] || 'q' });
+  } else move = game.move(clean, { sloppy: true });
+  if (!move) { toast('Lance inválido. Use o formato e2e4.'); return; }
+  $('typed').value = ''; selected = null; targets = []; playMove(move);
+});
+setSoundBtn(); saveStats();
+
+/* ---------- Loop ---------- */
+function loop(now) {
+  for (let i = tweens.length - 1; i >= 0; i--) {
+    const t = tweens[i], k = Math.min(1, (now - t.t0) / t.dur);
+    t.fn(k); if (k >= 1) { tweens.splice(i, 1); t.res(); }
+  }
+  if (selected && bySq[selected] && !busy) bySq[selected].position.y = 0.12 + Math.sin(now / 220) * 0.04;
+  const pulse = 0.5 + Math.sin(now / 260) * 0.25; HL.check.opacity = pulse; markMat.opacity = 0.7 + Math.sin(now / 300) * 0.2;
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+if (typeof Chess === 'undefined') {
+  $('loading').textContent = 'Não foi possível carregar as regras do xadrez. Verifique sua conexão e recarregue a página.';
+} else {
+  newGame();
+  camera.position.copy(cameraSpot(viewSide));
+  $('loading').remove();
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo e Master Fut 2026.">
+<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo e Xadrez 3D.">
 <title>Falzinho Games</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -146,7 +146,10 @@ const GAMES = [
     url: "/mestre-do-taco/", c1: "#0B4A2E", c2: "#F2C14E", arte: "mesa", pagina: "" },
   { nome: "Mente em Jogo", genero: "Quiz · Conhecimentos gerais", status: "Jogue agora",
     texto: "Suba a escada até R$ 1 milhão, enfrente o Relâmpago, a Sobrevivência, o Desafio Diário e o Duelo, e entre no ranking.",
-    url: "/mente-em-jogo/", c1: "#2A0F6B", c2: "#FF3D8B", arte: "quiz", pagina: "" }
+    url: "/mente-em-jogo/", c1: "#2A0F6B", c2: "#FF3D8B", arte: "quiz", pagina: "" },
+  { nome: "Xadrez 3D", genero: "Xadrez · Estratégia", status: "Jogue agora",
+    texto: "Tabuleiro em 3D que gira na sua mão: jogue contra o computador em 3 níveis ou com um amigo no mesmo aparelho.",
+    url: "/xadrez/", c1: "#6B4220", c2: "#E9B45A", arte: "xadrez", pagina: "" }
 ];
 
 const cap = (x, y, cor, miolo) => `<g transform="translate(${x} ${y})"><circle r="15" fill="#000" opacity=".28" transform="translate(2 3)"/><circle r="14" fill="${cor}" stroke="#fff" stroke-width="2"/><circle r="14" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="3" stroke-dasharray="2.2 2.2"/><circle r="8" fill="${miolo}" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/></g>`;
@@ -206,6 +209,18 @@ const ARTES = {
       <rect x="40" y="146" width="112" height="30" rx="15" fill="#1B0A4A" stroke="#FFC83D" stroke-width="2"/><text x="60" y="166" fill="#FFC83D">C</text>
       <rect x="168" y="146" width="112" height="30" rx="15" fill="#1B0A4A" stroke="#FFC83D" stroke-width="2"/><text x="188" y="166" fill="#FFC83D">D</text>
     </g>
+  </svg>`,
+  xadrez: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#1A1410"/>
+    <path d="M40 150L110 92H250L300 150Z" fill="#4A2A16"/>
+    <g transform="translate(160 121)"><path d="M-112 25L-62 -25H62L112 25Z" fill="#E8D3AB"/>
+    <g fill="#7A4A2A"><path d="M-112 25L-99.5 12.5H-71.5L-84 25Z"/><path d="M-56 25L-43.5 12.5H-15.5L-28 25Z"/><path d="M0 25L12.5 12.5H40.5L28 25Z"/><path d="M56 25L68.5 12.5H96.5L84 25Z"/>
+    <path d="M-99.5 12.5L-87 0H-62L-71.5 12.5Z"/><path d="M-43.5 12.5L-31 0H-6L-15.5 12.5Z"/><path d="M12.5 12.5L25 0H50L40.5 12.5Z"/><path d="M68.5 12.5L81 0H106L96.5 12.5Z"/>
+    <path d="M-87 0L-74.5 -12.5H-49.5L-62 0Z"/><path d="M-31 0L-18.5 -12.5H6.5L-6 0Z"/><path d="M25 0L37.5 -12.5H62.5L50 0Z"/>
+    <path d="M-74.5 -12.5L-62 -25H-37L-49.5 -12.5Z"/><path d="M-18.5 -12.5L-6 -25H19L6.5 -12.5Z"/><path d="M37.5 -12.5L50 -25H62L62.5 -12.5Z"/></g></g>
+    <g fill="#F1E6CF" stroke="#B08F5A" stroke-width="2"><path d="M110 132h40l-4-8h-6l-6-34h6l-6-10q4-14-8-18q-12 4-8 18l-6 10h6l-6 34h-6Z"/></g>
+    <g fill="#221D24" stroke="#E9B45A" stroke-width="2"><path d="M178 132h44l-4-8h-6l-4-26q14-6 10-22l-18-14l-6 6q-12 8-14 24l10 4l-6 28h-6Z"/></g>
+    <circle cx="198" cy="78" r="2.4" fill="#E9B45A"/>
   </svg>`
 };
 
