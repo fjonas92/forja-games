@@ -479,8 +479,8 @@ function formationPoints(key, custom) {
   if (key === 'custom' && Array.isArray(custom) && custom.length === 5) return fitFormation(custom);
   return (FORMS[key] || FORMS['2-2']).p;
 }
-// cada time do computador tem seu estilo fixo (a Muralha fica só pra quem escolher)
-function cpuFormation(t) { return FORM_KEYS[hash(t.id) % 4]; }
+// o adversário entra com uma formação pronta sorteada a cada partida (diferente da sua, se for uma pronta)
+function rivalFormation(avoid) { const o = FORM_KEYS.filter(k => k !== avoid); return o[Math.floor(Math.random() * o.length)]; }
 function formation(team) {
   const f = (G.cfg && G.cfg.formations && G.cfg.formations[team]) || FORMS['2-2'].p;
   return team === 0 ? f : f.map(([x, y]) => [W - x, y]);
@@ -902,10 +902,11 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const pick = (a, n) => shuffle(a).slice(0, n);
 
 /* ---------- Configurações salvas ---------- */
-const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true, form: '2-2', customForm: null, form2: '2-2', customForm2: null };
+const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true, form: '2-2', customForm: null };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('tampinhas_cfg') || '{}')); } catch (e) {}
-['form', 'form2'].forEach(k => { if (CFG[k] !== 'custom' && !FORMS[CFG[k]]) CFG[k] = '2-2'; });
-['customForm', 'customForm2'].forEach(k => {
+delete CFG.form2; delete CFG.customForm2;
+if (CFG.form !== 'custom' && !FORMS[CFG.form]) CFG.form = '2-2';
+['customForm'].forEach(k => {
   const c = CFG[k];
   if (!(Array.isArray(c) && c.length === 5 && c.every(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)))) CFG[k] = null;
 });
@@ -1019,11 +1020,11 @@ function compList() {
 }
 const levelSeg = () => '<h3>Nível do computador</h3><div class="seg">' + LEVELS.map(([v, l]) => '<button data-level="' + v + '" class="' + (CFG.level === v ? 'on' : '') + '">' + l + '</button>').join('') + '</div>';
 /* Formação: botões + campinho de prévia; na "Personalizada" dá pra arrastar as tampinhas */
-const formKey = slot => slot === 2 ? 'form2' : 'form', customKey = slot => slot === 2 ? 'customForm2' : 'customForm';
+const formKey = () => 'form', customKey = () => 'customForm'; // só a formação do jogador é editável
 function formBlock(slot) {
   const cur = CFG[formKey(slot)], custom = cur === 'custom';
   const opts = FORM_KEYS.map(k => [k, FORMS[k].nome + ' ' + FORMS[k].desc]).concat([['custom', 'Personalizada']]);
-  return '<h3>Formação' + (slot === 2 ? ' do Jogador 2' : '') + '</h3><div class="seg">' +
+  return '<h3>Sua formação</h3><div class="seg">' +
     opts.map(([k, l]) => '<button data-form="' + k + '" data-slot="' + slot + '" class="' + (cur === k ? 'on' : '') + '">' + l + '</button>').join('') + '</div>' +
     '<div class="formbox"><canvas class="formcv" data-slot="' + slot + '" width="500" height="520" aria-label="Prévia da formação"></canvas>' +
     '<p class="sub">' + (custom ? 'Arraste as tampinhas para montar sua formação. A de borda amarela é o goleiro. Fica salva no aparelho.<br><button class="linkbtn" data-formreset="' + slot + '">Voltar para a 2-2</button>'
@@ -1089,7 +1090,6 @@ function renderSetup() {
   if (S.mode === 'friendly' && S.step === 1) h += '<div class="seg"><button data-vs="cpu" class="' + (S.vs === 'cpu' ? 'on' : '') + '">Contra o computador</button><button data-vs="two" class="' + (S.vs === 'two' ? 'on' : '') + '">2 jogadores</button></div>';
   if (S.mode === 'friendly' && S.step === 1 && S.vs === 'cpu') h += levelSeg();
   if (S.mode === 'friendly' && S.step === 1) h += formBlock(1);
-  if (S.mode === 'friendly' && S.step === 2 && S.vs === 'two') h += formBlock(2);
   if (S.mode === 'cup') h += '<p class="sub">16 times, fase de grupos e mata-mata. Você joga as partidas do seu time.</p>' + levelSeg() + formBlock(1);
   if (S.mode === 'league') {
     if (comp) h += '<p class="sub">' + comp.teams.length + ' times, ' + (S.dbl ? 'ida e volta' : 'turno único') + '. Quem somar mais pontos é o campeão.</p>';
@@ -1174,8 +1174,8 @@ function launchMatch(cfg, info) {
   running = true; lastT = performance.now(); acc = 0; requestAnimationFrame(frame);
 }
 function matchBase(a, b, humans, names, extra) {
-  const forms = [humans[0] ? formationPoints(CFG.form, CFG.customForm) : formationPoints(cpuFormation(a)),
-                 humans[1] ? formationPoints(CFG.form2, CFG.customForm2) : formationPoints(cpuFormation(b))];
+  const forms = [humans[0] ? formationPoints(CFG.form, CFG.customForm) : formationPoints(rivalFormation()),
+                 formationPoints(rivalFormation(humans[0] ? CFG.form : null))];
   return Object.assign({ teams: [a, b], humans, names, duration: CFG.duration, difficulty: CFG.level, allowDraw: true, aiNoise: 1, formations: forms }, extra || {});
 }
 function startFriendly(a, b, vs) {
