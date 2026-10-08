@@ -42,6 +42,9 @@ h4{margin:16px 0 6px;color:var(--muted)}
 .seg{display:inline-flex;flex-wrap:wrap;gap:6px;background:var(--surface);border:1px solid var(--line);padding:5px;border-radius:14px;margin:0 8px 12px 0}
 .seg button{background:transparent;border:0;color:var(--muted);font:700 14px var(--font-body);padding:10px 14px;border-radius:10px;cursor:pointer;min-height:40px}
 .seg button.on{background:var(--ember);color:var(--ember-ink)}
+.formbox{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.formbox .sub{flex:1 1 200px;margin:0}
+.formcv{width:min(100%,250px);height:auto;border-radius:12px;border:1px solid var(--line);touch-action:none;cursor:grab;display:block}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .chips button{background:var(--surface);border:1px solid var(--line);color:var(--muted);font:600 13px var(--font-body);padding:7px 12px;border-radius:999px;cursor:pointer}
 .chips button.on{background:var(--surface2);color:var(--fg);border-color:var(--ember)}
@@ -444,9 +447,43 @@ function integrate(b, dt) {
 /* ---------- Estado da partida ---------- */
 const G = { active: false, paused: false, state: 'idle' };
 
+/* Formações: posições do goleiro + 4 tampinhas no campo da esquerda (o time da direita espelha) */
+const FORMS = {
+  '2-2': { nome: '2-2', desc: 'Equilibrada', p: [[L + 48, CY], [L + 185, CY - 130], [L + 185, CY + 130], [L + 330, CY - 66], [L + 330, CY + 66]] },
+  '1-2-1': { nome: '1-2-1', desc: 'Losango', p: [[L + 48, CY], [L + 165, CY], [L + 260, CY - 140], [L + 260, CY + 140], [L + 325, CY]] },
+  '3-1': { nome: '3-1', desc: 'Retranca', p: [[L + 48, CY], [L + 160, CY - 125], [L + 145, CY], [L + 160, CY + 125], [L + 310, CY]] },
+  '1-3': { nome: '1-3', desc: 'Ofensiva', p: [[L + 48, CY], [L + 165, CY], [L + 320, CY - 150], [L + 325, CY], [L + 320, CY + 150]] },
+  '4-0': { nome: '4-0', desc: 'Muralha', p: [[L + 48, CY], [L + 135, CY - 150], [L + 135, CY - 50], [L + 135, CY + 50], [L + 135, CY + 150]] }
+};
+const FORM_KEYS = Object.keys(FORMS);
+// ajusta uma posição pra ficar válida: no próprio campo, fora do círculo central e sem encostar nas outras
+function fitFormation(p) {
+  const q = p.map(([x, y]) => [x, y]), RC = 72 + DR + 3;
+  for (let it = 0; it < 30; it++) {
+    for (let i = 0; i < 5; i++) {
+      let [x, y] = q[i];
+      x = clamp(x, L + DR + 2, W / 2 - DR - 2); y = clamp(y, T + DR + 2, B - DR - 2);
+      const dx = x - W / 2, dy = y - CY, dc = Math.hypot(dx, dy);
+      if (dc < RC) { const k = RC / (dc || 1); x = W / 2 + (dc ? dx : -1) * k; y = CY + dy * k; }
+      for (let j = 0; j < 5; j++) {
+        if (j === i) continue;
+        const ox = x - q[j][0], oy = y - q[j][1], od = Math.hypot(ox, oy), min = DR * 2 + 4;
+        if (od < min) { const k = (min - od) / 2 / (od || 1); x += (od ? ox : 1) * k; y += oy * k; q[j][0] -= (od ? ox : 1) * k; q[j][1] -= oy * k; }
+      }
+      q[i] = [x, y];
+    }
+  }
+  return q.map(([x, y]) => [Math.round(x), Math.round(y)]);
+}
+function formationPoints(key, custom) {
+  if (key === 'custom' && Array.isArray(custom) && custom.length === 5) return fitFormation(custom);
+  return (FORMS[key] || FORMS['2-2']).p;
+}
+// cada time do computador tem seu estilo fixo (a Muralha fica só pra quem escolher)
+function cpuFormation(t) { return FORM_KEYS[hash(t.id) % 4]; }
 function formation(team) {
-  const p = [[L + 48, CY], [L + 185, CY - 130], [L + 185, CY + 130], [L + 330, CY - 66], [L + 330, CY + 66]];
-  return team === 0 ? p : p.map(([x, y]) => [W - x, y]);
+  const f = (G.cfg && G.cfg.formations && G.cfg.formations[team]) || FORMS['2-2'].p;
+  return team === 0 ? f : f.map(([x, y]) => [W - x, y]);
 }
 function resetKickoff() {
   for (let t = 0; t < 2; t++) { const f = formation(t); G.discs[t].forEach((d, i) => { d.x = f[i][0]; d.y = f[i][1]; d.vx = d.vy = 0; }); }
@@ -686,6 +723,8 @@ function aiCandidates(ti, cfg) {
     }
     const bx = ball.x - d.x, by = ball.y - d.y, bl = Math.hypot(bx, by) || 1, bang = Math.atan2(by, bx);
     for (const o of cfg.offs) for (const p of [0.7, 1]) out.push({ disc: d, ang: bang + o, pull: MAX_PULL * p });
+    // saída de bola: gol nesse lance não vale, então testa toques curtos e passes pros lados
+    if (G.koPending) for (const o of [-0.45, -0.25, 0, 0.25, 0.45]) for (const p of [0.25, 0.35, 0.5]) out.push({ disc: d, ang: bang + o, pull: MAX_PULL * p });
   }
   if (cfg.def) {
     // defesa: põe uma tampinha na linha entre a bola e o próprio gol
@@ -705,7 +744,8 @@ function aiNoisy(c, dif) {
 function aiTick(dt) {
   if (!G.ai) G.ai = { t: 0, plan: null };
   const a = G.ai; a.t += dt;
-  const dif = clamp(G.cfg.difficulty != null ? G.cfg.difficulty : 2, 0, 4), cfg = AI_SIM[dif];
+  // na saída de bola todos os níveis simulam (a IA simples chutava pro gol e tomava falta)
+  const dif = clamp(G.cfg.difficulty != null ? G.cfg.difficulty : 2, 0, 4), cfg = AI_SIM[dif] || (G.koPending ? AI_SIM[3] : null);
   if (!a.plan && a.t > 0.8) {
     if (!cfg) a.plan = aiPlanSimple(G.turn);
     else {
@@ -862,8 +902,13 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const pick = (a, n) => shuffle(a).slice(0, n);
 
 /* ---------- Configurações salvas ---------- */
-const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true };
+const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true, form: '2-2', customForm: null, form2: '2-2', customForm2: null };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('tampinhas_cfg') || '{}')); } catch (e) {}
+['form', 'form2'].forEach(k => { if (CFG[k] !== 'custom' && !FORMS[CFG[k]]) CFG[k] = '2-2'; });
+['customForm', 'customForm2'].forEach(k => {
+  const c = CFG[k];
+  if (!(Array.isArray(c) && c.length === 5 && c.every(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)))) CFG[k] = null;
+});
 function saveCfg() { try { localStorage.setItem('tampinhas_cfg', JSON.stringify(CFG)); } catch (e) {} if (typeof schedulePush === 'function') schedulePush(); }
 Sound.on = CFG.sound;
 const LEVELS = [[0, 'Iniciante'], [1, 'Fácil'], [2, 'Médio'], [3, 'Difícil'], [4, 'Profissional']];
@@ -973,22 +1018,79 @@ function compList() {
   return list;
 }
 const levelSeg = () => '<h3>Nível do computador</h3><div class="seg">' + LEVELS.map(([v, l]) => '<button data-level="' + v + '" class="' + (CFG.level === v ? 'on' : '') + '">' + l + '</button>').join('') + '</div>';
+/* Formação: botões + campinho de prévia; na "Personalizada" dá pra arrastar as tampinhas */
+const formKey = slot => slot === 2 ? 'form2' : 'form', customKey = slot => slot === 2 ? 'customForm2' : 'customForm';
+function formBlock(slot) {
+  const cur = CFG[formKey(slot)], custom = cur === 'custom';
+  const opts = FORM_KEYS.map(k => [k, FORMS[k].nome + ' ' + FORMS[k].desc]).concat([['custom', 'Personalizada']]);
+  return '<h3>Formação' + (slot === 2 ? ' do Jogador 2' : '') + '</h3><div class="seg">' +
+    opts.map(([k, l]) => '<button data-form="' + k + '" data-slot="' + slot + '" class="' + (cur === k ? 'on' : '') + '">' + l + '</button>').join('') + '</div>' +
+    '<div class="formbox"><canvas class="formcv" data-slot="' + slot + '" width="500" height="520" aria-label="Prévia da formação"></canvas>' +
+    '<p class="sub">' + (custom ? 'Arraste as tampinhas para montar sua formação. A de borda amarela é o goleiro. Fica salva no aparelho.<br><button class="linkbtn" data-formreset="' + slot + '">Voltar para a 2-2</button>'
+      : 'Seu time ataca para a direita. Escolha <b>Personalizada</b> para montar a sua.') + '</p></div>';
+}
+const FCV = { x0: L - ND + 8, y0: T - 10 }; // canto do recorte do campo desenhado na prévia
+function drawFormCanvas(cv) {
+  const slot = Number(cv.dataset.slot), g = cv.getContext('2d'), pts = formationPoints(CFG[formKey(slot)], CFG[customKey(slot)]);
+  g.setTransform(1, 0, 0, 1, -FCV.x0, -FCV.y0);
+  g.fillStyle = '#1c2a1d'; g.fillRect(FCV.x0, FCV.y0, 520, 540);
+  for (let i = 0; i < 6; i++) { g.fillStyle = i % 2 ? '#2f8a31' : '#3a9a3b'; g.fillRect(L + i * (W / 2 - L) / 6, T, (W / 2 - L) / 6 + 1, B - T); }
+  g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 3;
+  g.strokeRect(L, T, W / 2 - L + 40, B - T);
+  g.beginPath(); g.moveTo(W / 2, T); g.lineTo(W / 2, B); g.stroke();
+  g.beginPath(); g.arc(W / 2, CY, 72, Math.PI / 2, Math.PI * 1.5); g.stroke();
+  g.strokeRect(L, CY - 118, 135, 236); g.strokeRect(L, CY - 68, 58, 136);
+  g.fillStyle = 'rgba(10,14,30,.6)'; g.fillRect(L - ND, GY0, ND, GY1 - GY0);
+  g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.moveTo(L, GY0); g.lineTo(L - ND, GY0); g.lineTo(L - ND, GY1); g.lineTo(L, GY1); g.stroke();
+  pts.forEach(([x, y], i) => {
+    g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.arc(x + 3, y + 5, DR, 0, 7); g.fill();
+    g.fillStyle = '#E8530E'; g.beginPath(); g.arc(x, y, DR, 0, 7); g.fill();
+    g.lineWidth = 4; g.strokeStyle = i === 0 ? '#ffd54a' : '#ffffff'; g.stroke();
+    g.fillStyle = '#fff'; g.font = '900 22px Figtree, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(i === 0 ? 'G' : String(i), x, y + 1);
+  });
+}
+function drawFormCanvases() { document.querySelectorAll('canvas.formcv').forEach(drawFormCanvas); }
+function initFormDrag(root) {
+  let drag = null;
+  const toField = (cv, e) => { const r = cv.getBoundingClientRect(); return [FCV.x0 + (e.clientX - r.left) * cv.width / r.width, FCV.y0 + (e.clientY - r.top) * cv.height / r.height]; };
+  root.addEventListener('pointerdown', e => {
+    const cv = e.target.closest('canvas.formcv'); if (!cv) return;
+    const slot = Number(cv.dataset.slot);
+    if (CFG[formKey(slot)] !== 'custom') { CFG[formKey(slot)] = 'custom'; if (!CFG[customKey(slot)]) CFG[customKey(slot)] = FORMS['2-2'].p.map(p => p.slice()); saveCfg(); renderSetup(); return; }
+    const [x, y] = toField(cv, e), pts = CFG[customKey(slot)];
+    let best = -1, bd = DR * 1.6;
+    pts.forEach(([px, py], i) => { const d = Math.hypot(px - x, py - y); if (d < bd) { bd = d; best = i; } });
+    if (best < 0) return;
+    drag = { cv, slot, i: best }; cv.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  root.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const pts = CFG[customKey(drag.slot)], [x, y] = toField(drag.cv, e);
+    pts[drag.i] = [x, y];
+    CFG[customKey(drag.slot)] = fitFormation(pts); drawFormCanvas(drag.cv);
+  });
+  const end = () => { if (drag) { drag = null; saveCfg(); } };
+  root.addEventListener('pointerup', end); root.addEventListener('pointercancel', end);
+}
 function norm(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
 function renderSetup() {
   const S = SETUP;
   if (S.mode === 'league' && !S.comp) {
     let h = '<h2>Campeonato</h2><p class="sub">Pontos corridos: todos contra todos. Os outros jogos são simulados pelo computador e os resultados aparecem a cada rodada.</p>';
     h += '<div class="seg"><button data-dbl="0" class="' + (!S.dbl ? 'on' : '') + '">Turno único</button><button data-dbl="1" class="' + (S.dbl ? 'on' : '') + '">Ida e volta</button></div>';
-    h += levelSeg();
+    h += levelSeg() + formBlock(1);
     h += '<h3>Escolha o campeonato</h3><div class="comps">' + compList().map(c => '<button class="comp" data-comp="' + c.id + '"><b>' + esc(c.name) + '</b><small>' + esc(c.desc) + '</small></button>').join('') + '</div><button class="btn ghost" data-back="1">Voltar</button>';
-    $('setupBody').innerHTML = h; return;
+    $('setupBody').innerHTML = h; drawFormCanvases(); return;
   }
   const comp = S.comp && !S.comp.free ? S.comp : null;
   const titles = { friendly: S.step === 1 ? 'Escolha seu time' : (S.vs === 'two' ? 'Time do Jogador 2' : 'Escolha o adversário'), cup: 'Copa: escolha seu time', league: (S.comp ? S.comp.name : 'Campeonato') + ': escolha seu time' };
   let h = '<h2>' + titles[S.mode] + '</h2>';
   if (S.mode === 'friendly' && S.step === 1) h += '<div class="seg"><button data-vs="cpu" class="' + (S.vs === 'cpu' ? 'on' : '') + '">Contra o computador</button><button data-vs="two" class="' + (S.vs === 'two' ? 'on' : '') + '">2 jogadores</button></div>';
   if (S.mode === 'friendly' && S.step === 1 && S.vs === 'cpu') h += levelSeg();
-  if (S.mode === 'cup') h += '<p class="sub">16 times, fase de grupos e mata-mata. Você joga as partidas do seu time.</p>' + levelSeg();
+  if (S.mode === 'friendly' && S.step === 1) h += formBlock(1);
+  if (S.mode === 'friendly' && S.step === 2 && S.vs === 'two') h += formBlock(2);
+  if (S.mode === 'cup') h += '<p class="sub">16 times, fase de grupos e mata-mata. Você joga as partidas do seu time.</p>' + levelSeg() + formBlock(1);
   if (S.mode === 'league') {
     if (comp) h += '<p class="sub">' + comp.teams.length + ' times, ' + (S.dbl ? 'ida e volta' : 'turno único') + '. Quem somar mais pontos é o campeão.</p>';
     else h += '<p class="sub">Escolha seu time e o tamanho do campeonato. Os rivais são sorteados.</p><div class="seg">' + [4, 8, 12, 16, 20].map(n => '<button data-size="' + n + '" class="' + (S.size === n ? 'on' : '') + '">' + n + ' times</button>').join('') + '</div>';
@@ -1001,6 +1103,7 @@ function renderSetup() {
   if (S.mode === 'friendly' && S.step === 2) h += '<button class="btn ghost" data-random="1">Escolher aleatório</button>';
   h += '<div id="grid" class="grid"></div><button class="btn ghost" data-back="1">Voltar</button>';
   $('setupBody').innerHTML = h;
+  drawFormCanvases();
   fillGrid();
   const si = $('inSearch'); si.addEventListener('input', e => { S.q = e.target.value; fillGrid(); });
 }
@@ -1019,11 +1122,18 @@ function fillGrid() {
   $('grid').innerHTML = list.length ? list.map(t => '<button class="tile" data-id="' + t.id + '">' + teamChip(t) + '<b>' + esc(t.name) + '</b><small>Força ' + t.rating + '</small></button>').join('') : (SETUP.tab === 'mine' ? '<p class="sub">Você ainda não criou nenhum time. <button class="linkbtn" data-go="team">Criar meu time</button></p>' : '<p class="sub">Nenhum time encontrado.</p>');
 }
 function initSetup() {
+  initFormDrag($('setupBody'));
   $('setupBody').addEventListener('click', e => {
     const S = SETUP, t = e.target.closest('button'); if (!t) return;
     Sound.init();
     if (t.dataset.go === 'team') { TEAMED.cur = null; renderTeam(); show('sTeam'); }
     else if (t.dataset.level) { CFG.level = Number(t.dataset.level); saveCfg(); renderSetup(); }
+    else if (t.dataset.form) {
+      const slot = Number(t.dataset.slot), f = t.dataset.form; CFG[formKey(slot)] = f;
+      if (f === 'custom' && !CFG[customKey(slot)]) CFG[customKey(slot)] = FORMS['2-2'].p.map(q => q.slice());
+      saveCfg(); renderSetup();
+    }
+    else if (t.dataset.formreset) { const slot = Number(t.dataset.formreset); CFG[formKey(slot)] = '2-2'; CFG[customKey(slot)] = null; saveCfg(); renderSetup(); }
     else if (t.dataset.dbl) { S.dbl = t.dataset.dbl === '1'; renderSetup(); }
     else if (t.dataset.size) { S.size = Number(t.dataset.size); renderSetup(); }
     else if (t.dataset.comp) { S.comp = compList().find(c => c.id === t.dataset.comp); S.tab = S.comp.free ? 'nat' : 'club'; S.lg = 'ALL'; S.q = ''; renderSetup(); window.scrollTo(0, 0); }
@@ -1064,7 +1174,9 @@ function launchMatch(cfg, info) {
   running = true; lastT = performance.now(); acc = 0; requestAnimationFrame(frame);
 }
 function matchBase(a, b, humans, names, extra) {
-  return Object.assign({ teams: [a, b], humans, names, duration: CFG.duration, difficulty: CFG.level, allowDraw: true, aiNoise: 1 }, extra || {});
+  const forms = [humans[0] ? formationPoints(CFG.form, CFG.customForm) : formationPoints(cpuFormation(a)),
+                 humans[1] ? formationPoints(CFG.form2, CFG.customForm2) : formationPoints(cpuFormation(b))];
+  return Object.assign({ teams: [a, b], humans, names, duration: CFG.duration, difficulty: CFG.level, allowDraw: true, aiNoise: 1, formations: forms }, extra || {});
 }
 function startFriendly(a, b, vs) {
   const two = vs === 'two';
@@ -1412,7 +1524,7 @@ function renderAcct() {
 }
 function snapshotLocal() {
   let tour = null; try { const r = localStorage.getItem(SAVE_KEY); if (r) tour = JSON.parse(r); } catch (e) {}
-  return { teams: USER_TEAMS.map(t => Object.assign({}, t)), tour, cfg: { name: CFG.name, level: CFG.level, duration: CFG.duration } };
+  return { teams: USER_TEAMS.map(t => Object.assign({}, t)), tour, cfg: { name: CFG.name, level: CFG.level, duration: CFG.duration, form: CFG.form, customForm: CFG.customForm } };
 }
 async function pushNow() {
   if (!CLOUD.sb || !CLOUD.user) return true;
@@ -1436,7 +1548,7 @@ async function syncDown() {
     let localSave = null; try { localSave = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) {}
     const rt = data.tour, rts = rt && rt.savedAt || 0, lts = localSave && localSave.savedAt || 0;
     if (rt && rts > lts) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(rt)); } catch (e) {} }
-    if (data.cfg) { if (data.cfg.name && CFG.name === 'Jogador') { CFG.name = String(data.cfg.name).slice(0, 14); $('inName').value = CFG.name; } if (data.cfg.level != null) CFG.level = Number(data.cfg.level) | 0; saveCfg(); }
+    if (data.cfg) { if (data.cfg.name && CFG.name === 'Jogador') { CFG.name = String(data.cfg.name).slice(0, 14); $('inName').value = CFG.name; } if (data.cfg.level != null) CFG.level = Number(data.cfg.level) | 0; if (FORMS[data.cfg.form] || data.cfg.form === 'custom') CFG.form = data.cfg.form; if (Array.isArray(data.cfg.customForm) && data.cfg.customForm.length === 5 && data.cfg.customForm.every(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite))) CFG.customForm = fitFormation(data.cfg.customForm); if (CFG.form === 'custom' && !CFG.customForm) CFG.form = '2-2'; saveCfg(); }
   }
   await pushNow(); refreshResume();
 }
