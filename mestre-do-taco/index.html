@@ -1194,15 +1194,21 @@ function init3D(THREE) {
   for (let i = 1; i < 8; i++) { if (i === 4) continue; const x = L + PW * i / 8; dmAt(x, T - 33); dmAt(x, B + 33); }
   for (let i = 1; i < 4; i++) { const y = T + PH * i / 4; dmAt(L - 33, y); dmAt(R + 33, y); }
 
-  /* caçapas: buraco escuro + bolsa de couro por cima da borda */
-  const holeMat = new THREE.MeshBasicMaterial({ color: '#020202' }), leather = new THREE.MeshStandardMaterial({ color: '#1a1410', roughness: 0.55 });
+  /* caçapas: buraco no nível do feltro, fundo curvo escuro só do lado de fora e recorte com couro rente à madeira */
+  const holeMat = new THREE.MeshBasicMaterial({ color: '#020202' });
+  const wallMat = new THREE.MeshStandardMaterial({ color: '#0b0806', roughness: 0.9, side: THREE.DoubleSide });
+  const leather = new THREE.MeshStandardMaterial({ color: '#2a1d14', roughness: 0.5, metalness: 0.1 });
   POCKETS.forEach(p => {
-    const h = new THREE.Mesh(new THREE.CircleGeometry(p.r + 1, 32).rotateX(-Math.PI / 2), holeMat); h.position.set(X(p.x), 0.25, Z(p.y)); scene.add(h);
-    const ox = p.x < CX ? -1 : (p.x > CX ? 1 : 0), oy = p.y < CY ? -1 : 1;
-    const cup = new THREE.Mesh(new THREE.CylinderGeometry(p.r + 7, p.r + 4, RAIL_H + 1, 28, 1, true, 0, Math.PI * 2), leather);
-    cup.position.set(X(p.x) + ox * 12, RAIL_H / 2, Z(p.y) + oy * 12); scene.add(cup);
-    const top = new THREE.Mesh(new THREE.RingGeometry(p.r - 1, p.r + 7, 28).rotateX(-Math.PI / 2), leather); top.position.set(X(p.x) + ox * 12, RAIL_H + 0.6, Z(p.y) + oy * 12); scene.add(top);
-    const inner = new THREE.Mesh(new THREE.CircleGeometry(p.r - 1, 28).rotateX(-Math.PI / 2), holeMat); inner.position.set(X(p.x) + ox * 12, RAIL_H + 0.5, Z(p.y) + oy * 12); scene.add(inner);
+    const sx = p.x < CX ? -1 : (p.x > CX ? 1 : 0), sy = p.y < CY ? -1 : 1, n = Math.hypot(sx, sy), ox = sx / n, oz = sy / n, r = p.r + 1;
+    const hole = new THREE.Mesh(new THREE.CircleGeometry(r, 36).rotateX(-Math.PI / 2), holeMat); hole.position.set(X(p.x), 0.25, Z(p.y)); scene.add(hole);
+    // meia parede: cobre só a metade virada para fora da mesa (cilindro: x = r·sen θ, z = r·cos θ)
+    const tc = Math.atan2(ox, oz);
+    const wall = new THREE.Mesh(new THREE.CylinderGeometry(r, r, RAIL_H, 36, 1, true, tc - Math.PI / 2, Math.PI), wallMat);
+    wall.position.set(X(p.x), RAIL_H / 2, Z(p.y)); scene.add(wall);
+    // recorte na madeira e acabamento de couro, também só na metade de fora (círculo: x = r·cos θ, z = -r·sen θ)
+    const tr = Math.atan2(-oz, ox);
+    const cut = new THREE.Mesh(new THREE.CircleGeometry(r, 36, tr - Math.PI / 2, Math.PI).rotateX(-Math.PI / 2), holeMat); cut.position.set(X(p.x), RAIL_H + 0.15, Z(p.y)); scene.add(cut);
+    const rim = new THREE.Mesh(new THREE.RingGeometry(r, r + 5, 36, 1, tr - Math.PI / 2, Math.PI).rotateX(-Math.PI / 2), leather); rim.position.set(X(p.x), RAIL_H + 0.3, Z(p.y)); scene.add(rim);
   });
 
   /* bolas */
