@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jogar Atelon | Falzinho Games</title>
+<meta name="description" content="Jogue Atelon direto no navegador, sem instalar nada.">
+<link rel="canonical" href="https://falzinhogames.com.br/jogar/atelon/">
+<script src="/analytics.js"></script>
+<style>
+:root{--bg:#11151D;--bar:#1A2030;--fg:#EEF1F7;--muted:#9AA5BA;--ember:#FF8A3D;--c1:#8A1F3A}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#jogo{display:flex;flex-direction:column;height:100vh;height:100dvh;background:var(--bg)}
+.bar{display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--bar);border-bottom:3px solid var(--c1);flex:none}
+.bar a,.bar button{color:var(--fg);text-decoration:none;font:600 14px system-ui,sans-serif;background:none;border:0;cursor:pointer;padding:8px 6px}
+.bar a:hover,.bar button:hover{color:var(--ember)}
+.bar strong{flex:1;text-align:center;font-size:15px;letter-spacing:.3px}
+.stage{position:relative;flex:1;min-height:0}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+#carregando{position:absolute;inset:0;display:grid;place-content:center;gap:10px;text-align:center;padding:24px;background:var(--bg);color:var(--muted);font-size:15px}
+#carregando b{color:var(--fg);font-size:20px}
+#carregando a{color:var(--ember)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="jogo" data-nome="Atelon" data-slug="atelon">
+  <div class="bar">
+    <a href="/#jogos">&larr; Falzinho Games</a>
+    <strong>Atelon</strong>
+    <button type="button" id="tela-cheia">Tela cheia</button>
+  </div>
+  <div class="stage">
+    <iframe id="frame" src="https://atelon.onrender.com" title="Atelon" allow="fullscreen; autoplay; clipboard-write; gamepad"></iframe>
+    <div id="carregando"><b>Carregando Atelon...</b><span>Na primeira vez do dia pode levar até 1 minuto para acordar.</span><span>Se não abrir, <a href="https://atelon.onrender.com" target="_blank" rel="noopener">abra em uma nova aba</a>.</span></div>
+  </div>
+</div>
+<script src="/jogar.js"></script>
+<script src="/cookies.js"></script>
+</body>
+</html>

@@ -145,7 +145,7 @@ def game_page(g):
       <span class="genre">{g['genero']}</span>
       <h1>{g['nome']}</h1>
       <p class="lead">{g['lead']}</p>
-      <a class="cta" href="{g['url']}" target="_blank" rel="noopener">Jogar {g['nome']} →</a>
+      <a class="cta" href="/jogar/{g['slug']}/">Jogar {g['nome']} →</a>
     </section>
 {AD}
     <section class="txt">

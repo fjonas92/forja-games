@@ -223,7 +223,7 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 <section id="sConfig" class="hidden"><div class="panel"><h2>Configura&ccedil;&otilde;es</h2><div id="cfgBody"></div><p><button class="btn ghost" data-go="menu">Voltar</button></p></div></section>
 <section id="sHelp" class="hidden"><div class="panel help"><h2>Como jogar</h2>
 <ul>
-<li><b>Mirar:</b> toque ou clique na mesa e arraste: o taco gira em volta da bola branca e aponta para onde voc&ecirc; tocar. Para ajustar com precis&atilde;o, use os bot&otilde;es de ajuste fino (ou as setas do teclado).</li>
+<li><b>Mirar:</b> segure o taco e arraste: ele gira em volta da bola branca acompanhando o seu dedo ou o mouse. Para ajustar com precis&atilde;o, use os bot&otilde;es de ajuste fino (ou as setas do teclado).</li>
 <li><b>For&ccedil;a:</b> puxe a barra de for&ccedil;a (lado esquerdo) para baixo e solte para dar a tacada. Quanto mais para baixo, mais forte.</li>
 <li><b>Linhas:</b> a linha branca mostra a trajet&oacute;ria da branca, e a amarela para onde a bola atingida vai.</li>
 <li><b>Bola 8:</b> lisas (1 a 7) contra listradas (9 a 15). Encace&ccedil;pe todas as suas e depois a bola 8. A 8 antes da hora, ou com falta, perde o jogo.</li>
@@ -695,7 +695,7 @@ function drawOverlay(ctx) {
     let t = '';
     if (G.state === 'place') t = G.humans[G.turn] ? G.names[G.turn] + ': arraste a bola branca e solte' : G.names[G.turn] + ' posiciona a bola branca...';
     else if (netWaiting()) t = 'Sincronizando com ' + G.names[0] + '…';
-    else if (G.state === 'aim') t = G.humans[G.turn] ? 'Sua vez, ' + G.names[G.turn] + ': mire e puxe a barra de força' : 'Vez de ' + G.names[G.turn] + '...';
+    else if (G.state === 'aim') t = G.humans[G.turn] ? 'Sua vez, ' + G.names[G.turn] + ': arraste o taco para mirar e puxe a barra de força' : 'Vez de ' + G.names[G.turn] + '...';
     if (t) { ctx.save(); ctx.textAlign = 'center'; ctx.font = '800 15px Karla, Arial, sans-serif'; const w = ctx.measureText(t).width + 30; ctx.fillStyle = 'rgba(8,10,24,.7)'; rr(ctx, 500 - w / 2, 70, w, 28, 14); ctx.fill(); ctx.fillStyle = TEAM[G.turn]; ctx.textBaseline = 'middle'; ctx.fillText(t, 500, 85); ctx.restore(); }
   }
 }
@@ -711,7 +711,14 @@ function pointerDown(x, y) {
   if (x < 52 && y > T - 24 && y < B + 24) { G.drag = { kind: 'power' }; setPower(y); return true; }
   const fb = fineHit(x, y); if (fb) { G.fine = fb * 0.5; G.fineDown = true; return true; }
   if (V3.ready && V3.cam === 'cue') { G.drag = { kind: 'turn', x0: x, a0: G.aim }; return true; }
-  G.drag = { kind: 'aim' }; setAim(tx, ty); return true;
+  /* pega o taco: ele gira em volta da branca acompanhando o dedo/mouse, sem pular pro ponto tocado */
+  G.drag = { kind: 'grab', a0: G.aim, p0: null }; grabMove(tx, ty); return true;
+}
+function grabMove(x, y) {
+  const c = G.cue, d = G.drag; if (!c || !d || Math.hypot(x - c.x, y - c.y) < 14) return;
+  const pa = Math.atan2(y - c.y, x - c.x);
+  if (d.p0 === null) { d.p0 = pa; return; }
+  G.aim = d.a0 + angDiff(d.p0, pa);
 }
 function fineHit(x, y) { if (Math.hypot(x - 972, y - 470) < 24) return -1; if (Math.hypot(x - 972, y - 520) < 24) return 1; return 0; }
 function setPower(y) { G.power = clamp((y - (T - 6)) / (B + 6 - (T - 6)), 0, 1); }
@@ -723,7 +730,7 @@ function pointerMove(x, y) {
   if (d.kind === 'power') { setPower(y); return; }
   if (d.kind === 'turn') { G.aim = d.a0 + (x - d.x0) * 0.004; return; }
   const [tx, ty] = tableXY(x, y);
-  if (d.kind === 'aim') setAim(tx, ty); else if (d.kind === 'place') movePlace(tx, ty);
+  if (d.kind === 'grab') grabMove(tx, ty); else if (d.kind === 'aim') setAim(tx, ty); else if (d.kind === 'place') movePlace(tx, ty);
 }
 function pointerUp() {
   G.fine = 0;
