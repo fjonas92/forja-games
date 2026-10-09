@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo e Xadrez 3D.">
+<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D e ELYDRAN: Lendas do Cristal.">
 <title>Falzinho Games</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -149,7 +149,10 @@ const GAMES = [
     url: "/mente-em-jogo/", c1: "#2A0F6B", c2: "#FF3D8B", arte: "quiz", pagina: "" },
   { nome: "Xadrez 3D", genero: "Xadrez · Estratégia", status: "Jogue agora",
     texto: "Tabuleiro em 3D que gira na sua mão: jogue contra o computador em 3 níveis ou com um amigo no mesmo aparelho.",
-    url: "/xadrez/", c1: "#6B4220", c2: "#E9B45A", arte: "xadrez", pagina: "" }
+    url: "/xadrez/", c1: "#6B4220", c2: "#E9B45A", arte: "xadrez", pagina: "" },
+  { nome: "ELYDRAN", genero: "RPG de ação · Lendas do Cristal", status: "Jogue agora",
+    texto: "Explore a vila e a floresta, lute em tempo real, evolua suas criaturas companheiras e derrote o Golem Guardião. Teclado, controle ou toque.",
+    url: "/elydran/", c1: "#2A1A5A", c2: "#7FD6FF", arte: "elydran", pagina: "" }
 ];
 
 const cap = (x, y, cor, miolo) => `<g transform="translate(${x} ${y})"><circle r="15" fill="#000" opacity=".28" transform="translate(2 3)"/><circle r="14" fill="${cor}" stroke="#fff" stroke-width="2"/><circle r="14" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="3" stroke-dasharray="2.2 2.2"/><circle r="8" fill="${miolo}" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/></g>`;
@@ -221,6 +224,20 @@ const ARTES = {
     <g fill="#F1E6CF" stroke="#B08F5A" stroke-width="2"><path d="M110 132h40l-4-8h-6l-6-34h6l-6-10q4-14-8-18q-12 4-8 18l-6 10h6l-6 34h-6Z"/></g>
     <g fill="#221D24" stroke="#E9B45A" stroke-width="2"><path d="M178 132h44l-4-8h-6l-4-26q14-6 10-22l-18-14l-6 6q-12 8-14 24l10 4l-6 28h-6Z"/></g>
     <circle cx="198" cy="78" r="2.4" fill="#E9B45A"/>
+  </svg>`,
+  elydran: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" shape-rendering="crispEdges">
+    <defs><linearGradient id="ely-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#120A2E"/><stop offset=".6" stop-color="#3A2A7A"/><stop offset="1" stop-color="#8A5AB8"/></linearGradient>
+    <radialGradient id="ely-glow"><stop offset="0" stop-color="#9FE8FF" stop-opacity=".7"/><stop offset="1" stop-color="#9FE8FF" stop-opacity="0"/></radialGradient></defs>
+    <rect width="320" height="200" fill="url(#ely-sky)"/>
+    <g fill="#fff" opacity=".8"><rect x="30" y="20" width="2" height="2"/><rect x="90" y="40" width="2" height="2"/><rect x="150" y="14" width="2" height="2"/><rect x="250" y="30" width="2" height="2"/><rect x="290" y="60" width="2" height="2"/><rect x="200" y="52" width="2" height="2"/></g>
+    <path d="M30 70H90L74 92H48Z" fill="#24162F"/><rect x="30" y="66" width="60" height="5" fill="#4A8A5A"/>
+    <path d="M230 50H300L282 78H250Z" fill="#24162F"/><rect x="230" y="46" width="70" height="5" fill="#4A8A5A"/>
+    <path d="M0 160L50 120L90 150L140 105L190 145L240 115L320 150V200H0Z" fill="#24163E"/>
+    <rect x="0" y="168" width="320" height="32" fill="#2F6E35"/><rect x="0" y="168" width="320" height="4" fill="#4EA044"/>
+    <circle cx="160" cy="130" r="56" fill="url(#ely-glow)"/>
+    <path d="M150 172L160 116L170 172Z" fill="#7FD6FF"/><path d="M160 116L170 172H160Z" fill="#3B7FD0"/><path d="M138 172L144 140L150 172Z" fill="#7FD6FF"/><path d="M170 172L176 146L182 172Z" fill="#7FD6FF"/>
+    <g transform="translate(94 134)"><rect x="4" y="0" width="12" height="10" fill="#6B3D22"/><rect x="5" y="6" width="10" height="7" fill="#F2C9A0"/><rect x="7" y="9" width="2" height="2" fill="#1A1424"/><rect x="11" y="9" width="2" height="2" fill="#1A1424"/><rect x="2" y="14" width="16" height="14" fill="#2F56C4"/><rect x="6" y="14" width="8" height="12" fill="#ECE9F4"/><rect x="5" y="28" width="4" height="6" fill="#34426A"/><rect x="11" y="28" width="4" height="6" fill="#34426A"/><rect x="18" y="8" width="3" height="20" fill="#D9DDE8" transform="rotate(25 19 18)"/></g>
+    <g transform="translate(212 152)"><ellipse cx="8" cy="8" rx="9" ry="6" fill="#FF8A2A"/><circle cx="18" cy="2" r="5" fill="#FF8A2A"/><path d="M14 -2L15 -9L18 -3ZM18 -3L22 -9L23 0Z" fill="#FF8A2A"/><path d="M0 6Q-10 -4 -4 -12Q0 -4 4 2Z" fill="#FFB03A"/><rect x="19" y="0" width="2" height="2" fill="#1A1424"/></g>
   </svg>`
 };
 

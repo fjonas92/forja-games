@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120a2e">
+<title>ELYDRAN: Lendas do Cristal | Falzinho Games</title>
+<meta name="description" content="ELYDRAN: Lendas do Cristal, um RPG de ação em pixel art no navegador. Explore a vila e a floresta, lute em tempo real, evolua suas criaturas companheiras e derrote o Golem Guardião. Joga com teclado, controle ou toque.">
+<link rel="canonical" href="https://falzinhogames.com.br/elydran/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=Figtree:wght@400;600;700&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<style>
+:root{--bg:#0d0a1c;--surface:#1a1430;--line:#3a2e5e;--fg:#f3ecff;--muted:#b8a8d8;--gold:#f0c04a;--gutter:16px;--font-body:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:radial-gradient(900px 500px at 50% -10%,#3a2a7a 0%,#0d0a1c 65%) fixed,var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.55;padding-inline:var(--gutter);-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
+.bar{max-width:1200px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
+.bar .back{text-decoration:none;color:var(--muted);font-weight:600;font-size:14px}
+.bar .back:hover{color:var(--fg)}
+.bar .logo{font-family:'Pixelify Sans',monospace;font-weight:700;font-size:20px;letter-spacing:2px;color:#e9f6ff;text-shadow:0 0 12px rgba(127,214,255,.6)}
+.bar .logo small{color:var(--gold);font-size:12px;letter-spacing:1px;margin-left:6px}
+.iconbtn{background:var(--surface);border:1px solid var(--line);color:var(--fg);height:40px;border-radius:10px;font:700 14px var(--font-body);padding:0 12px;cursor:pointer}
+main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
+#stage{position:relative;width:min(100%,calc((100vh - 70px)*16/9));aspect-ratio:16/9;margin:0 auto;background:#000;border-radius:10px;overflow:hidden;box-shadow:0 0 0 2px #3a2e5e,0 20px 50px rgba(0,0,0,.6);touch-action:none;user-select:none;-webkit-user-select:none}
+#stage:fullscreen{width:min(100vw,calc(100vh*16/9));border-radius:0;box-shadow:none;margin:auto}
+#game{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+#btnFull{position:absolute;bottom:8px;right:8px;z-index:3;background:rgba(18,12,28,.7);color:#fff;border:1px solid rgba(240,192,74,.7);border-radius:8px;font:700 12px var(--font-body);padding:6px 10px;cursor:pointer}
+/* controles de toque */
+#touch{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}
+@media (pointer:coarse){#touch{display:block}#btnFull{display:none}}
+.stick{position:absolute;left:3%;bottom:6%;width:22%;max-width:130px;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);pointer-events:auto;touch-action:none}
+.knob{position:absolute;left:30%;top:30%;width:40%;height:40%;border-radius:50%;background:rgba(240,192,74,.55);border:2px solid rgba(255,255,255,.6)}
+.tbtns{position:absolute;right:3%;bottom:6%;width:30%;max-width:190px;aspect-ratio:1;pointer-events:none}
+.tb{position:absolute;width:34%;aspect-ratio:1;border-radius:50%;background:rgba(18,12,28,.55);border:2px solid rgba(255,255,255,.4);color:#fff;font:700 clamp(12px,3vw,20px) var(--font-body);pointer-events:auto;touch-action:none;display:grid;place-items:center;padding:0}
+.tb.on{background:rgba(240,192,74,.6)}
+.tb[data-act=attack]{right:0;top:33%;width:40%;background:rgba(232,66,79,.45)}
+.tb[data-act=dodge]{right:36%;bottom:0}
+.tb[data-act=special]{right:36%;top:0}
+.tb[data-act=interact]{right:72%;top:33%}
+.tsmall{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:none}
+.tsmall button{pointer-events:auto;touch-action:none;background:rgba(18,12,28,.6);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;font:700 14px var(--font-body);width:34px;height:30px;padding:0}
+.info{max-width:820px;margin:28px auto 0;color:var(--muted)}
+.info h1{font-family:'Pixelify Sans',monospace;color:var(--fg);font-size:clamp(24px,5vw,34px);margin:0 0 6px}
+.info h2{font-family:'Pixelify Sans',monospace;color:var(--fg);font-size:20px;margin:24px 0 8px}
+.info table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden;font-size:14px}
+.info th,.info td{padding:8px 10px;text-align:left;border-top:1px solid var(--line)}
+.info th{color:var(--fg);background:#241c44;border-top:0}
+.info p strong{color:var(--fg)}
+@media (orientation:portrait) and (pointer:coarse){#stage::after{content:'Gire o celular para a horizontal';position:absolute;left:0;right:0;bottom:0;background:var(--gold);color:#120c1c;font:700 13px var(--font-body);text-align:center;padding:6px;z-index:4}}
+</style>
+</head>
+<body>
+<div id="redes" style="margin-inline:calc(var(--gutter) * -1);padding:10px var(--gutter);background:#FF8A3D;color:#1A1209;font-size:14px;font-weight:600;text-align:center;display:flex;gap:6px 16px;justify-content:center;align-items:center;flex-wrap:wrap"><span>Siga a gente nas redes: dicas, novidades e feedbacks</span><a href="https://www.instagram.com/falzingames" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Instagram</a><a href="https://x.com/falzinhogames" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">X (Twitter)</a></div>
+<header class="bar"><a class="back" href="/">&larr; Falzinho Games</a><span class="logo">ELYDRAN<small>Lendas do Cristal</small></span><span></span></header>
+<main>
+  <div id="stage">
+    <canvas id="game" width="480" height="270" aria-label="ELYDRAN: Lendas do Cristal"></canvas>
+    <button id="btnFull" type="button">&#9974; Tela cheia</button>
+    <div id="touch" aria-hidden="true">
+      <div class="stick"><div class="knob"></div></div>
+      <div class="tbtns">
+        <button class="tb" data-act="attack" type="button">&#9876;</button>
+        <button class="tb" data-act="dodge" type="button">&raquo;</button>
+        <button class="tb" data-act="special" type="button">&#10022;</button>
+        <button class="tb" data-act="interact" type="button">&#9995;</button>
+      </div>
+      <div class="tsmall"><button data-act="swap" type="button" aria-label="Trocar criatura">&#8644;</button><button data-act="inventory" type="button" aria-label="Inventário">&#127890;</button><button data-act="map" type="button" aria-label="Mapa">&#128506;</button><button data-act="pause" type="button">&#10074;&#10074;</button><button id="btnFull2" type="button">&#9974;</button></div>
+    </div>
+  </div>
+  <section class="info">
+    <h1>ELYDRAN: Lendas do Cristal</h1>
+    <p>O Cristal de Aurora se apagou e as criaturas da floresta ficaram agressivas. Como <strong>Kael</strong>, ao lado da raposinha de brasa <strong>Brasek</strong>, explore a Vila Aurora e a Floresta de Aurora, encontre os três Fragmentos de Cristal, resgate novos companheiros e enfrente o <strong>Golem Guardião</strong> no Santuário do Cristal.</p>
+    <p>Combate em tempo real com espada, esquiva e o Pulso de Cristal. Suas criaturas lutam do seu lado, sobem de nível e <strong>evoluem</strong>. O jogo salva nos cristais de luz e automaticamente ao trocar de região.</p>
+    <h2>Controles</h2>
+    <table>
+      <tr><th>Ação</th><th>Teclado</th><th>Controle</th></tr>
+      <tr><td>Mover</td><td>WASD ou setas</td><td>Analógico ou direcional</td></tr>
+      <tr><td>Atacar</td><td>Espaço</td><td>A / ✕</td></tr>
+      <tr><td>Esquivar</td><td>Shift</td><td>B / ○</td></tr>
+      <tr><td>Interagir e conversar</td><td>E</td><td>X / □</td></tr>
+      <tr><td>Pulso de Cristal (habilidade)</td><td>Q</td><td>Y / △</td></tr>
+      <tr><td>Trocar criatura</td><td>Tab</td><td>LB / RB</td></tr>
+      <tr><td>Inventário</td><td>I</td><td>LT / RT</td></tr>
+      <tr><td>Mapa</td><td>M</td><td>View / Select</td></tr>
+      <tr><td>Pausar</td><td>Esc</td><td>Menu / Start</td></tr>
+    </table>
+    <p>No celular aparecem um analógico e botões na tela. Funciona melhor com o aparelho na horizontal e em tela cheia.</p>
+    <p style="font-size:13px">Música da abertura: Pixabay (kaazoom). Demo versão 0.1.</p>
+  </section>
+</main>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
