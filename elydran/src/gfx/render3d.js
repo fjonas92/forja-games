@@ -419,9 +419,25 @@ export class Renderer3D {
     for (const [it, e] of store) if (!seen.has(it)) { this.dyn.remove(e.group); e.dispose && e.dispose(); store.delete(it); }
   }
   xray(m) {
-    const mat = new THREE.MeshBasicMaterial({ color: '#7fd6ff', transparent: true, opacity: 0.45, depthFunc: THREE.GreaterDepth, depthWrite: false }), list = [];
+    const mat = new THREE.MeshBasicMaterial({ color: '#7fd6ff', transparent: true, opacity: 0.4, depthFunc: THREE.GreaterDepth, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), list = [];
     m.group.traverse(o => { if (o.isMesh && o.material && !o.material.isMeshBasicMaterial) list.push(o); });
-    list.forEach(o => { const t = new THREE.Mesh(o.geometry, mat); t.position.copy(o.position); t.rotation.copy(o.rotation); t.scale.copy(o.scale); t.renderOrder = 5; o.parent.add(t); });
+    m.xrayMeshes = []; list.forEach(o => { const t = new THREE.Mesh(o.geometry, mat); t.position.copy(o.position); t.rotation.copy(o.rotation); t.scale.copy(o.scale); t.renderOrder = 5; t.visible = false; o.parent.add(t); m.xrayMeshes.push(t); });
+  }
+  // o herói está atrás de árvore, casa ou pilar (do ponto de vista da câmera)? Só então aparece a silhueta azul
+  heroOccluded(p) {
+    const hx = p.x * U, hz = p.y * U, dx = this.cam.position.x - hx, dz = this.cam.position.z - hz, L = Math.hypot(dx, dz) || 1, ux = dx / L, uz = dz / L, tp = Math.tan(this.pitch);
+    for (const o of this.mapRef.objects) {
+      let H, R, ox, oz;
+      if (o.type === 'tree') { H = 3; R = 0.8; ox = o.x * U; oz = (o.y - 2) * U; }
+      else if (o.type === 'house') { H = 3.6; R = Math.max(1.3, (o.wt || 4) * 0.5); ox = o.x * U; oz = o.y * U - 1.15; }
+      else if (o.type === 'pillar') { H = 2.8; R = 0.5; ox = o.x * U; oz = o.y * U - 0.4; }
+      else continue;
+      const rx = ox - hx, rz = oz - hz; if (Math.abs(rx) > 9 || Math.abs(rz) > 9) continue;
+      const s = rx * ux + rz * uz; if (s < 0.2 || s > 7) continue;
+      if (Math.abs(rx * uz - rz * ux) > R) continue;
+      if (H > 0.9 + s * tp) return true;
+    }
+    return false;
   }
   color(col) {
     let c = this.colCache.get(col); if (c) return c;
@@ -439,6 +455,7 @@ export class Renderer3D {
       if (m.weaponKind !== p.weapon) { m.weaponKind = p.weapon; m.setWeapon(p.weapon); }
       m.group.visible = !(p.iframes > 0 && p.dodgeT <= 0 && Math.floor(t * 20) % 2);
       m.pose({ moving: p.moving, walkT: p.walkT, t, swing: p.swingT < 0.2 ? p.swingT / 0.2 : -1, dodge: p.dodgeT > 0 ? 1 - p.dodgeT / 0.22 : -1 });
+      const occ = this.heroOccluded(p); if (m.xrayMeshes) for (const xm of m.xrayMeshes) xm.visible = occ;
     });
     // moradores
     this.track(this.S.npc, g.npcs, n => M.makeHumanoid(n.pal), (m, n) => {
