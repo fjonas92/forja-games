@@ -6,7 +6,19 @@ import { rng } from '../utils/math.js';
 const GROUND = {
   day: { [T.GRASS]: ['#5fb04a', '#55a443', '#6cbd52'], [T.GRASS2]: ['#4e9c40', '#47913a', '#58a648'], [T.TALL]: ['#4e9c40'], [T.FLOWER]: ['#5fb04a'], [T.MOSS]: ['#4a8f3e'] },
   forest: { [T.GRASS]: ['#3f8a3c', '#3a8037', '#479442'], [T.GRASS2]: ['#2f6e35', '#2b6631', '#357a3a'], [T.TALL]: ['#2f6e35'], [T.FLOWER]: ['#3f8a3c'], [T.MOSS]: ['#2a5f3a', '#275836', '#2f6a40'] },
-  sanctuary: {}
+  sanctuary: {},
+  ice: { [T.GRASS]: ['#e4eef8', '#d6e4f2', '#eef5fc'], [T.GRASS2]: ['#d3e1f0', '#c8d8ea', '#dce8f4'], [T.TALL]: ['#c8d8ea'], [T.FLOWER]: ['#e4eef8'], [T.MOSS]: ['#b8d0e4'],
+    path: ['#9db6cf', '#90aac4', '#aac2d8'], cobble: ['#8aa4c0', '#7e98b4', '#96b0cc'], sand: ['#cfe0ee', '#c2d6e8'], stone: ['#6a86a8', '#5f7c9e', '#7692b4'], water: '#4cc0ee', tall: '#bcd4ea' },
+  desert: { [T.GRASS]: ['#e0c27a', '#d8b86e', '#e8cc88'], [T.GRASS2]: ['#d4b366', '#cba85c', '#dcbe74'], [T.TALL]: ['#c8a458'], [T.FLOWER]: ['#e0c27a'], [T.MOSS]: ['#c9a35a'],
+    path: ['#b88a54', '#ae804a', '#c2945e'], cobble: ['#c4a67a', '#b89a6e', '#d0b286'], sand: ['#f0dc9c', '#e6d08e'], stone: ['#9a7a4a', '#8e6e40', '#a68656'], water: '#3ab0b0', tall: '#b89a4a' },
+  volcano: { [T.GRASS]: ['#3a2e2c', '#332826', '#443634'], [T.GRASS2]: ['#2c2220', '#251c1a', '#362a28'], [T.TALL]: ['#2c2220'], [T.FLOWER]: ['#3a2e2c'], [T.MOSS]: ['#4a2a22'],
+    path: ['#5a4038', '#503832', '#654a42'], cobble: ['#4e4440', '#443c38', '#5a504a'], sand: ['#6a5040', '#5e4638'], stone: ['#3a3038', '#322a32', '#443a42'], water: '#ff6a1a', tall: '#5a3a30' },
+  swamp: { [T.GRASS]: ['#4a5e32', '#42562c', '#52683a'], [T.GRASS2]: ['#3a4c28', '#344522', '#425630'], [T.TALL]: ['#3a4c28'], [T.FLOWER]: ['#4a5e32'], [T.MOSS]: ['#2e4a2a'],
+    path: ['#6a5a3a', '#5e5032', '#756444'], cobble: ['#5a6458', '#4e584c', '#66705f'], sand: ['#8a8a56', '#7e7e4c'], stone: ['#44503f', '#3c4838', '#4d5a48'], water: '#4a6a3a', tall: '#5a7a3a' },
+  corrupt: { [T.GRASS]: ['#3a2e4a', '#33283f', '#443758'], [T.GRASS2]: ['#2c2238', '#261e32', '#352a44'], [T.TALL]: ['#2c2238'], [T.FLOWER]: ['#3a2e4a'], [T.MOSS]: ['#48285a'],
+    path: ['#6a4a5a', '#5e4252', '#785868'], cobble: ['#5a4c6a', '#4e4260', '#665878'], sand: ['#7a5a7a', '#6e506e'], stone: ['#4a3a66', '#42345c', '#54447a'], water: '#7a3ab8', tall: '#7a4aa8' },
+  sky: { [T.GRASS]: ['#6ac86a', '#5cbc5e', '#78d478'], [T.GRASS2]: ['#58b45a', '#4ea852', '#64c066'], [T.TALL]: ['#58b45a'], [T.FLOWER]: ['#6ac86a'], [T.MOSS]: ['#4aa060'],
+    path: ['#d8c8a0', '#cebe96', '#e2d2aa'], cobble: ['#c8c6d8', '#bcbace', '#d4d2e2'], sand: ['#efe2b0', '#e6d8a4'], stone: ['#b8b4cc', '#aca8c2', '#c4c0d6'], water: '#8ac8f0', tall: '#58b45a' }
 };
 const PATH = ['#c9a06a', '#bf955f', '#d1aa74'], COBBLE = ['#9a9aa8', '#8e8e9c', '#a6a6b4'], SAND = ['#e8d39a', '#dfc88c'], STONE = ['#4a4466', '#433e5e', '#524b70'];
 
@@ -14,27 +26,27 @@ function noisy(g, r, x, y, cols, n) { g.fillStyle = cols[0]; g.fillRect(x, y, TI
 
 export function renderGround(map) {
   const c = document.createElement('canvas'); c.width = map.w * TILE; c.height = map.h * TILE;
-  const g = c.getContext('2d'), r = rng(map.w * 31 + map.h), pal = GROUND[map.theme] || GROUND.day;
+  const g = c.getContext('2d'), r = rng(map.w * 31 + map.h), pal = GROUND[map.theme] || GROUND.day, cPATH = pal.path || PATH, cCOB = pal.cobble || COBBLE, cSAND = pal.sand || SAND, cSTONE = pal.stone || STONE, cWAT = pal.water || (map.theme === 'forest' ? '#2a8aa8' : '#3a9ad8'), cTALL = pal.tall || (map.theme === 'forest' ? '#4e9a48' : '#7cc35a');
   const isW = (x, y) => map.get(x, y) === T.WATER;
   for (let y = 0; y < map.h; y++) for (let x = 0; x < map.w; x++) {
     const t = map.get(x, y), X = x * TILE, Y = y * TILE;
-    if (t === T.PATH) noisy(g, r, X, Y, PATH, 6);
-    else if (t === T.COBBLE) { noisy(g, r, X, Y, COBBLE, 2); g.fillStyle = 'rgba(40,40,60,.35)'; const o = (y % 2) * 4; g.fillRect(X, Y + 7, TILE, 1); g.fillRect(X + o + 3, Y, 1, 7); g.fillRect(X + o + 11, Y + 8, 1, 8); g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(X + o + 4, Y + 1, 5, 1); }
-    else if (t === T.SAND) noisy(g, r, X, Y, SAND, 4);
-    else if (t === T.WATER) { g.fillStyle = map.theme === 'forest' ? '#2a8aa8' : '#3a9ad8'; g.fillRect(X, Y, TILE, TILE); g.fillStyle = 'rgba(0,30,80,.18)'; g.fillRect(X, Y + 8, TILE, 8); }
+    if (t === T.PATH) noisy(g, r, X, Y, cPATH, 6);
+    else if (t === T.COBBLE) { noisy(g, r, X, Y, cCOB, 2); g.fillStyle = 'rgba(40,40,60,.35)'; const o = (y % 2) * 4; g.fillRect(X, Y + 7, TILE, 1); g.fillRect(X + o + 3, Y, 1, 7); g.fillRect(X + o + 11, Y + 8, 1, 8); g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(X + o + 4, Y + 1, 5, 1); }
+    else if (t === T.SAND) noisy(g, r, X, Y, cSAND, 4);
+    else if (t === T.WATER) { g.fillStyle = cWAT; g.fillRect(X, Y, TILE, TILE); g.fillStyle = 'rgba(0,30,80,.18)'; g.fillRect(X, Y + 8, TILE, 8); }
     else if (t === T.BRIDGE) { g.fillStyle = '#7a4a2a'; g.fillRect(X, Y, TILE, TILE); g.fillStyle = '#9a6234'; for (let i = 0; i < 4; i++) g.fillRect(X + i * 4, Y, 3, TILE); g.fillStyle = '#4e2c18'; g.fillRect(X, Y, TILE, 1); }
-    else if (t === T.STONE || t === T.COBBLE && map.theme === 'sanctuary') { noisy(g, r, X, Y, STONE, 3); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(X, Y + 15, TILE, 1); g.fillRect(X + 15, Y, 1, TILE); g.fillStyle = 'rgba(160,140,255,.08)'; g.fillRect(X + 1, Y + 1, 6, 1); }
-    else if (t === T.VOID) { g.fillStyle = '#0b0718'; g.fillRect(X, Y, TILE, TILE); if (r() < 0.04) { g.fillStyle = '#d9c8ff'; g.fillRect(X + Math.floor(r() * 15), Y + Math.floor(r() * 15), 1, 1); } }
+    else if (t === T.STONE || t === T.COBBLE && map.theme === 'sanctuary') { noisy(g, r, X, Y, cSTONE, 3); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(X, Y + 15, TILE, 1); g.fillRect(X + 15, Y, 1, TILE); g.fillStyle = 'rgba(160,140,255,.08)'; g.fillRect(X + 1, Y + 1, 6, 1); }
+    else if (t === T.VOID) { g.fillStyle = map.theme === 'sky' ? '#bfe0ff' : '#0b0718'; g.fillRect(X, Y, TILE, TILE); if (map.theme !== 'sky' && r() < 0.04) { g.fillStyle = '#d9c8ff'; g.fillRect(X + Math.floor(r() * 15), Y + Math.floor(r() * 15), 1, 1); } }
     else {
       const cols = pal[t] || pal[T.GRASS] || ['#5fb04a']; noisy(g, r, X, Y, cols.length > 1 ? cols : [cols[0], '#4a8f3e'], 5);
-      if (t === T.TALL) { g.fillStyle = map.theme === 'forest' ? '#4e9a48' : '#7cc35a'; for (let i = 0; i < 5; i++) { const gx = X + 1 + Math.floor(r() * 13), gy = Y + 4 + Math.floor(r() * 10); g.fillRect(gx, gy - 3, 1, 4); g.fillRect(gx + 2, gy - 2, 1, 3); } }
+      if (t === T.TALL) { g.fillStyle = cTALL; for (let i = 0; i < 5; i++) { const gx = X + 1 + Math.floor(r() * 13), gy = Y + 4 + Math.floor(r() * 10); g.fillRect(gx, gy - 3, 1, 4); g.fillRect(gx + 2, gy - 2, 1, 3); } }
       if (t === T.FLOWER) { for (let i = 0; i < 3; i++) { g.fillStyle = ['#ffd23f', '#ff6fa8', '#ffffff', '#8ad0ff'][Math.floor(r() * 4)]; const fx = X + 2 + Math.floor(r() * 11), fy = Y + 2 + Math.floor(r() * 11); g.fillRect(fx, fy, 2, 2); g.fillStyle = '#2f6e35'; g.fillRect(fx, fy + 2, 1, 2); } }
       if (r() < 0.08) { g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(X + Math.floor(r() * 12), Y + Math.floor(r() * 12), 3, 1); }
     }
     // borda clara onde a água encontra a terra
     if (t === T.WATER) { g.fillStyle = 'rgba(220,245,255,.55)'; if (!isW(x, y - 1)) g.fillRect(X, Y, TILE, 2); if (!isW(x - 1, y)) g.fillRect(X, Y, 1, TILE); if (!isW(x + 1, y)) g.fillRect(X + 15, Y, 1, TILE); }
     // sombra na beirada do vazio (santuário flutuante)
-    if (t === T.VOID && map.get(x, y - 1) !== T.VOID && map.get(x, y - 1) !== undefined) { g.fillStyle = '#2a2244'; g.fillRect(X, Y, TILE, 6); g.fillStyle = '#1a1430'; g.fillRect(X, Y + 6, TILE, 4); }
+    if (t === T.VOID && map.theme !== 'sky' && map.get(x, y - 1) !== T.VOID && map.get(x, y - 1) !== undefined) { g.fillStyle = '#2a2244'; g.fillRect(X, Y, TILE, 6); g.fillStyle = '#1a1430'; g.fillRect(X, Y + 6, TILE, 4); }
   }
   return c;
 }

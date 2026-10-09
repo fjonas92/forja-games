@@ -20,11 +20,23 @@ export class Input {
     });
     addEventListener('keyup', e => this.keys.delete(e.code));
     addEventListener('blur', () => this.keys.clear());
-    addEventListener('gamepadconnected', e => { this.padName = e.gamepad.id; this.lastDevice = 'gamepad'; });
+    addEventListener('gamepadconnected', e => { this.padName = e.gamepad.id; this.lastDevice = 'gamepad'; this.connected = true; this.onPad && this.onPad(true, e.gamepad.id); });
+    addEventListener('gamepaddisconnected', () => {
+      const left = [...(navigator.getGamepads ? navigator.getGamepads() : [])].some(p => p && p.connected);
+      if (!left) { this.connected = false; if (this.lastDevice === 'gamepad') this.lastDevice = 'keyboard'; this.onPad && this.onPad(false, ''); }
+    });
+    addEventListener('pointerdown', e => { if (e.pointerType === 'touch') this.lastDevice = 'touch'; });
+    this.yaw = 0; this.zoomAxis = 0; this.rotate = false; this.connected = false; this.onPad = null;
+  }
+  // vibração do controle (quando o navegador permite)
+  rumble(ms = 150, strong = 0.7, weak = 0.4) {
+    if (this.lastDevice !== 'gamepad') return;
+    try { for (const p of navigator.getGamepads()) { if (p && p.connected && p.vibrationActuator) { p.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: strong, weakMagnitude: weak }); break; } } } catch (e) {}
   }
   // chamado uma vez por quadro, antes da lógica
   poll() {
     ACTIONS.forEach(a => { this.prev[a] = this.held[a]; this.held[a] = KEYS[a].some(k => this.keys.has(k)) || !!this.touch.btn[a]; });
+    let camX = (this.keys.has('KeyC') ? 1 : 0) - (this.keys.has('KeyZ') ? 1 : 0), camY = 0;
     let ax = (this.held.right ? 1 : 0) - (this.held.left ? 1 : 0), ay = (this.held.down ? 1 : 0) - (this.held.up ? 1 : 0);
     if (this.touch.x || this.touch.y) { ax = this.touch.x; ay = this.touch.y; }
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -33,15 +45,23 @@ export class Input {
       const b = i => i >= 0 && p.buttons[i] && (p.buttons[i].pressed || p.buttons[i].value > 0.5);
       let any = false;
       ACTIONS.forEach(a => { if (PAD[a] && PAD[a].some(b)) { this.held[a] = true; any = true; } });
-      const sx = p.axes[0] || 0, sy = p.axes[1] || 0;
-      if (Math.hypot(sx, sy) > 0.25) { ax = sx; ay = sy; any = true; }
+      const dz = (x, y, d = 0.2) => { const m = Math.hypot(x, y); if (m < d) return [0, 0]; const k = Math.min(1, (m - d) / (1 - d)) / m; return [x * k, y * k]; };
+      const [sx, sy] = dz(p.axes[0] || 0, p.axes[1] || 0);
+      if (sx || sy) { ax = sx; ay = sy; any = true; }
+      if (p.mapping === 'standard' || p.axes.length >= 4) { const [cx, cy] = dz(p.axes[2] || 0, p.axes[3] || 0, 0.25); camX += cx; camY = cy; if (cx || cy) any = true; }
       if (b(12) || b(13) || b(14) || b(15)) { ax = (b(15) ? 1 : 0) - (b(14) ? 1 : 0); ay = (b(13) ? 1 : 0) - (b(12) ? 1 : 0); }
       // stick também navega nos menus
       if (sy < -0.6) this.held.up = true; if (sy > 0.6) this.held.down = true; if (sx < -0.6) this.held.left = true; if (sx > 0.6) this.held.right = true;
       if (any) { this.lastDevice = 'gamepad'; this.padName = p.id; }
+      if (!this.connected) { this.connected = true; this.onPad && this.onPad(true, p.id); }
       break;
     }
+    // câmera: gira com o analógico direito (ou Z / C) e o zoom com cima e baixo dele
+    this.yaw += Math.max(-1, Math.min(1, camX)) * (1 / 60) * 2.2; if (this.yaw > Math.PI) this.yaw -= Math.PI * 2; else if (this.yaw < -Math.PI) this.yaw += Math.PI * 2; this.zoomAxis = camY;
+    if (this.keys.has('KeyZ') && this.keys.has('KeyC')) this.yaw = 0;
     const l = Math.hypot(ax, ay); if (l > 1) { ax /= l; ay /= l; }
+    // com a câmera girada, "para cima" é sempre para onde a câmera olha
+    if (this.rotate && this.yaw) { const c = Math.cos(this.yaw), s = Math.sin(this.yaw), rx = ax * c + ay * s, ry = -ax * s + ay * c; ax = rx; ay = ry; }
     this.axis.x = ax; this.axis.y = ay;
   }
   pressed(a) { return this.held[a] && !this.prev[a]; }

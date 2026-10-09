@@ -5,5 +5,6 @@ export const ITEMS = {
   berry: { name: 'Fruta-Lume', kind: 'consumable', desc: 'Cura 15 de vida de você e da sua criatura.', heal: 15, petHeal: 25, price: 6, icon: 'berry' },
   sword_iron: { name: 'Espada de Ferro', kind: 'weapon', desc: 'Espada simples, mas confiável. Ataque +4.', attack: 4, icon: 'sword' },
   sword_crystal: { name: 'Lâmina Cristalina', kind: 'weapon', desc: 'Forjada com cristal de Aurora. Ataque +11.', attack: 11, icon: 'sword2' },
-  shard: { name: 'Fragmento de Cristal', kind: 'quest', desc: 'Pulsa com uma luz azul. O Ancião precisa de três.', icon: 'shard' }
+  shard: { name: 'Fragmento de Cristal', kind: 'quest', desc: 'Pulsa com uma luz azul. Três delas quebram o selo de espinhos.', icon: 'shard' },
+  key_ruin: { name: 'Chave de Pedra', kind: 'quest', desc: 'Pesada e fria. Abre o portão de pedra nas Ruínas Esquecidas.', icon: 'key' }
 };

@@ -14,6 +14,7 @@ const ok = g => g.input.pressed('interact') || g.input.pressed('attack');
 const back = g => g.input.pressed('back') || g.input.pressed('dodge');
 
 /* ---------- Abertura ---------- */
+const LOGO = new Image(); LOGO.src = new URL('../../assets/logo.png', import.meta.url).href;
 export function drawTitle(ctx, g, t) {
   const sky = ctx.createLinearGradient(0, 0, 0, VIEW_H); sky.addColorStop(0, '#120a2e'); sky.addColorStop(0.55, '#3a2a7a'); sky.addColorStop(1, '#8a5ab8');
   ctx.fillStyle = sky; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
@@ -29,11 +30,16 @@ export function drawTitle(ctx, g, t) {
   drawCrystal(ctx, 240, 250, t, true);
   // logotipo
   const glow = 0.6 + Math.sin(t * 2) * 0.2;
-  ctx.save(); ctx.shadowColor = `rgba(127,214,255,${glow})`; ctx.shadowBlur = 12;
-  text(ctx, 'ELYDRAN', VIEW_W / 2, 30, { size: 40, align: 'center', col: '#e9f6ff', shadowCol: '#2a1a5a' }); ctx.restore();
-  text(ctx, '— Lendas do Cristal —', VIEW_W / 2, 74, { size: 11, align: 'center', col: '#ffd37a' });
+  if (LOGO.complete && LOGO.naturalWidth) {
+    const lw = 190, lh = lw * LOGO.naturalHeight / LOGO.naturalWidth;
+    ctx.save(); ctx.shadowColor = `rgba(127,214,255,${glow})`; ctx.shadowBlur = 14; ctx.drawImage(LOGO, VIEW_W / 2 - lw / 2, 4 + Math.sin(t * 1.2) * 1.5, lw, lh); ctx.restore();
+  } else {
+    ctx.save(); ctx.shadowColor = `rgba(127,214,255,${glow})`; ctx.shadowBlur = 12;
+    text(ctx, 'ELYDRAN', VIEW_W / 2, 30, { size: 40, align: 'center', col: '#e9f6ff', shadowCol: '#2a1a5a' }); ctx.restore();
+    text(ctx, '— Lendas do Cristal —', VIEW_W / 2, 74, { size: 11, align: 'center', col: '#ffd37a' });
+  }
   const opts = g.titleOpts(); g.ui.sel = Math.min(g.ui.sel, opts.length - 1);
-  opts.forEach((o, i) => { const y = 112 + i * 18, on = i === g.ui.sel; if (on) { ctx.fillStyle = 'rgba(240,192,74,.18)'; ctx.fillRect(VIEW_W / 2 - 70, y - 3, 140, 15); text(ctx, '▶', VIEW_W / 2 - 64, y, { size: 9, col: '#f0c04a' }); } text(ctx, o.label, VIEW_W / 2, y, { size: 10, align: 'center', col: on ? '#ffe27a' : '#d8cfee' }); });
+  opts.forEach((o, i) => { const y = 120 + i * 17, on = i === g.ui.sel; if (on) { ctx.fillStyle = 'rgba(240,192,74,.18)'; ctx.fillRect(VIEW_W / 2 - 70, y - 3, 140, 15); text(ctx, '▶', VIEW_W / 2 - 64, y, { size: 9, col: '#f0c04a' }); } text(ctx, o.label, VIEW_W / 2, y, { size: 10, align: 'center', col: on ? '#ffe27a' : '#d8cfee' }); });
   text(ctx, g.input.lastDevice === 'gamepad' ? 'Controle conectado' : 'Teclado, controle ou toque', VIEW_W / 2, VIEW_H - 12, { size: 7, align: 'center', col: '#b8a8d8' });
   text(ctx, 'v0.1', VIEW_W - 6, VIEW_H - 12, { size: 7, align: 'right', col: '#8a7aa8' });
 }
@@ -42,9 +48,9 @@ export function updateTitle(g) { const opts = g.titleOpts(); g.ui.sel = nav(g, o
 /* ---------- Controles ---------- */
 export function drawControls(ctx, g) {
   panel(ctx, 70, 30, 340, 210); text(ctx, 'Controles', VIEW_W / 2, 40, { size: 12, align: 'center', col: '#ffe27a' });
-  const rows = [['Mover', 'WASD / setas', 'Analógico / direcional'], ['Atacar', 'Espaço', 'A / ✕'], ['Esquivar', 'Shift', 'B / ○'], ['Interagir', 'E', 'X / □'], ['Pulso de Cristal', 'Q', 'Y / △'], ['Trocar criatura', 'Tab', 'LB / RB'], ['Inventário', 'I', 'LT / RT'], ['Mapa', 'M', 'View / Select'], ['Pausar', 'Esc', 'Menu / Start']];
-  text(ctx, 'Teclado', 230, 60, { size: 7, col: '#9fe8ff' }); text(ctx, 'Controle', 320, 60, { size: 7, col: '#9fe8ff' });
-  rows.forEach(([a, k, p], i) => { const y = 72 + i * 16; text(ctx, a, 90, y, { size: 8 }); text(ctx, k, 230, y, { size: 8, col: '#ffe27a' }); text(ctx, p, 320, y, { size: 8, col: '#ffe27a' }); });
+  const rows = [['Mover', 'WASD / setas', 'Analógico / direcional'], ['Atacar', 'Espaço', 'A / ✕'], ['Esquivar', 'Shift', 'B / ○'], ['Interagir', 'E', 'X / □'], ['Pulso de Cristal', 'Q', 'Y / △'], ['Trocar criatura', 'Tab', 'LB / RB'], ['Inventário', 'I', 'LT / RT'], ['Mapa', 'M', 'View / Select'], ['Pausar', 'Esc', 'Menu / Start'], ['Girar câmera (3D)', 'Z / C', 'Analógico direito'], ['Zoom (3D)', 'Roda do mouse', 'Direito cima/baixo']];
+  text(ctx, 'Teclado', 230, 56, { size: 7, col: '#9fe8ff' }); text(ctx, 'Controle', 320, 56, { size: 7, col: '#9fe8ff' });
+  rows.forEach(([a, k, p], i) => { const y = 67 + i * 13.5; text(ctx, a, 90, y, { size: 8 }); text(ctx, k, 230, y, { size: 8, col: '#ffe27a' }); text(ctx, p, 320, y, { size: 8, col: '#ffe27a' }); });
   keyHint(ctx, g.input.label('back'), 'Voltar', VIEW_W / 2, 222, 'center');
 }
 export function updateControls(g) { if (back(g) || ok(g) || g.input.pressed('pause')) { Audio.select(); g.closeOverlay(); } }
@@ -179,13 +185,16 @@ export function drawOver(ctx, g) {
 }
 export function updateOver(g) { if (ok(g)) g.respawn(); }
 export function drawVictory(ctx, g, t) {
+  const v = g.victory || { title: 'O Cristal de Aurora brilha outra vez!', l1: '', l2: '' };
   ctx.fillStyle = 'rgba(10,6,30,.78)'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
-  drawCrystal(ctx, VIEW_W / 2, 120, t, true);
-  text(ctx, 'O Cristal de Aurora brilha outra vez!', VIEW_W / 2, 132, { size: 12, align: 'center', col: '#bff3ff' });
+  drawCrystal(ctx, VIEW_W / 2, 110, t, true);
+  if (v.phase) text(ctx, v.phase, VIEW_W / 2, 122, { size: 7, align: 'center', col: '#ffe27a' });
+  text(ctx, v.title, VIEW_W / 2, 134, { size: 12, align: 'center', col: '#bff3ff' });
   const mins = Math.floor(g.playTime / 60);
-  text(ctx, `Nível ${g.player.level} · ${g.party.length} criatura${g.party.length > 1 ? 's' : ''} · ${mins} min de jogo`, VIEW_W / 2, 152, { size: 8, align: 'center' });
-  text(ctx, 'Obrigado por jogar a demo de ELYDRAN: Lendas do Cristal.', VIEW_W / 2, 172, { size: 8, align: 'center', col: '#ffe27a' });
-  text(ctx, 'Novas regiões, criaturas e transformações estão a caminho.', VIEW_W / 2, 184, { size: 7, align: 'center', col: '#b8a8d8' });
-  keyHint(ctx, g.input.label('interact'), 'Continuar explorando', VIEW_W / 2, 210, 'center');
+  text(ctx, `Nível ${g.player.level} · ${g.party.length} criatura${g.party.length > 1 ? 's' : ''} · ${mins} min de jogo`, VIEW_W / 2, 154, { size: 8, align: 'center' });
+  if (v.l1) text(ctx, v.l1, VIEW_W / 2, 172, { size: 8, align: 'center', col: '#ffe27a' });
+  if (v.l2) text(ctx, v.l2, VIEW_W / 2, 185, { size: 7, align: 'center', col: '#b8a8d8' });
+  if (v.l3) text(ctx, v.l3, VIEW_W / 2, 197, { size: 7, align: 'center', col: '#b8a8d8' });
+  keyHint(ctx, g.input.label('interact'), 'Continuar', VIEW_W / 2, 216, 'center');
 }
 export function updateVictory(g) { if (ok(g)) { g.closeOverlay(); Audio.playMusic('victory'); } }

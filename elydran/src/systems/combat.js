@@ -16,19 +16,30 @@ export function calcDamage(attack, defense, power, atkEl, defEl) {
 }
 
 export class Effects {
+  static mode3d = false;
   constructor() { this.texts = []; this.parts = []; this.shake = 0; this.flash = 0; this.flashCol = '#fff'; }
-  text(x, y, s, col, big) { this.texts.push({ x, y, s: String(s), col: col || '#fff', t: 0, big: !!big }); }
-  burst(x, y, col, n, spd, life) { for (let i = 0; i < (n || 8); i++) { const a = Math.random() * 6.28, v = rand(0.3, 1) * (spd || 60); this.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 10, t: 0, life: life || rand(0.3, 0.6), col, g: 60 }); } }
-  sparkle(x, y, col) { this.parts.push({ x: x + rand(-4, 4), y: y + rand(-4, 4), vx: rand(-8, 8), vy: rand(-30, -10), t: 0, life: rand(0.4, 0.9), col, g: 0 }); }
+  // mode3d: no modo 3D os efeitos têm altura (z) própria; y é sempre a posição no chão
+  text(x, y, s, col, big) { const o = { x, y, s: String(s), col: col || '#fff', t: 0, big: !!big }; if (Effects.mode3d) { o.gx = x; o.gy = y + 22; } this.texts.push(o); }
+  burst(x, y, col, n, spd, life) {
+    for (let i = 0; i < (n || 8); i++) {
+      const a = Math.random() * 6.28, v = rand(0.3, 1) * (spd || 60);
+      if (Effects.mode3d) this.parts.push({ x, y: y + 6, z: 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6, vz: rand(15, 70) * (v / 60 + 0.4), t: 0, life: life || rand(0.3, 0.6), col, g: 0 });
+      else this.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 10, t: 0, life: life || rand(0.3, 0.6), col, g: 60 });
+    }
+  }
+  sparkle(x, y, col) {
+    if (Effects.mode3d) this.parts.push({ x: x + rand(-4, 4), y: y + rand(-3, 3) + 4, z: 6, vx: rand(-8, 8), vy: 0, vz: rand(10, 30), t: 0, life: rand(0.4, 0.9), col, g: 0 });
+    else this.parts.push({ x: x + rand(-4, 4), y: y + rand(-4, 4), vx: rand(-8, 8), vy: rand(-30, -10), t: 0, life: rand(0.4, 0.9), col, g: 0 });
+  }
   update(dt) {
-    for (const p of this.texts) { p.t += dt; p.y -= dt * 22; }
+    for (const p of this.texts) { p.t += dt; if (p.gx === undefined) p.y -= dt * 22; }
     this.texts = this.texts.filter(p => p.t < 0.9);
-    for (const p of this.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.g * dt; p.vx *= 0.96; }
+    for (const p of this.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; if (p.vz !== undefined) { p.z += p.vz * dt; p.vz -= 150 * dt; if (p.z < 0) { p.z = 0; p.vz = 0; } } else p.vy += p.g * dt; p.vx *= 0.96; }
     this.parts = this.parts.filter(p => p.t < p.life);
     this.shake = Math.max(0, this.shake - dt * 18); this.flash = Math.max(0, this.flash - dt * 2.5);
   }
   draw(ctx, cam, font) {
-    for (const p of this.parts) { ctx.globalAlpha = 1 - p.t / p.life; ctx.fillStyle = p.col; ctx.fillRect(Math.round(p.x - cam.x), Math.round(p.y - cam.y), 2, 2); }
+    for (const p of this.parts) { ctx.globalAlpha = 1 - p.t / p.life; ctx.fillStyle = p.col; ctx.fillRect(Math.round(p.x - cam.x), Math.round(p.y - cam.y - (p.z || 0)), 2, 2); }
     ctx.globalAlpha = 1; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     for (const p of this.texts) {
       ctx.globalAlpha = Math.min(1, 2.2 - p.t * 2.4); ctx.font = (p.big ? 'bold 11px ' : 'bold 9px ') + font;

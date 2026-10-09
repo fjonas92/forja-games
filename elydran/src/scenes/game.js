@@ -56,6 +56,7 @@ export class Game {
     o.push({ label: 'Nova jornada', fn: () => { if (Save.hasSave() && !this.confirmNew) { this.confirmNew = true; this.toast('Aperte de novo para apagar o jogo salvo e começar do zero', '#ff9a6a', 3); return; } this.confirmNew = false; this.startNew(); } });
     o.push({ label: 'Controles', fn: () => this.openOverlay('controls') });
     o.push({ label: Audio.on ? 'Som: ligado' : 'Som: desligado', fn: () => { Audio.setOn(!Audio.on); if (Audio.on) Audio.playIntro(); } });
+    if (this.gfx) o.push({ label: 'Gráficos: ' + (this.gfx.is3d() ? '3D' : '2D'), fn: () => this.gfx.toggle() });
     return o;
   }
   pauseOpts() {
@@ -63,6 +64,7 @@ export class Game {
     if (!this.boss) o.push({ label: 'Salvar jornada', fn: () => { this.saveGame(); this.closeOverlay(); } });
     o.push({ label: 'Inventário', fn: () => this.openOverlay('menu') }, { label: 'Mapa', fn: () => this.openOverlay('map') }, { label: 'Controles', fn: () => this.openOverlay('controls') });
     o.push({ label: Audio.on ? 'Som: ligado' : 'Som: desligado', fn: () => { Audio.setOn(!Audio.on); if (Audio.on) Audio.playMusic(this.musicFor()); } });
+    if (this.gfx) o.push({ label: 'Gráficos: ' + (this.gfx.is3d() ? '3D' : '2D'), fn: () => this.gfx.toggle() });
     o.push({ label: 'Sair para a abertura', fn: () => { if (!this.boss) this.saveGame(true); this.mode = 'title'; this.ui.sel = 0; Audio.stopMusic(); Audio.playIntro(); } });
     return o;
   }
@@ -70,7 +72,7 @@ export class Game {
   closeOverlay() { this.mode = this.prevMode && this.prevMode !== this.mode ? this.prevMode : 'play'; if (this.mode !== 'title' && this.mode !== 'pause') this.mode = 'play'; this.prevMode = null; this.ui.sel = 0; }
 
   /* ---------- mapas ---------- */
-  musicFor() { return this.map.id === 'sanctuary' ? (this.flags.bossDefeated ? 'victory' : 'sanctuary') : this.map.id; }
+  musicFor() { const id = this.map.id; if (id === 'sanctuary') return this.flags.thornDown ? 'victory' : 'sanctuary'; if (id === 'slimepit') return this.flags.slimeDown ? 'forest' : 'sanctuary'; if (id === 'ruins') return 'sanctuary'; if (this.map.phase) return this.map.phase.music; return id; }
   loadMap(id, x, y) {
     const m = getMap(id); this.map = m; this.ground = m.groundCanvas || (m.groundCanvas = renderGround(m));
     const p = this.player; p.x = x != null ? x : m.start.x; p.y = y != null ? y : m.start.y;
@@ -79,13 +81,15 @@ export class Game {
     for (const s of m.spawns) {
       if (s.special === 'shard' && this.flags.alphaDown) continue;
       if (s.special === 'guard_cristarta' && this.flags.cristarta) continue;
-      if (s.special === 'boss') { if (this.flags.bossDefeated) continue; this.boss = new Boss(s.x, s.y); this.enemies.push(this.boss); continue; }
-      const lvl = id === 'forest' ? 1 + Math.floor(Math.hypot(s.x - m.start.x, s.y - m.start.y) / 260) : 1;
+      if (s.special === 'boss') { if (this.flags[s.flag]) continue; const b = new Boss(s.kind, s.x, s.y); b.flag = s.flag; this.boss = b; this.enemies.push(b); continue; }
+      const lvl = id === 'forest' ? 1 + Math.floor(Math.hypot(s.x - m.start.x, s.y - m.start.y) / 260) : id === 'ruins' ? 3 : m.phase ? m.phase.lvl : 1;
       this.enemies.push(new Enemy(s.kind, s.x, s.y, s.special, lvl));
     }
     m.bushes.forEach(b => { b.ready = true; });
     this.spawnPet(); this.regionT = 3.2; this.snapCam();
-    if (id === 'sanctuary' && this.quests.step('main') === 'sanctuary') this.quests.advance('main', 'sanctuary');
+    this.refreshGates(); this.runeSeq = []; this.runeLit = this.flags.gate_b ? [true, true, true] : [false, false, false];
+    const q = this.quests; if (id === 'slimepit') q.advance('main', 'pit'); else if (id === 'forest') q.advance('main', 'forest'); else if (id === 'sanctuary') q.advance('main', 'thorn'); else if (id === 'ruins') q.advance('main', 'ruins');
+    this.applyCrystals(); if (m.phase && x == null) this.saveGame(true);
     Audio.playMusic(this.musicFor());
   }
   spawnPet() { const c = this.party[this.activePet]; this.petObj = c ? new Companion(c, this.player.x - 14, this.player.y + 4) : null; }
@@ -99,14 +103,30 @@ export class Game {
   runActions() { const d = this.dialog; while (d && d.i < d.lines.length && d.lines[d.i][0] === '*') { this.action(d.lines[d.i][1]); d.i++; } if (d && d.i >= d.lines.length) { this.dialog = null; if (this.mode === 'dialog') this.mode = 'play'; this.talkingTo = null; } }
   nextLine() { this.dialog.i++; this.dialog.chars = 0; this.runActions(); }
   action(a) {
-    if (a === 'talk_elder' && this.quests.advance('main', 'talk_elder')) { this.inv.add('potion', 2); this.toast('Recebeu 2 Poções de Vida', '#ff8a9a'); Audio.pickup(); this.checkShards(); }
-    else if (a === 'return_elder' && this.quests.advance('main', 'return_elder')) { this.toast('O selo do Santuário se abriu!', '#7fd6ff', 4); Audio.chest(); this.saveGame(true); }
+    if (a === 'talk_elder' && this.quests.advance('main', 'talk_elder')) { this.inv.add('potion', 2); this.toast('Recebeu 2 Poções de Vida', '#ff8a9a'); Audio.pickup(); this.checkPrepare(); }
+    else if (a === 'laylla_meet') { if (this.quests.advance('main', 'laylla')) { this.toast('Laylla conhece a floresta e vai te guiar', '#7fd6ff', 4); Audio.pickup(); this.checkShards(); } }
     else if (a === 'shop') { this.dialog = null; this.mode = 'shop'; this.ui.sel = 0; this.prevMode = 'play'; }
-    else if (a === 'give_sword') { this.inv.add('sword_iron'); this.player.weapon = 'sword_iron'; this.toast('Equipou a Espada de Ferro! Ataque +4', '#ffe27a', 3.5); Audio.chest(); }
+    else if (a === 'give_sword') { this.inv.add('sword_iron'); this.player.weapon = 'sword_iron'; this.toast('Equipou a Espada de Ferro! Ataque +4', '#ffe27a', 3.5); Audio.chest(); this.checkPrepare(); }
     else if (a === 'start_friend') { if (this.quests.start('friend')) { this.toast('Nova missão: Amigo Perdido', '#ffe27a'); Audio.pickup(); } }
     else if (a === 'enter_sanctuary') { this.goTo('sanctuary', TILE * 13 + 8, TILE * 16 + 8); }
   }
-  goTo(id, x, y) { if (id !== 'sanctuary') this.saveGame(true); this.fade = { t: 0, id, x, y }; }
+  goTo(id, x, y) { if (id !== 'sanctuary' && id !== 'slimepit') this.saveGame(true); this.fade = { t: 0, id, x, y }; }
+  // etapa 'prepare': espada na mão e 3 frutas na mochila
+  checkPrepare() { if (this.quests.step('main') === 'prepare' && this.player.weapon !== 'none' && this.inv.count('berry') >= 3) { this.quests.advance('main', 'prepare'); this.toast('Tudo pronto! Desça ao Poço Gosmento, a noroeste.', '#7fd6ff', 4.5); Audio.chest(); } }
+  // portões: abertos conforme as bandeiras do jogo (guarda a colisão original para poder fechar de novo em um jogo novo)
+  refreshGates() { for (const o of this.map.objects) if (o.type === 'gate') { if (!o.solid0) o.solid0 = o.solid; o.open = !!this.flags[o.flag]; o.solid = o.open ? null : o.solid0; } }
+  openGateA(o) {
+    if (!this.inv.count('key_ruin')) return this.talk(DIALOGUES.gate_a());
+    this.inv.remove('key_ruin'); this.flags.gate_a = true; this.refreshGates(); Audio.chest(); this.fx.burst(o.x, o.y - 10, '#ffe27a', 18, 70); this.toast('O portão de pedra se abriu!', '#ffe27a', 3.5); this.quests.advance('main', 'key');
+  }
+  // runas: azul, vermelha, verde (índices 0, 2, 1). Errar apaga tudo e dá um choque.
+  touchRune(i) {
+    if (this.runeLit[i]) return; const order = [0, 2, 1], sp = this.map.specials.find(s => s.id === 'rune' && s.idx === i);
+    if (order[this.runeSeq.length] === i) {
+      this.runeSeq.push(i); this.runeLit[i] = true; Audio.pickup(); this.fx.burst(sp.x, sp.y - 10, sp.col, 14, 60);
+      if (this.runeSeq.length === 3) { this.flags.gate_b = true; this.refreshGates(); this.quests.advance('main', 'runes'); this.toast('O portão de runas se abriu!', '#7fd6ff', 4); Audio.chest(); this.fx.shake = 6; }
+    } else { this.runeSeq = []; this.runeLit = [false, false, false]; this.toast('As runas se apagaram...', '#ff9a6a', 3); this.player.hurt(5, this, 0, 0); }
+  }
 
   /* ---------- recompensas ---------- */
   onEnemyKilled(e) {
@@ -117,7 +137,7 @@ export class Game {
     for (const [id, ch] of e.d.drops) if (Math.random() < ch) this.pickups.push(new Pickup(id, e.x, e.y - 4));
     if (e.special === 'shard') { this.flags.alphaDown = true; this.pickups.push(new Pickup('shard', e.x, e.y - 4)); this.toast('O Lobo Alfa deixou cair um Fragmento!', '#9fe8ff'); }
     if (e.special === 'guard_cristarta' && !this.enemies.some(o => o !== e && o.hp > 0 && o.special === 'guard_cristarta')) this.rescueCristarta();
-    if (e.boss) this.onBossDown();
+    if (e.boss) this.onBossDown(e);
     setTimeout(() => { this.enemies = this.enemies.filter(o => o !== e); }, 0);
   }
   giveXp(xp) {
@@ -140,7 +160,7 @@ export class Game {
     this.inv.add(pk.kind, pk.n); Audio.pickup(); this.toast('+ ' + ITEMS[pk.kind].name, '#9fe8ff');
     if (pk.kind === 'shard') this.checkShards();
   }
-  checkShards() { if (this.quests.step('main') === 'shards' && this.inv.count('shard') >= 3) { this.quests.advance('main', 'shards'); this.toast('Você tem os 3 fragmentos! Volte ao Ancião Thaleo.', '#7fd6ff', 4.5); Audio.chest(); } }
+  checkShards() { if (this.quests.step('main') === 'shards' && this.inv.count('shard') >= 3) { this.quests.advance('main', 'shards'); this.toast('3 fragmentos! A barreira de espinhos se abriu, ao norte.', '#7fd6ff', 4.5); Audio.chest(); this.saveGame(true); } }
   rescueCristarta() {
     if (this.flags.cristarta) return; this.flags.cristarta = true;
     this.quests.start('friend'); if (this.quests.step('friend') === 'find') this.quests.advance('friend', 'find'); this.quests.advance('friend', 'free');
@@ -148,10 +168,45 @@ export class Game {
     this.toast('Cristarta entrou para a equipe!', '#4dc3ff', 4); this.toast('Troque de criatura com ' + this.input.label('swap'), '#4dc3ff', 5);
     const sp = this.map.specials.find(s => s.id === 'trapped'); if (sp) this.fx.burst(sp.x, sp.y - 6, '#bff3ff', 24, 80, 0.8);
   }
-  onBossDown() {
-    this.flags.bossDefeated = true; this.quests.advance('main', 'boss'); this.fx.flash = 1; this.fx.flashCol = '#bff3ff'; this.fx.shake = 10; Audio.stopMusic();
-    this.projectiles = []; this.enemies.forEach(e => { if (e !== this.boss && e.hp > 0) { e.hp = 0; this.fx.burst(e.x, e.y, '#7fd6ff', 8, 50); } });
-    setTimeout(() => { this.boss = null; this.saveGame(true); this.prevMode = 'play'; this.mode = 'victory'; Audio.chest(); Audio.playMusic('victory'); }, 2200);
+  checkGate() {
+    const m = this.map, d = m.phase; if (this.flags[m.gateFlag]) return;
+    if (this.enemies.some(e => e.hp > 0 && !e.boss)) return;
+    this.flags[m.gateFlag] = true; this.refreshGates(); this.quests.advance('main', d.id);
+    this.toast('O portão se abriu! O chefe espera adiante.', '#ffe27a', 4.5); Audio.chest(); this.fx.shake = 6; this.saveGame(true);
+  }
+  // cada Cristal conquistado dá um bônus permanente (Forma Suprema vale dois)
+  applyCrystals() {
+    const f = this.flags, u = (f.cr_p6 ? 1 : 0) + (f.cr_p9 ? 1 : 0) + (f.cr_p14 ? 2 : 0);
+    this.player.bonus = { attack: u * 5, maxHp: u * 25, defense: u * 2, crystals: u };
+  }
+  giveCrystal(d) {
+    this.flags['cr_' + d.id] = true; this.applyCrystals(); const p = this.player; p.hp = p.stats.maxHp; p.mp = p.stats.maxMp;
+    this.toast(d.crystalName + ': seu poder aumentou!', '#ffe27a', 5); this.fx.burst(p.x, p.y - 10, '#ffe27a', 30, 100, 0.9);
+  }
+  endingFor(d) {
+    const full = this.quests.done('friend');
+    return { phase: 'FASE 15 CONCLUÍDA · A ÚLTIMA LUZ', title: d.victory.title, l1: full ? 'A luz voltou a Elydran. Kael, Laylla e Cristarta finalmente respiram em paz.' : 'A luz voltou a Elydran, mas ainda há criaturas esperando por ajuda.',
+      l2: full ? 'Final completo: ninguém foi deixado para trás.' : 'Resgate Cristarta na Floresta de Aurora para ver o final completo.', l3: 'Obrigado por jogar ELYDRAN: Lendas do Cristal.' };
+  }
+  chainNext(b, kind) {
+    const m = this.map, p = this.player;
+    this.fx.burst(b.x, b.y - 8, b.d.color, 30, 100, 0.8); this.fx.flash = 0.7; this.fx.flashCol = '#fff'; this.fx.shake = 8; this.projectiles = [];
+    this.enemies.forEach(e => { if (e !== b && e.hp > 0) e.hp = 0; });
+    p.hp = Math.min(p.stats.maxHp, p.hp + p.stats.maxHp * 0.25);
+    this.toast('Um guardião caiu! O próximo desperta...', '#ffe27a', 3.5); Audio.chest();
+    setTimeout(() => { if (this.map !== m) return; const nb = new Boss(kind, m.bossAt[0], m.bossAt[1]); nb.flag = b.flag; this.boss = nb; this.enemies.push(nb); this.fx.burst(nb.x, nb.y - 8, nb.d.color, 24, 90, 0.7); }, 1800);
+  }
+  onBossDown(b) {
+    const def = this.map.phase;
+    if (def && def.chain) { const i = def.chain.indexOf(b.kind); if (i >= 0 && i < def.chain.length - 1) return this.chainNext(b, def.chain[i + 1]); }
+    const f = b.flag, q = this.quests; this.flags[f] = true; this.fx.flash = 1; this.fx.flashCol = '#bff3ff'; this.fx.shake = 10; Audio.stopMusic();
+    this.projectiles = []; this.enemies.forEach(e => { if (e !== b && e.hp > 0) { e.hp = 0; this.fx.burst(e.x, e.y, '#7fd6ff', 8, 50); } });
+    let v;
+    if (f === 'slimeDown') { q.advance('main', 'slime'); v = { phase: 'FASE 1 CONCLUÍDA · O DESPERTAR', title: 'O Slime Ancestral foi derrotado!', l1: 'A gosma sumiu e a ponte para a Floresta de Aurora está livre.', l2: 'A próxima lenda espera do outro lado do rio.' }; }
+    else if (f === 'thornDown') { q.advance('main', 'thornboss'); this.flags.bossDefeated = true; v = { phase: 'FASE 2 CONCLUÍDA · FLORESTA DE AURORA', title: 'O Guardião Espinheiro caiu!', l1: 'Os espinhos recuaram e uma escadaria apareceu a nordeste da floresta.', l2: 'As Ruínas Esquecidas guardam a próxima pista.' }; }
+    else if (f === 'knightDown') { q.advance('main', 'knight'); v = { phase: 'FASE 3 CONCLUÍDA · RUÍNAS ESQUECIDAS', title: 'O Cavaleiro de Pedra desmoronou!', l1: 'Você achou a primeira pista dos Cristais Elementais (tábua ao norte).', l2: 'Uma passagem se abriu no fundo do salão: ela leva à Fase 4, as Montanhas de Gelo.' }; }
+    else if (def) { q.advance('main', def.id + 'boss'); if (def.crystal) this.giveCrystal(def); v = def.final ? this.endingFor(def) : { phase: 'FASE ' + def.n + ' CONCLUÍDA · ' + def.name.toUpperCase(), title: def.victory.title, l1: def.victory.l1, l2: def.victory.l2 }; }
+    setTimeout(() => { this.boss = null; this.refreshGates(); this.saveGame(true); this.victory = v; this.prevMode = 'play'; this.mode = 'victory'; Audio.chest(); Audio.playMusic('victory'); }, 2200);
   }
   useItem(id) {
     const it = ITEMS[id], p = this.player, s = p.stats, pet = this.party[this.activePet];
@@ -169,7 +224,7 @@ export class Game {
   respawn() {
     const d = Save.load(); this.inv.coins = Math.floor(this.inv.coins / 2);
     const p = this.player, s = p.stats; p.hp = s.maxHp; p.mp = s.maxMp; p.iframes = 2; this.party.forEach(c => { c.hp = creatureStats(c).maxHp; });
-    const region = d && d.player.region !== 'sanctuary' ? d.player.region : 'village', pos = d && d.player.position;
+    const region = d ? d.player.region : 'village', pos = d && d.player.position;
     this.loadMap(region, pos && pos.x, pos && pos.y); this.mode = 'play';
   }
 
@@ -179,9 +234,12 @@ export class Game {
     for (const n of this.npcs) if (near(n.x, n.y, 22)) return { label: 'Falar', x: n.x, y: n.y, fn: () => { this.talkingTo = n; this.talk(DIALOGUES[n.id](this)); } };
     for (const c of this.map.chests) if (!this.flags[c.id] && near(c.x, c.y, 22)) return { label: 'Abrir', x: c.x, y: c.y + 4, fn: () => this.openChest(c) };
     for (const sv of this.map.saves) if (near(sv.x, sv.y, 24)) return { label: 'Descansar e salvar', x: sv.x, y: sv.y, fn: () => this.restAt(sv) };
-    for (const b of this.map.bushes) if (b.kind === 'berry' && b.ready && near(b.x, b.y, 18)) return { label: 'Colher', x: b.x, y: b.y + 6, fn: () => { b.ready = false; b.regrow = 60; this.inv.add('berry'); Audio.pickup(); this.toast('+ Fruta-Lume', '#ffd23f'); } };
+    for (const b of this.map.bushes) if (b.kind === 'berry' && b.ready && near(b.x, b.y, 18)) return { label: 'Colher', x: b.x, y: b.y + 6, fn: () => { b.ready = false; b.regrow = 60; this.inv.add('berry'); Audio.pickup(); this.toast('+ Fruta-Lume', '#ffd23f'); this.checkPrepare(); } };
     for (const o of this.map.objects) if (o.type === 'sign' && near(o.x, o.y, 20)) return { label: 'Ler', x: o.x, y: o.y + 6, fn: () => this.talk([['Placa', o.text]]) };
+    for (const o of this.map.objects) if (o.type === 'gate' && !o.open && near(o.x, o.y, 32)) return { label: o.id === 'gate_a' ? 'Abrir portão' : 'Examinar', x: o.x, y: o.y, fn: () => (o.id === 'gate_a' ? this.openGateA(o) : this.talk(DIALOGUES[o.id || 'goo']())) };
     for (const sp of this.map.specials) {
+      if (sp.id === 'talk' && (!sp.needFlag || this.flags[sp.needFlag]) && near(sp.x, sp.y, sp.r)) return { label: sp.label || 'Ler', x: sp.x, y: sp.y + 6, fn: () => this.talk(DIALOGUES[sp.talk](this)) };
+      if (sp.id === 'rune' && !this.flags.gate_b && near(sp.x, sp.y, sp.r)) return { label: 'Tocar runa', x: sp.x, y: sp.y + 4, fn: () => this.touchRune(sp.idx) };
       if (sp.id === 'seal' && near(sp.x, sp.y, 30)) return { label: 'Examinar', x: sp.x, y: sp.y + 8, fn: () => this.talk(DIALOGUES.seal(this)) };
       if (sp.id === 'trapped' && !this.flags.cristarta && near(sp.x, sp.y, 26)) return { label: 'Falar', x: sp.x, y: sp.y + 6, fn: () => this.talk(DIALOGUES.trapped(this)) };
     }
@@ -235,11 +293,20 @@ export class Game {
     this.fx.update(dt);
     // missão: chegou perto da criatura presa
     if (!this.flags.cristarta) { const sp = this.map.specials.find(s => s.id === 'trapped'); if (sp && Math.hypot(sp.x - p.x, sp.y - p.y) < 80) { if (!this.quests.started('friend')) { this.quests.start('friend'); this.toast('Nova missão: Amigo Perdido', '#ffe27a'); } if (this.quests.advance('friend', 'find')) this.toast('Derrote os Gotalins que cercam a criatura!', '#4dc3ff', 3.5); } }
+    if (this.quests.step('main') === 'prepare') this.checkPrepare();
+    if (this.map.phase && this.mode === 'play') this.checkGate();
+    // armadilhas de espinhos das ruínas: sobem em ritmo (o aviso vermelho vem antes)
+    if (this.map.id === 'ruins' || this.map.phase) for (const o of this.map.objects) if (o.type === 'spikes') { const ph = (this.t + o.off) % 3; if (ph > 1.9 && p.dodgeT <= 0 && Math.hypot(p.x - o.x, p.y - o.y) < 9) p.hurt(7, this, (p.x - o.x) * 8, (p.y - o.y) * 8); }
     // saídas do mapa
     for (const ex of this.map.exits) {
       const r = ex.rect; if (p.x < r.x || p.x > r.x + r.w || p.y < r.y || p.y > r.y + r.h) continue;
-      if (ex.needSeal) { const st = this.quests.step('main'); if (st !== 'sanctuary' && st !== 'boss' && st !== 'done') { p.y += 6; this.talk(DIALOGUES.seal(this)); break; } }
-      if (ex.lockDuringBoss && this.boss && this.boss.hp > 0 && this.boss.state !== 'sleep') { p.y -= 6; this.toast('Uma barreira de cristal bloqueia a saída!', '#ff7ae0'); break; }
+      if ((ex.needStep && !this.quests.atLeast('main', ex.needStep)) || (ex.needFlag && !this.flags[ex.needFlag])) {
+        const W = this.map.w * TILE, H = this.map.h * TILE, cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+        if (r.y <= 8) p.y = r.y + r.h + 4; else if (r.y + r.h >= H - 8) p.y = r.y - 4; else if (r.x <= 8) p.x = r.x + r.w + 4; else if (r.x + r.w >= W - 8) p.x = r.x - 4;
+        else if (Math.abs(p.y - cy) * 2 > Math.abs(p.x - cx)) p.y += (p.y < cy ? -1 : 1) * 10; else p.x += (p.x < cx ? -1 : 1) * 10;
+        this.toast(ex.msg || 'O caminho está bloqueado.', '#ff9a6a', 3.5); break;
+      }
+      if (ex.lockDuringBoss && this.boss && this.boss.hp > 0 && this.boss.state !== 'sleep') { p.y -= 6; this.toast('Uma barreira bloqueia a saída!', '#ff7ae0'); break; }
       this.goTo(ex.to, ex.tx, ex.ty); break;
     }
     // câmera suave
@@ -267,12 +334,30 @@ export class Game {
   }
   hitSprites(x, y) { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); if (this.map.get(tx, ty) === T.TALL) this.fx.burst(x, y + 6, '#7cc35a', 5, 40, 0.3); }
   questTargets() {
-    const st = this.quests.step('main'), m = this.map, out = [];
-    if (st === 'talk_elder' || st === 'return_elder') { const n = m.npcs.find(n => n.id === 'elder'); if (n) out.push(n); else if (m.id === 'forest') out.push({ x: 0, y: 24 * TILE }); }
-    if (st === 'shards' && m.id === 'forest') { m.chests.forEach(c => { if (!this.flags[c.id] && c.items.some(([i]) => i === 'shard')) out.push(c); }); if (!this.flags.alphaDown) { const s = m.spawns.find(s => s.special === 'shard'); if (s) out.push(s); } }
-    if (st === 'shards' && m.id === 'village') out.push({ x: (m.w - 1) * TILE, y: 15 * TILE });
-    if ((st === 'sanctuary' || st === 'boss') && m.id === 'forest') out.push({ x: 33 * TILE, y: 3 * TILE });
-    if (this.quests.step('friend') && !this.quests.done('friend') && m.id === 'forest') { const s = m.specials.find(s => s.id === 'trapped'); if (s) out.push(s); }
+    const st = this.quests.step('main'), m = this.map, out = [], p = this.player;
+    const npc = id => { const n = m.npcs.find(n => n.id === id); if (n) out.push(n); return !!n; };
+    if (m.id === 'village') {
+      if (st === 'talk_elder') npc('elder');
+      else if (st === 'prepare') { if (p.weapon === 'none') npc('smith'); else { const b = m.bushes.find(b => b.kind === 'berry' && b.ready); if (b) out.push(b); } }
+      else if (st === 'pit' || st === 'slime') { const h = m.objects.find(o => o.type === 'hole'); if (h) out.push(h); }
+      else if (st === 'forest') out.push({ x: (m.w - 1) * TILE, y: 15 * TILE });
+    } else if (m.id === 'forest') {
+      if (st === 'forest' || st === 'laylla') npc('laylla');
+      else if (st === 'shards') { m.chests.forEach(c => { if (!this.flags[c.id] && c.items.some(([i]) => i === 'shard')) out.push(c); }); if (!this.flags.alphaDown) { const s = m.spawns.find(s => s.special === 'shard'); if (s) out.push(s); } }
+      else if (st === 'thorn' || st === 'thornboss') out.push({ x: 33 * TILE, y: 3 * TILE });
+      else if (st === 'ruins') { const h = m.objects.find(o => o.type === 'hole'); if (h) out.push(h); }
+      else if (this.flags.thornDown && !this.flags.knightDown && st !== 'done') { const h = m.objects.find(o => o.type === 'hole'); if (h) out.push(h); }
+      if (this.quests.step('friend') && !this.quests.done('friend')) { const s = m.specials.find(s => s.id === 'trapped'); if (s) out.push(s); }
+    } else if (m.id === 'ruins') {
+      if (st === 'key') { const c = m.chests.find(c => c.id === 'r_key'); if (c && !this.flags.r_key) out.push(c); else { const g = m.objects.find(o => o.id === 'gate_a'); if (g) out.push(g); } }
+      else if (st === 'runes') { const sp = m.specials.find(s => s.id === 'rune' && !this.runeLit[s.idx]); if (sp) out.push(sp); }
+      else if (st === 'knight' && this.boss) out.push(this.boss);
+      else if (this.flags.knightDown) { const h = m.objects.find(o => o.type === 'hole'); if (h) out.push(h); }
+    } else if (m.phase) {
+      if (!this.flags[m.gateFlag]) { let best = null, bd = 1e9; for (const e of this.enemies) if (e.hp > 0 && !e.boss) { const d = Math.hypot(e.x - p.x, e.y - p.y); if (d < bd) { bd = d; best = e; } } if (best) out.push(best); }
+      else if (this.boss && this.boss.hp > 0) out.push(this.boss);
+      else { const h = m.objects.find(o => o.type === 'hole'); if (h) out.push(h); }
+    }
     return out;
   }
 
@@ -281,13 +366,16 @@ export class Game {
     const t = this.t;
     if (this.mode === 'title' || (this.mode === 'controls' && this.prevMode === 'title')) { M.drawTitle(ctx, this, t); if (this.mode === 'controls') M.drawControls(ctx, this); this.drawToasts(ctx); return; }
     const cam = { x: Math.round(this.cam.x + (this.fx.shake ? rand(-this.fx.shake, this.fx.shake) : 0)), y: Math.round(this.cam.y + (this.fx.shake ? rand(-this.fx.shake, this.fx.shake) : 0)) };
-    ctx.fillStyle = this.map.theme === 'sanctuary' ? '#0b0718' : '#173d24'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
-    ctx.drawImage(this.ground, -cam.x, -cam.y);
-    drawWater(ctx, this.map, cam, t);
-    this.drawWorld(ctx, cam, t);
-    for (const pr of this.projectiles) pr.draw(ctx, cam, t);
-    this.fx.draw(ctx, cam, FONT);
-    this.drawLight(ctx, cam, t);
+    if (this.r3d) this.r3d.drawOverlay(ctx, this); // 3D: o mundo já foi desenhado no outro canvas, aqui vai só a interface por cima
+    else {
+      ctx.fillStyle = this.map.theme === 'sanctuary' ? '#0b0718' : '#173d24'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+      ctx.drawImage(this.ground, -cam.x, -cam.y);
+      drawWater(ctx, this.map, cam, t);
+      this.drawWorld(ctx, cam, t);
+      for (const pr of this.projectiles) pr.draw(ctx, cam, t);
+      this.fx.draw(ctx, cam, FONT);
+      this.drawLight(ctx, cam, t);
+    }
     if (this.fx.flash > 0) { ctx.globalAlpha = Math.min(1, this.fx.flash); ctx.fillStyle = this.fx.flashCol; ctx.fillRect(0, 0, VIEW_W, VIEW_H); ctx.globalAlpha = 1; }
     if (this.mode !== 'over') drawHUD(ctx, this, t);
     if (this.mode === 'dialog') M.drawDialog(ctx, this, t);
@@ -331,7 +419,12 @@ export class Game {
     else if (o.type === 'rock') S.drawRock(ctx, x, y, o.s);
     else if (o.type === 'pillar') S.drawPillar(ctx, x, y, o.broken);
     else if (o.type === 'glowshroom') S.drawMushroomGlow(ctx, x, y, t, o.col);
-    else if (o.type === 'portal') { const st = this.quests.step('main'); S.drawPortal(ctx, x, y, t, st === 'sanctuary' || st === 'boss' || st === 'done'); }
+    else if (o.type === 'portal') { S.drawPortal(ctx, x, y, t, this.quests.atLeast('main', 'thorn')); }
+    else if (o.type === 'hole') { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(x, y, 17, 9, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#0b0718'; ctx.beginPath(); ctx.ellipse(x, y, 13, 6.5, 0, 0, 7); ctx.fill(); ctx.strokeStyle = o.col; ctx.globalAlpha = 0.6 + Math.sin(t * 3) * 0.25; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y, 14, 7.5, 0, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
+    else if (o.type === 'gate') { if (o.open) return; if (o.style === 'goo') { ctx.fillStyle = '#58d98a'; ctx.beginPath(); ctx.ellipse(x, y - 8, 11, 26, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#9af0b4'; ctx.fillRect(x - 5, y - 24, 3, 8); } else { ctx.fillStyle = '#5a5478'; ctx.fillRect(o.solid0.x - cam.x, o.solid0.y - cam.y - 14, o.solid0.w, o.solid0.h + 14); ctx.fillStyle = '#8a82b0'; ctx.fillRect(o.solid0.x - cam.x + 2, o.solid0.y - cam.y - 12, o.solid0.w - 4, 3); } }
+    else if (o.type === 'spikes') { const ph = (this.t + o.off) % 3, up = ph > 1.9, warn = ph > 1.3 && !up; ctx.fillStyle = '#1a1424'; ctx.fillRect(x - 5, y - 2, 10, 4); if (up) { ctx.fillStyle = '#d0d4de'; for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(x + k * 3 - 1.5, y); ctx.lineTo(x + k * 3, y - 8); ctx.lineTo(x + k * 3 + 1.5, y); ctx.fill(); } } else if (warn) { ctx.fillStyle = 'rgba(255,70,70,.7)'; ctx.fillRect(x - 4, y - 1, 8, 2); } }
+    else if (o.type === 'rune') { const lit = this.runeLit && this.runeLit[o.idx]; ctx.fillStyle = '#4a4468'; ctx.fillRect(x - 5, y - 6, 10, 8); ctx.fillStyle = lit ? o.col : '#2a2440'; ctx.fillRect(x - 3, y - 12, 6, 6); if (lit) { ctx.globalAlpha = 0.3; ctx.fillRect(x - 6, y - 15, 12, 12); ctx.globalAlpha = 1; } }
+    else if (o.type === 'tablet') { ctx.fillStyle = '#6a6488'; ctx.fillRect(x - 6, y - 14, 12, 14); ctx.fillStyle = '#8a82b0'; ctx.fillRect(x - 4, y - 12, 8, 2); ctx.fillRect(x - 4, y - 8, 6, 2); }
     else if (o.type === 'bigcrystal') S.drawCrystal(ctx, x, y, t, true, this.flags.bossDefeated ? '#9fe8ff' : null, !this.flags.bossDefeated);
   }
   // luz e clima de cada região

@@ -9,6 +9,9 @@ export class Quests {
   text(q) { return this.started(q) ? QUESTS[q].steps[this.state[q]].text : ''; }
   // avança só se estiver na etapa indicada (evita pular etapas)
   advance(q, from) { if (this.step(q) !== from) return false; this.state[q] = Math.min(QUESTS[q].steps.length - 1, this.state[q] + 1); return true; }
+  idx(q, id) { return QUESTS[q].steps.findIndex(s => s.id === id); }
+  // já chegou nessa etapa (ou passou dela)?
+  atLeast(q, id) { return this.started(q) && this.state[q] >= this.idx(q, id); }
   done(q) { return this.step(q) === 'done'; }
   active() { return Object.keys(this.state).filter(q => !this.done(q) || q === 'main'); }
   toJSON() { return { ...this.state }; }

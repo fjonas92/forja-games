@@ -60,5 +60,5 @@ export function drawHUD(ctx, g, t) {
     text(ctx, '~ ' + g.map.name + ' ~', VIEW_W / 2, 92, { size: 14, align: 'center', col: '#ffe9b0' }); ctx.globalAlpha = 1;
   }
   // dica de interação
-  if (g.prompt && g.mode === 'play') { const pr = g.prompt; keyHint(ctx, g.input.label('interact'), pr.label, pr.x - g.cam.x, pr.y - g.cam.y - 34, 'center'); }
+  if (g.prompt && g.mode === 'play') { const pr = g.prompt; let px = pr.x - g.cam.x, py = pr.y - g.cam.y - 34; if (g.r3d) { const q = g.r3d.project(pr.x, pr.y, 2.5); px = q.x; py = q.y; } keyHint(ctx, g.input.label('interact'), pr.label, px, py, 'center'); }
 }

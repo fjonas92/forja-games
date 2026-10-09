@@ -12,12 +12,13 @@ const SIDE = ['......kkkk......', '....kkhhhhk.....', '...khhhhhhhk....', '..khh
 const mirror = rows => rows.map(r => r + r.split('').reverse().join(''));
 
 export const PALETTES = {
-  hero: { k: '#1a1424', h: '#6b3d22', H: '#3f2212', s: '#f2c9a0', S: '#cf9a74', e: '#1a1424', b: '#2f56c4', B: '#1d3478', w: '#ece9f4', g: '#f0c04a', L: '#4e2c18', l: '#7a4a2a', p: '#34426a' },
+  hero: { k: '#1a1424', h: '#2b1d2a', H: '#171019', s: '#f2c9a0', S: '#cf9a74', e: '#1a1424', b: '#2f56c4', B: '#1d3478', w: '#ece9f4', g: '#f0c04a', L: '#4e2c18', l: '#7a4a2a', p: '#1f2a55' },
   elder: { k: '#1a1424', h: '#e9e6ef', H: '#b7b3c4', s: '#e8bf98', S: '#c7976f', e: '#1a1424', b: '#3c7a4a', B: '#24502f', w: '#d9cfa8', g: '#e0b048', L: '#4e2c18', l: '#7a4a2a', p: '#2e5a38' },
   merchant: { k: '#1a1424', h: '#d8462e', H: '#962a1c', s: '#f6d2ad', S: '#d6a27a', e: '#1a1424', b: '#7b3fa8', B: '#4f2470', w: '#f3e6c9', g: '#f0c04a', L: '#5a2e1a', l: '#8a5530', p: '#5a2e86' },
   smith: { k: '#1a1424', h: '#2a1a12', H: '#140c08', s: '#a8693f', S: '#82502e', e: '#1a1424', b: '#6a4a2e', B: '#46301c', w: '#c9b79c', g: '#b9b9c4', L: '#3a2414', l: '#6a4024', p: '#3d3a46' },
   kid: { k: '#1a1424', h: '#ff8fbf', H: '#d0558c', s: '#f6d2ad', S: '#d6a27a', e: '#1a1424', b: '#ffcc4d', B: '#d69a1e', w: '#fff6e8', g: '#7ad94a', L: '#5a2e1a', l: '#8a5530', p: '#3a6fd6' },
-  guard: { k: '#1a1424', h: '#9aa4b8', H: '#6a7488', s: '#e8bf98', S: '#c7976f', e: '#1a1424', b: '#8a2a2a', B: '#5a1818', w: '#b8c0d0', g: '#e0b048', L: '#3a2414', l: '#6a4024', p: '#3a3a4a' }
+  guard: { k: '#1a1424', h: '#9aa4b8', H: '#6a7488', s: '#e8bf98', S: '#c7976f', e: '#1a1424', b: '#8a2a2a', B: '#5a1818', w: '#b8c0d0', g: '#e0b048', L: '#3a2414', l: '#6a4024', p: '#3a3a4a' },
+  laylla: { k: '#1a1424', h: '#b8461f', H: '#7e2c12', s: '#f2c9a0', S: '#cf9a74', e: '#1a1424', b: '#1f8f8a', B: '#14605f', w: '#f6f1e4', g: '#f0c04a', L: '#4e2c18', l: '#7a4a2a', p: '#3b3a5c' }
 };
 
 function paint(g, rows, pal, ox, oy) { rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const c = r[x]; if (c !== '.' && pal[c]) px(g, ox + x, oy + y, 1, 1, pal[c]); } }); }
@@ -309,6 +310,7 @@ export function drawIcon(ctx, kind, x, y) {
   } else if (kind === 'berry') { ctx.fillStyle = '#1a1424'; ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, 7); ctx.fill(); ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, 7); ctx.fill(); px(ctx, -1, -6, 2, 3, '#4ea044'); px(ctx, -2, -2, 1, 1, '#fff'); }
   else if (kind === 'shard') { ctx.fillStyle = '#1a1424'; ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(5, 0); ctx.lineTo(0, 6); ctx.lineTo(-5, 0); ctx.fill(); ctx.fillStyle = '#7fd6ff'; ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(4, 0); ctx.lineTo(0, 5); ctx.lineTo(-4, 0); ctx.fill(); px(ctx, -1, -4, 1, 4, '#fff'); }
   else if (kind === 'sword' || kind === 'sword2') { drawSword(ctx, -6, 6, -Math.PI / 4, kind === 'sword2' ? 'sword_crystal' : 'sword_iron'); }
+  else if (kind === 'key') { px(ctx, -5, -2, 5, 5, '#1a1424'); px(ctx, -4, -1, 3, 3, '#f0c04a'); px(ctx, -3, 0, 1, 1, '#1a1424'); px(ctx, 0, -1, 7, 3, '#1a1424'); px(ctx, 0, 0, 6, 1, '#f0c04a'); px(ctx, 4, 1, 2, 3, '#1a1424'); px(ctx, 4, 1, 1, 2, '#f0c04a'); }
   else if (kind === 'coin') { ctx.fillStyle = '#1a1424'; ctx.beginPath(); ctx.arc(0, 0, 4, 0, 7); ctx.fill(); ctx.fillStyle = '#f0c04a'; ctx.beginPath(); ctx.arc(0, 0, 3, 0, 7); ctx.fill(); px(ctx, -1, -2, 1, 3, '#fff1b8'); }
   ctx.restore();
 }

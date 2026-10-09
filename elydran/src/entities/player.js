@@ -53,7 +53,7 @@ export class Player {
     if (inp.pressed('special')) {
       if (this.mp >= 20 && this.specialCd <= 0) {
         this.mp -= 20; this.specialCd = 1.2; Audio.magic(); g.fx.shake = 3;
-        g.projectiles.push(new Projectile({ kind: 'nova', x: this.x, y: this.y - 6, vx: 0, vy: 0, life: 0.35, r: 8, friendly: true, grow: 150, power: 1.6, attack: s.attack, element: 'crystal' }));
+        g.projectiles.push(new Projectile({ kind: 'nova', x: this.x, y: this.y - 6, vx: 0, vy: 0, life: 0.35 + ((this.bonus && this.bonus.crystals) || 0) * 0.05, r: 8, friendly: true, grow: 150 + ((this.bonus && this.bonus.crystals) || 0) * 25, power: 1.6 + ((this.bonus && this.bonus.crystals) || 0) * 0.3, attack: s.attack, element: 'crystal' }));
         g.fx.burst(this.x, this.y - 6, '#bff3ff', 18, 90, 0.5);
       } else if (this.mp < 20) g.toast('Energia insuficiente', '#9fe8ff');
     }
@@ -61,7 +61,7 @@ export class Player {
   hurt(dmg, g, kx, ky) {
     if (this.iframes > 0 || this.hp <= 0) return false;
     this.hp -= dmg; this.iframes = 0.9; this.kbx = kx || 0; this.kby = ky || 0;
-    g.fx.text(this.x, this.y - 22, '-' + dmg, '#ff6a6a'); g.fx.shake = 4; Audio.hurt();
+    g.fx.text(this.x, this.y - 22, '-' + dmg, '#ff6a6a'); g.fx.shake = 4; Audio.hurt(); g.input.rumble && g.input.rumble(220, 0.9, 0.5);
     if (this.hp <= 0) { this.hp = 0; g.onPlayerDown(); }
     return true;
   }

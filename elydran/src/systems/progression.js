@@ -4,8 +4,8 @@ import { ITEMS } from '../data/items.js';
 
 // atributos do herói conforme o nível e a arma
 export function heroStats(p) {
-  const L = p.level, w = ITEMS[p.weapon];
-  return { maxHp: 90 + L * 14, maxMp: 40 + L * 5, attack: 8 + L * 3 + (w ? w.attack : 0), defense: 4 + L * 2, speed: 92 };
+  const L = p.level, w = ITEMS[p.weapon], b = p.bonus || {};
+  return { maxHp: 90 + L * 14 + (b.maxHp || 0), maxMp: 40 + L * 5, attack: 8 + L * 3 + (w ? w.attack : 0) + (b.attack || 0), defense: 4 + L * 2 + (b.defense || 0), speed: 92 };
 }
 // atributos da criatura conforme o nível
 export function creatureStats(c) {

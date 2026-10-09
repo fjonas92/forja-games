@@ -31,7 +31,7 @@ export function load() {
   const p = d.player;
   const out = {
     player: { level: num(p.level, 1, 99, 1) | 0, xp: num(p.xp, 0, 1e6, 0), hp: num(p.hp, 1, 9999, 100), mp: num(p.mp, 0, 9999, 40), weapon: ITEMS[p.weapon] && ITEMS[p.weapon].kind === 'weapon' ? p.weapon : 'none',
-      region: ['village', 'forest', 'sanctuary'].includes(p.region) ? p.region : 'village', position: p.position && { x: num(p.position.x, 0, 5000, 0), y: num(p.position.y, 0, 5000, 0) } },
+      region: ['village', 'forest', 'sanctuary', 'slimepit', 'ruins'].includes(p.region) || /^p([4-9]|1[0-5])$/.test(p.region) ? p.region : 'village', position: p.position && { x: num(p.position.x, 0, 5000, 0), y: num(p.position.y, 0, 5000, 0) } },
     inventory: d.inventory || {},
     party: Array.isArray(d.party) ? d.party.filter(c => c && CREATURES[c.id]).slice(0, 6).map(c => ({ id: c.id, level: num(c.level, 1, 99, 1) | 0, xp: num(c.xp, 0, 1e6, 0), bond: num(c.bond, 0, 100, 0), hp: num(c.hp, 0, 9999, 1) })) : [],
     active: num(d.active, 0, 5, 0) | 0,
@@ -41,6 +41,7 @@ export function load() {
   };
   if (!out.party.length) out.party = [{ id: 'brasek', level: 1, xp: 0, bond: 0, hp: 50 }];
   if (out.active >= out.party.length) out.active = 0;
-  if (out.player.region === 'sanctuary') out.player.region = 'forest', out.player.position = null; // nunca recomeça no meio da luta
+  if (out.player.region === 'sanctuary') out.player.region = 'forest', out.player.position = null;
+  if (out.player.region === 'slimepit') out.player.region = 'village', out.player.position = null; // nunca recomeça no meio da luta
   return out;
 }

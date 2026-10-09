@@ -30,6 +30,13 @@ main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
 #stage{position:relative;width:min(100%,calc((100vh - 70px)*16/9));aspect-ratio:16/9;margin:0 auto;background:#000;border-radius:10px;overflow:hidden;box-shadow:0 0 0 2px #3a2e5e,0 20px 50px rgba(0,0,0,.6);touch-action:none;user-select:none;-webkit-user-select:none}
 #stage:fullscreen{width:min(100vw,calc(100vh*16/9));border-radius:0;box-shadow:none;margin:auto}
 #game{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+#game3d{position:absolute;inset:0;width:100%;height:100%;display:none}
+#stage.m3d #game3d{display:block}
+#stage.m3d #game{position:absolute;inset:0;z-index:1;pointer-events:none}
+#stage[data-dev="gamepad"] #touch,#stage[data-dev="keyboard"] #touch{display:none!important}
+#btnGfx{position:absolute;bottom:8px;right:112px;z-index:3;background:rgba(18,12,28,.7);color:#fff;border:1px solid rgba(127,214,255,.7);border-radius:8px;font:700 12px var(--font-body);padding:6px 10px;cursor:pointer}
+#padstatus{max-width:820px;margin:10px auto 0;text-align:center;color:var(--muted);font-size:14px}
+#padstatus b{color:var(--gold)}
 #btnFull{position:absolute;bottom:8px;right:8px;z-index:3;background:rgba(18,12,28,.7);color:#fff;border:1px solid rgba(240,192,74,.7);border-radius:8px;font:700 12px var(--font-body);padding:6px 10px;cursor:pointer}
 /* controles de toque */
 #touch{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}
@@ -54,6 +61,7 @@ main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
 .info p strong{color:var(--fg)}
 @media (orientation:portrait) and (pointer:coarse){#stage::after{content:'Gire o celular para a horizontal';position:absolute;left:0;right:0;bottom:0;background:var(--gold);color:#120c1c;font:700 13px var(--font-body);text-align:center;padding:6px;z-index:4}}
 </style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"}}</script>
 <script src="/analytics.js"></script>
 </head>
 <body>
@@ -61,7 +69,9 @@ main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
 <header class="bar"><a class="back" href="/">&larr; Falzinho Games</a><span class="logo">ELYDRAN<small>Lendas do Cristal</small></span><span></span></header>
 <main>
   <div id="stage">
+    <canvas id="game3d" aria-hidden="true"></canvas>
     <canvas id="game" width="480" height="270" aria-label="ELYDRAN: Lendas do Cristal"></canvas>
+    <button id="btnGfx" type="button" title="Alternar entre 3D e 2D">3D</button>
     <button id="btnFull" type="button">&#9974; Tela cheia</button>
     <div id="touch" aria-hidden="true">
       <div class="stick"><div class="knob"></div></div>
@@ -74,9 +84,10 @@ main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
       <div class="tsmall"><button data-act="swap" type="button" aria-label="Trocar criatura">&#8644;</button><button data-act="inventory" type="button" aria-label="Inventário">&#127890;</button><button data-act="map" type="button" aria-label="Mapa">&#128506;</button><button data-act="pause" type="button">&#10074;&#10074;</button><button id="btnFull2" type="button">&#9974;</button></div>
     </div>
   </div>
+  <p id="padstatus" role="status">Nenhum controle detectado. Conecte um e aperte qualquer botão.</p>
   <section class="info">
     <h1>ELYDRAN: Lendas do Cristal</h1>
-    <p>O Cristal de Aurora se apagou e as criaturas da floresta ficaram agressivas. Como <strong>Kael</strong>, ao lado da raposinha de brasa <strong>Brasek</strong>, explore a Vila Aurora e a Floresta de Aurora, encontre os três Fragmentos de Cristal, resgate novos companheiros e enfrente o <strong>Golem Guardião</strong> no Santuário do Cristal.</p>
+    <p>Uma chuva de cristais acordou criaturas antigas. Como <strong>Kael</strong>, ao lado da raposinha de brasa <strong>Brasek</strong> e da ranger <strong>Laylla</strong>, atravesse a Vila Aurora, a Floresta de Aurora e as Ruínas Esquecidas, enfrente o <strong>Slime Ancestral</strong>, o <strong>Guardião Espinheiro</strong> e o <strong>Cavaleiro de Pedra</strong> e descubra a primeira pista dos Cristais Elementais.</p>
     <p>Combate em tempo real com espada, esquiva e o Pulso de Cristal. Suas criaturas lutam do seu lado, sobem de nível e <strong>evoluem</strong>. O jogo salva nos cristais de luz e automaticamente ao trocar de região.</p>
     <h2>Controles</h2>
     <table>
@@ -90,8 +101,10 @@ main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
       <tr><td>Inventário</td><td>I</td><td>LT / RT</td></tr>
       <tr><td>Mapa</td><td>M</td><td>View / Select</td></tr>
       <tr><td>Pausar</td><td>Esc</td><td>Menu / Start</td></tr>
+      <tr><td>Girar a câmera (3D)</td><td>Z / C</td><td>Analógico direito</td></tr>
+      <tr><td>Zoom da câmera (3D)</td><td>Roda do mouse</td><td>Analógico direito, cima e baixo</td></tr>
     </table>
-    <p>No celular aparecem um analógico e botões na tela. Funciona melhor com o aparelho na horizontal e em tela cheia.</p>
+    <p>O jogo é em 3D. Se o seu aparelho não rodar bem, o botão <strong>3D</strong> no canto da tela volta para o modo 2D clássico. No celular aparecem um analógico e botões na tela. Funciona melhor com o aparelho na horizontal e em tela cheia.</p>
     <p style="font-size:13px">Música da abertura: Pixabay (kaazoom). Demo versão 0.1.</p>
   </section>
 </main>
