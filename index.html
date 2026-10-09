@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D e ELYDRAN: Lendas do Cristal.">
+<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal e APEX, corrida 3D.">
 <title>Falzinho Games</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -153,7 +153,10 @@ const GAMES = [
     url: "/xadrez/", c1: "#6B4220", c2: "#E9B45A", arte: "xadrez", pagina: "" },
   { nome: "ELYDRAN", genero: "RPG de ação · Lendas do Cristal", status: "Jogue agora",
     texto: "Explore a vila e a floresta, lute em tempo real, evolua suas criaturas companheiras e derrote o Golem Guardião. Teclado, controle ou toque.",
-    url: "/elydran/", c1: "#2A1A5A", c2: "#7FD6FF", arte: "elydran", pagina: "" }
+    url: "/elydran/", c1: "#2A1A5A", c2: "#7FD6FF", arte: "elydran", pagina: "" },
+  { nome: "APEX", genero: "Corrida 3D · Campeonato", status: "Jogue agora",
+    texto: "Crie seu piloto, escolha a equipe, evolua o carro e dispute 12 circuitos em 3D contra 15 rivais. Teclado, joystick ou toque no celular.",
+    url: "/apex/", c1: "#14182C", c2: "#FF3B30", arte: "apex", pagina: "" }
 ];
 
 const cap = (x, y, cor, miolo) => `<g transform="translate(${x} ${y})"><circle r="15" fill="#000" opacity=".28" transform="translate(2 3)"/><circle r="14" fill="${cor}" stroke="#fff" stroke-width="2"/><circle r="14" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="3" stroke-dasharray="2.2 2.2"/><circle r="8" fill="${miolo}" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/></g>`;
@@ -239,6 +242,20 @@ const ARTES = {
     <path d="M150 172L160 116L170 172Z" fill="#7FD6FF"/><path d="M160 116L170 172H160Z" fill="#3B7FD0"/><path d="M138 172L144 140L150 172Z" fill="#7FD6FF"/><path d="M170 172L176 146L182 172Z" fill="#7FD6FF"/>
     <g transform="translate(94 134)"><rect x="4" y="0" width="12" height="10" fill="#6B3D22"/><rect x="5" y="6" width="10" height="7" fill="#F2C9A0"/><rect x="7" y="9" width="2" height="2" fill="#1A1424"/><rect x="11" y="9" width="2" height="2" fill="#1A1424"/><rect x="2" y="14" width="16" height="14" fill="#2F56C4"/><rect x="6" y="14" width="8" height="12" fill="#ECE9F4"/><rect x="5" y="28" width="4" height="6" fill="#34426A"/><rect x="11" y="28" width="4" height="6" fill="#34426A"/><rect x="18" y="8" width="3" height="20" fill="#D9DDE8" transform="rotate(25 19 18)"/></g>
     <g transform="translate(212 152)"><ellipse cx="8" cy="8" rx="9" ry="6" fill="#FF8A2A"/><circle cx="18" cy="2" r="5" fill="#FF8A2A"/><path d="M14 -2L15 -9L18 -3ZM18 -3L22 -9L23 0Z" fill="#FF8A2A"/><path d="M0 6Q-10 -4 -4 -12Q0 -4 4 2Z" fill="#FFB03A"/><rect x="19" y="0" width="2" height="2" fill="#1A1424"/></g>
+  </svg>`,
+  apex: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><linearGradient id="apx-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2F6FD8"/><stop offset="1" stop-color="#F4C9A0"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#apx-sky)"/>
+    <path d="M0 96L52 62L92 90L140 56L190 92L250 66L320 96V120H0Z" fill="#5D6C86"/>
+    <rect y="104" width="320" height="96" fill="#3F8B3A"/>
+    <path d="M144 104H176L300 200H20Z" fill="#33353B"/>
+    <path d="M144 104H149L40 200H20ZM176 104H171L280 200H300Z" fill="#E5E7EB"/>
+    <path d="M149 104H152L62 200H40ZM171 104H168L258 200H280Z" fill="#E1262E"/>
+    <g stroke="#fff" stroke-width="3" stroke-dasharray="10 12" opacity=".7"><path d="M160 108V200"/></g>
+    <g transform="translate(160 160)"><ellipse cx="0" cy="22" rx="44" ry="7" fill="#000" opacity=".35"/>
+      <rect x="-48" y="2" width="14" height="22" rx="4" fill="#15171C"/><rect x="34" y="2" width="14" height="22" rx="4" fill="#15171C"/>
+      <path d="M-30 6L-18 -14H18L30 6V20H-30Z" fill="#FF3B30"/><path d="M-12 -14L-6 -26H6L12 -14Z" fill="#B5201A"/>
+      <rect x="-40" y="-16" width="80" height="6" fill="#15171C"/><circle cx="0" cy="-8" r="6" fill="#F4F4F4"/></g>
   </svg>`
 };
 

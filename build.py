@@ -201,7 +201,7 @@ PRIV = """    <article class="txt">
       <p>Podemos atualizar esta página quando necessário. A data da última atualização aparece no topo.</p>
     </article>"""
 
-SITEMAP_PAGES = ["/", "/atelon.html", "/novo-mundo.html", "/master-fut.html", "/privacidade.html", "/sobre.html", "/contato.html", "/tampinhas/", "/mestre-do-taco/", "/mente-em-jogo/", "/xadrez/", "/elydran/"]
+SITEMAP_PAGES = ["/", "/atelon.html", "/novo-mundo.html", "/master-fut.html", "/privacidade.html", "/sobre.html", "/contato.html", "/tampinhas/", "/mestre-do-taco/", "/mente-em-jogo/", "/xadrez/", "/elydran/", "/apex/"]
 
 def write(name, text):
     with open(name, "w", encoding="utf-8", newline="\n") as f:
