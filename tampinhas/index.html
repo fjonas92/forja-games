@@ -188,6 +188,11 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 .acct .btn{width:100%}
 .acctrow{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
 .acctrow b{color:var(--fg)}
+.skipbtn{position:absolute;right:14px;bottom:calc(6% + 8px);z-index:6;background:rgba(10,14,30,.78);color:#fff;border:2px solid rgba(255,255,255,.85);border-radius:999px;padding:10px 18px;font:800 15px var(--font-body);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.skipbtn:hover{background:#fff;color:#141a33}
+.tourOpts{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.tourOpts summary{cursor:pointer;font-weight:800}
+.tourOpts[open] summary{margin-bottom:6px}
 .joinrow{display:flex;gap:8px;margin-top:12px}.joinrow .search{flex:1;margin:0;text-transform:uppercase;letter-spacing:4px;font-weight:800;text-align:center}
 .room{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:12px}
 .room small{color:var(--muted);font-weight:700}.room b{font:900 34px var(--font-body);letter-spacing:6px;flex:1}
@@ -250,7 +255,7 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 <ul>
 <li><b>Chutar:</b> toque num bot&atilde;o do seu time, puxe para tr&aacute;s (como um estilingue) e solte. Quanto mais voc&ecirc; puxar, mais forte &eacute; o chute. A seta mostra para onde ele vai.</li>
 <li><b>Vez:</b> cada jogada passa a vez para o outro time, depois que tudo para de se mexer. Voc&ecirc; tem 15 segundos para jogar.</li>
-<li><b>Objetivo:</b> fa&ccedil;a mais gols que o advers&aacute;rio antes do tempo acabar. No mata-mata da Copa, empate vai para a prorroga&ccedil;&atilde;o e, se continuar empatado, para o gol de ouro: quem marcar primeiro vence. No campeonato de pontos corridos, empate vale 1 ponto.</li>
+<li><b>Objetivo:</b> fa&ccedil;a mais gols que o advers&aacute;rio antes do tempo acabar, ou escolha a partida por gols (vence quem fizer 2, 3 ou 5 primeiro). No mata-mata da Copa, empate vai para a prorroga&ccedil;&atilde;o e, se continuar empatado, para o gol de ouro: quem marcar primeiro vence. No campeonato de pontos corridos, empate vale 1 ponto.</li>
 <li><b>Modos:</b> Amistoso (contra o computador ou em 2 no mesmo aparelho), Copa do Mundo no formato de 2026 (48 seleções, 12 grupos, 16 avos de final), Libertadores (32 clubes, 8 grupos, mata-mata desde as oitavas), Champions League no formato atual (fase de liga com 36 clubes, playoff, mata-mata em ida e volta e final única), Copa r&aacute;pida (16 times) e Campeonato de pontos corridos (28 ligas e mais de 500 clubes, com os outros jogos simulados). Em Meus times voc&ecirc; cria o seu time de tampinha.</li>
 <li><b>Online:</b> com uma conta, crie uma sala e mande o c&oacute;digo para um amigo jogar no aparelho dele. As vit&oacute;rias contam no Ranking online (semana, m&ecirc;s, temporada e geral).</li>
 <li><b>Replay:</b> depois de cada gol, o lance passa de novo em c&acirc;mera lenta. D&aacute; para desligar nas Configura&ccedil;&otilde;es.</li>
@@ -261,7 +266,7 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 <section id="sMatch" class="hidden">
   <div id="rotate">Gire o celular na horizontal para jogar melhor</div>
   <div id="stage"><canvas id="gl" aria-hidden="true"></canvas><canvas id="cv" width="1000" height="640"></canvas>
-    <button class="cornerbtn" id="btnPause" aria-label="Pausar">&#9208;</button><button class="cornerbtn" id="btnFull" aria-label="Tela cheia">&#9974;</button><button class="cornerbtn" id="btnCam" aria-label="Trocar câmera" title="Trocar câmera" hidden>&#127909;</button>
+    <button class="skipbtn" id="btnSkip" type="button" hidden>Pular replay &#9197;</button><button class="cornerbtn" id="btnPause" aria-label="Pausar">&#9208;</button><button class="cornerbtn" id="btnFull" aria-label="Tela cheia">&#9974;</button><button class="cornerbtn" id="btnCam" aria-label="Trocar câmera" title="Trocar câmera" hidden>&#127909;</button>
     <div id="ovl" class="ovl hidden"></div></div>
 </section>
 </main>
@@ -481,7 +486,7 @@ function paintSprite(cv, t) {
   const ir = Rr - S * 0.07;
   g.save(); g.beginPath(); g.arc(Rr, Rr, ir, 0, 7); g.clip();
   let art = false;
-  if (t.kind === 'nat') {
+  if (t.kind === 'nat' && !t.noFlag) {
     const im = flagImg(t.iso);
     if (im.complete && im.naturalWidth) {
       const h = 2 * ir, w = h * im.naturalWidth / im.naturalHeight;
@@ -700,16 +705,21 @@ function replayApply(t) {
 }
 function startReplay() {
   const frames = G.rec; G.rec = null;
+  if (G.cfg.online && NET.skipNext) { NET.skipNext = false; return false; } // o outro jogador já pulou
   if (!frames || frames.length < 8 || CFG.replay === false) return false;
   G.replay = { frames, t: 0 };
   G.state = 'replay'; G.drag = null; G.ai = null; G.msg = null;
   replayApply(0);
   return true;
 }
-function skipReplay() { if (netOn()) return; if (G.state === 'replay' && G.replay) G.replay.t = G.replay.frames.length; }
+function skipReplay(remote) {
+  if (G.state !== 'replay' || !G.replay) return;
+  G.replay.t = G.replay.frames.length;
+  if (netOn() && !remote) netSend('skip'); // online: quem pula, pula para os dois
+}
 // depois do gol (e do replay, se houver): fim de jogo ou bola ao centro
 function afterGoal() {
-  if (G.golden || G.time <= 0) { if (checkEnd()) return; }
+  if (G.golden || G.time <= 0 || G.cfg.goals) { if (checkEnd()) return; }
   resetKickoff(); G.turn = 1 - G.lastScorer; G.turnT = TURN_TIME; G.state = 'intro'; G.stateT = 0.9; Sound.whistle();
 }
 function physicsStep(dt) {
@@ -754,6 +764,11 @@ function checkEnd() {
   if (netGuest()) return false; // o fim do jogo vem do dono da sala
   const [a, b] = aggScore();
   if (G.golden) { if (a !== b) { endMatch(); return true; } return false; }
+  if (G.cfg.goals) { // partida por gols: acaba quando alguém chega ao alvo (no mata-mata, agregado empatado vai pro gol de ouro)
+    if (Math.max(G.score[0], G.score[1]) < G.cfg.goals) return false;
+    if (a === b && !G.cfg.allowDraw) { G.golden = true; G.msg = { t: 'GOL DE OURO!', s: 1.8 }; return false; }
+    endMatch(); return true;
+  }
   if (G.time <= 0) {
     if (a === b && !G.cfg.allowDraw) {
       if (!G.extra) { G.extra = true; G.time = Math.max(30, Math.round(G.cfg.duration / 2)); G.msg = { t: 'PRORROGAÇÃO!', s: 1.8 }; Sound.whistle(); return false; }
@@ -771,7 +786,7 @@ function endMatch() {
   const res = { score: [a, b], winner: x > y ? 0 : (y > x ? 1 : -1), golden: G.golden, extra: G.extra, agg: G.cfg.agg ? [x, y] : null };
   if (G.cfg.onEnd) setTimeout(() => G.cfg.onEnd(res), 1400);
 }
-function tickClock(dt) { if (!G.golden && G.time > 0) { G.time = Math.max(0, G.time - dt); } }
+function tickClock(dt) { if (G.cfg.goals) return; if (!G.golden && G.time > 0) { G.time = Math.max(0, G.time - dt); } }
 
 function update(dt) {
   if (!G.active || G.paused) return;
@@ -1012,7 +1027,7 @@ function drawHUD(ctx) {
   ctx.fillText(G.score[0] + ':' + G.score[1], 500, 30);
   ctx.fillStyle = 'rgba(0,0,0,.55)'; roundRectPath(ctx, 452, 62, 96, 22, 11); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.font = '800 14px Figtree, Arial, sans-serif';
-  ctx.fillText(G.golden ? 'GOL DE OURO' : (G.extra ? 'PRORR. ' : '') + fmtTime(G.time), 500, 74);
+  ctx.fillText(G.golden ? 'GOL DE OURO' : G.cfg.goals ? 'VALE ' + G.cfg.goals + ' GOLS' : (G.extra ? 'PRORR. ' : '') + fmtTime(G.time), 500, 74);
   if (G.cfg.agg) { const [x, y] = aggScore(); ctx.fillStyle = 'rgba(0,0,0,.6)'; roundRectPath(ctx, 436, 88, 128, 20, 10); ctx.fill(); ctx.fillStyle = '#ffd54a'; ctx.font = '800 12px Figtree, Arial, sans-serif'; ctx.fillText('AGREGADO ' + x + ':' + y, 500, 98); }
   // barra de tempo da jogada
   if (G.state === 'aim') {
@@ -1116,7 +1131,7 @@ function drawReplayBadge(ctx) {
   ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.fillRect(0, H - 34, W, 3);
   ctx.fillStyle = TEAM_RING[G.lastScorer] || '#fff'; ctx.fillRect(0, H - 34, W * f, 3);
   ctx.font = '800 14px Figtree, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,.85)';
-  ctx.fillText('Gol de ' + G.cfg.teams[G.lastScorer].name + '  ·  toque na tela para pular', W / 2, H - 16);
+  ctx.fillText('Gol de ' + G.cfg.teams[G.lastScorer].name, W / 2, H - 16);
   ctx.restore();
 }
 
@@ -1487,10 +1502,11 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const pick = (a, n) => shuffle(a).slice(0, n);
 
 /* ---------- Configurações salvas ---------- */
-const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true, replay: true, form: '2-2', customForm: null, ball: 'classica' };
+const CFG = { name: 'Jogador', duration: 120, goals: 0, level: 2, sound: true, replay: true, form: '2-2', customForm: null, ball: 'classica' };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('tampinhas_cfg') || '{}')); } catch (e) {}
 delete CFG.form2; delete CFG.customForm2;
 if (CFG.form !== 'custom' && !FORMS[CFG.form]) CFG.form = '2-2';
+if (![0, 2, 3, 5].includes(CFG.goals)) CFG.goals = 0;
 ['customForm'].forEach(k => {
   const c = CFG[k];
   if (!(Array.isArray(c) && c.length === 5 && c.every(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)))) CFG[k] = null;
@@ -1512,6 +1528,29 @@ function loadUserTeams() {
     });
   } catch (e) {}
 }
+
+/* ---------- Aparência personalizada de seleções e clubes do jogo (cores, nome, sigla e estilo) ---------- */
+let LOOKS = {}; const LOOK_ORIG = {};
+function lookClean(l) {
+  if (!l || !HEX.test(l.c1) || !HEX.test(l.c2)) return null;
+  return { name: String(l.name || '').trim().slice(0, 16), short: String(l.short || '').replace(/\s/g, '').slice(0, 3).toUpperCase(), c1: l.c1, c2: l.c2, pat: Math.max(0, Math.min(6, l.pat | 0)), noFlag: !!l.noFlag };
+}
+const lookOrig = t => LOOK_ORIG[t.id] || { name: t.name, short: t.short, c1: t.c1, c2: t.c2, pat: t.pat, noFlag: t.noFlag };
+function lookOn(t, l) { // copia o visual `l` por cima do time (ou volta ao original com l = null)
+  if (!LOOK_ORIG[t.id]) LOOK_ORIG[t.id] = lookOrig(t);
+  const o = LOOK_ORIG[t.id];
+  Object.assign(t, o); if (o.pat === undefined) delete t.pat; if (o.noFlag === undefined) delete t.noFlag;
+  if (l) Object.assign(t, { name: l.name || o.name, short: l.short || o.short, c1: l.c1, c2: l.c2, pat: l.pat }, t.kind === 'nat' ? { noFlag: l.noFlag } : {});
+}
+function loadLooks() {
+  let a = {}; try { a = JSON.parse(localStorage.getItem('tampinhas_looks') || '{}') || {}; } catch (e) {}
+  LOOKS = {};
+  for (const id in a) { const t = TEAM_BY_ID[id], l = lookClean(a[id]); if (t && !t.user && l) LOOKS[id] = l; }
+  for (const id in LOOK_ORIG) if (!LOOKS[id] && TEAM_BY_ID[id]) lookOn(TEAM_BY_ID[id], null);
+  for (const id in LOOKS) lookOn(TEAM_BY_ID[id], LOOKS[id]);
+  spriteCache.clear();
+}
+function saveLooks() { try { localStorage.setItem('tampinhas_looks', JSON.stringify(LOOKS)); } catch (e) {} spriteCache.clear(); if (typeof schedulePush === 'function') schedulePush(); }
 function saveUserTeams() { try { localStorage.setItem('tampinhas_teams', JSON.stringify(USER_TEAMS)); } catch (e) {} if (typeof schedulePush === 'function') schedulePush(); }
 loadUserTeams();
 
@@ -1551,7 +1590,7 @@ function show(id) {
   window.scrollTo(0, 0);
 }
 function teamChip(t, cls) {
-  if (t.kind === 'nat') return '<span class="chip ' + (cls || '') + '"><img src="flags/' + t.iso + '.png" alt="" loading="lazy" onerror="this.remove()"><i style="background:' + t.c1 + '"></i></span>';
+  if (t.kind === 'nat' && !t.noFlag) return '<span class="chip ' + (cls || '') + '"><img src="flags/' + t.iso + '.png" alt="" loading="lazy" onerror="this.remove()"><i style="background:' + t.c1 + '"></i></span>';
   return '<span class="chip club ' + (cls || '') + '" style="background:linear-gradient(135deg,' + t.c1 + ' 50%,' + t.c2 + ' 50%)"><b>' + esc(t.short) + '</b></span>';
 }
 
@@ -1583,13 +1622,13 @@ function initMenu() {
 function renderConfig() {
   const seg = (key, opts) => '<div class="seg">' + opts.map(([v, l]) => '<button data-k="' + key + '" data-v="' + v + '" class="' + (String(CFG[key]) === String(v) ? 'on' : '') + '">' + l + '</button>').join('') + '</div>';
   $('cfgBody').innerHTML =
-    '<h3>Duração da partida</h3>' + seg('duration', [[60, '1:00'], [90, '1:30'], [120, '2:00'], [180, '3:00']]) +
+    winBlock() +
     '<h3>Dificuldade do computador</h3>' + seg('level', LEVELS) +
     '<h3>Som</h3>' + seg('sound', [[true, 'Ligado'], [false, 'Desligado']]) +
     '<h3>Replay dos gols</h3>' + seg('replay', [[true, 'Ligado'], [false, 'Desligado']]) + ballBlock();
   drawBallPreviews($('cfgBody'));
   $('cfgBody').onclick = e => {
-    const bb = e.target.closest('button[data-ball]'); if (bb) { CFG.ball = bb.dataset.ball; saveCfg(); renderConfig(); return; }
+    const ob = e.target.closest('button'); if (ob && matchOptClick(ob)) { renderConfig(); return; }
     const b = e.target.closest('button[data-k]'); if (!b) return;
     const k = b.dataset.k, v = b.dataset.v;
     CFG[k] = (k === 'sound' || k === 'replay') ? v === 'true' : Number(v); if (k === 'sound') { Sound.setOn(CFG.sound); if (CFG.sound && current !== 'sMatch') Sound.startMusic(); $('btnSound').textContent = Sound.on ? '🔊' : '🔇'; }
@@ -1647,6 +1686,21 @@ function compList() {
   Object.keys(LEAGUE_NAMES).filter(k => k !== 'BRA').forEach(k => list.push({ id: k, name: LEAGUE_NAMES[k], desc: LEAGUE_COUNTRY[k] + ' · ' + CLUBS.filter(c => c.lg === k).length + ' clubes', teams: CLUBS.filter(c => c.lg === k) }));
   return list;
 }
+const WIN_OPTS = [[0, 'Por tempo'], [2, 'Quem fizer 2'], [3, 'Quem fizer 3'], [5, 'Quem fizer 5']], DUR_OPTS = [[60, '1:00'], [90, '1:30'], [120, '2:00'], [180, '3:00']];
+const winBlock = () => '<h3>Como a partida termina</h3><div class="seg">' + WIN_OPTS.map(([v, l]) => '<button data-goals="' + v + '" class="' + (CFG.goals === v ? 'on' : '') + '">' + l + '</button>').join('') + '</div>' +
+  (CFG.goals ? '<p class="sub">Sem relógio: vence quem marcar ' + CFG.goals + ' gols primeiro.</p>' : '<div class="seg">' + DUR_OPTS.map(([v, l]) => '<button data-dur="' + v + '" class="' + (CFG.duration === v ? 'on' : '') + '">' + l + '</button>').join('') + '</div>');
+// trata os botões de opção da partida (regra, tempo, nível, formação e bola); devolve true se o clique era de um deles
+function matchOptClick(t) {
+  const d = t.dataset;
+  if (d.goals != null) CFG.goals = Number(d.goals);
+  else if (d.dur) CFG.duration = Number(d.dur);
+  else if (d.level) CFG.level = Number(d.level);
+  else if (d.ball) CFG.ball = d.ball;
+  else if (d.form) { CFG.form = d.form; if (d.form === 'custom' && !CFG.customForm) CFG.customForm = FORMS['2-2'].p.map(q => q.slice()); }
+  else if (d.formreset) { CFG.form = '2-2'; CFG.customForm = null; }
+  else return false;
+  saveCfg(); return true;
+}
 const levelSeg = () => '<h3>Nível do computador</h3><div class="seg">' + LEVELS.map(([v, l]) => '<button data-level="' + v + '" class="' + (CFG.level === v ? 'on' : '') + '">' + l + '</button>').join('') + '</div>';
 /* Formação: botões + campinho de prévia; na "Personalizada" dá pra arrastar as tampinhas */
 const formKey = () => 'form', customKey = () => 'customForm'; // só a formação do jogador é editável
@@ -1681,13 +1735,13 @@ function drawFormCanvas(cv) {
   });
 }
 function drawFormCanvases() { document.querySelectorAll('canvas.formcv').forEach(drawFormCanvas); }
-function initFormDrag(root) {
+function initFormDrag(root, rerender) {
   let drag = null;
   const toField = (cv, e) => { const r = cv.getBoundingClientRect(); return [FCV.x0 + (e.clientX - r.left) * cv.width / r.width, FCV.y0 + (e.clientY - r.top) * cv.height / r.height]; };
   root.addEventListener('pointerdown', e => {
     const cv = e.target.closest('canvas.formcv'); if (!cv) return;
     const slot = Number(cv.dataset.slot);
-    if (CFG[formKey(slot)] !== 'custom') { CFG[formKey(slot)] = 'custom'; if (!CFG[customKey(slot)]) CFG[customKey(slot)] = FORMS['2-2'].p.map(p => p.slice()); saveCfg(); renderSetup(); return; }
+    if (CFG[formKey(slot)] !== 'custom') { CFG[formKey(slot)] = 'custom'; if (!CFG[customKey(slot)]) CFG[customKey(slot)] = FORMS['2-2'].p.map(p => p.slice()); saveCfg(); (rerender || renderSetup)(); return; }
     const [x, y] = toField(cv, e), pts = CFG[customKey(slot)];
     let best = -1, bd = DR * 1.6;
     pts.forEach(([px, py], i) => { const d = Math.hypot(px - x, py - y); if (d < bd) { bd = d; best = i; } });
@@ -1709,7 +1763,7 @@ function renderSetup() {
   if (S.mode === 'league' && !S.comp) {
     let h = '<h2>Campeonato</h2><p class="sub">Pontos corridos: todos contra todos. Os outros jogos são simulados pelo computador e os resultados aparecem a cada rodada.</p>';
     h += '<div class="seg"><button data-dbl="0" class="' + (!S.dbl ? 'on' : '') + '">Turno único</button><button data-dbl="1" class="' + (S.dbl ? 'on' : '') + '">Ida e volta</button></div>';
-    h += levelSeg() + formBlock(1) + ballBlock();
+    h += levelSeg() + winBlock() + formBlock(1) + ballBlock();
     h += '<h3>Escolha o campeonato</h3><div class="comps">' + compList().map(c => '<button class="comp" data-comp="' + c.id + '"><b>' + esc(c.name) + '</b><small>' + esc(c.desc) + '</small></button>').join('') + '</div><button class="btn ghost" data-back="1">Voltar</button>';
     $('setupBody').innerHTML = h; drawFormCanvases(); drawBallPreviews($('setupBody')); return;
   }
@@ -1718,9 +1772,9 @@ function renderSetup() {
   let h = '<h2>' + titles[S.mode] + '</h2>';
   if (S.mode === 'friendly' && S.step === 1) h += '<div class="seg"><button data-vs="cpu" class="' + (S.vs === 'cpu' ? 'on' : '') + '">Contra o computador</button><button data-vs="two" class="' + (S.vs === 'two' ? 'on' : '') + '">2 jogadores</button></div>';
   if (S.mode === 'friendly' && S.step === 1 && S.vs === 'cpu') h += levelSeg();
-  if (S.mode === 'friendly' && S.step === 1) h += formBlock(1) + ballBlock();
+  if (S.mode === 'friendly' && S.step === 1) h += winBlock() + formBlock(1) + ballBlock();
   if (S.mode === 'online') h += '<p class="sub">O adversário escolhe o time dele no aparelho dele.</p>' + formBlock(1) + (NET.role === 'guest' ? '' : ballBlock());
-  if (S.mode === 'cup') h += '<p class="sub">' + (S.comp ? esc(S.comp.desc) : '16 times, fase de grupos e mata-mata.') + ' Você joga as partidas do seu time.</p>' + levelSeg() + formBlock(1) + ballBlock();
+  if (S.mode === 'cup') h += '<p class="sub">' + (S.comp ? esc(S.comp.desc) : '16 times, fase de grupos e mata-mata.') + ' Você joga as partidas do seu time.</p>' + levelSeg() + winBlock() + formBlock(1) + ballBlock();
   if (S.mode === 'league') {
     if (comp) h += '<p class="sub">' + comp.teams.length + ' times, ' + (S.dbl ? 'ida e volta' : 'turno único') + '. Quem somar mais pontos é o campeão.</p>';
     else h += '<p class="sub">Escolha seu time e o tamanho do campeonato. Os rivais são sorteados.</p><div class="seg">' + [4, 8, 12, 16, 20].map(n => '<button data-size="' + n + '" class="' + (S.size === n ? 'on' : '') + '">' + n + ' times</button>').join('') + '</div>';
@@ -1753,19 +1807,12 @@ function fillGrid() {
   $('grid').innerHTML = list.length ? list.map(t => '<button class="tile" data-id="' + t.id + '">' + teamChip(t) + '<b>' + esc(t.name) + '</b><small>Força ' + t.rating + '</small></button>').join('') : (SETUP.tab === 'mine' ? '<p class="sub">Você ainda não criou nenhum time. <button class="linkbtn" data-go="team">Criar meu time</button></p>' : '<p class="sub">Nenhum time encontrado.</p>');
 }
 function initSetup() {
-  initFormDrag($('setupBody'));
+  initFormDrag($('setupBody'), renderSetup);
   $('setupBody').addEventListener('click', e => {
     const S = SETUP, t = e.target.closest('button'); if (!t) return;
     Sound.init();
     if (t.dataset.go === 'team') { TEAMED.cur = null; renderTeam(); show('sTeam'); }
-    else if (t.dataset.level) { CFG.level = Number(t.dataset.level); saveCfg(); renderSetup(); }
-    else if (t.dataset.ball) { CFG.ball = t.dataset.ball; saveCfg(); renderSetup(); }
-    else if (t.dataset.form) {
-      const slot = Number(t.dataset.slot), f = t.dataset.form; CFG[formKey(slot)] = f;
-      if (f === 'custom' && !CFG[customKey(slot)]) CFG[customKey(slot)] = FORMS['2-2'].p.map(q => q.slice());
-      saveCfg(); renderSetup();
-    }
-    else if (t.dataset.formreset) { const slot = Number(t.dataset.formreset); CFG[formKey(slot)] = '2-2'; CFG[customKey(slot)] = null; saveCfg(); renderSetup(); }
+    else if (matchOptClick(t)) renderSetup();
     else if (t.dataset.dbl) { S.dbl = t.dataset.dbl === '1'; renderSetup(); }
     else if (t.dataset.size) { S.size = Number(t.dataset.size); renderSetup(); }
     else if (t.dataset.comp) { S.comp = compList().find(c => c.id === t.dataset.comp); S.tab = S.comp.free ? 'nat' : 'club'; S.lg = 'ALL'; S.q = ''; renderSetup(); window.scrollTo(0, 0); }
@@ -1788,7 +1835,7 @@ function chooseTeam(t) {
 
 /* ---------- Partida (laço principal e telas de apoio) ---------- */
 let running = false, lastT = 0, acc = 0, lastMatchInfo = null;
-const cv = $('cv'), ctx = cv.getContext('2d');
+const cv = $('cv'), ctx = cv.getContext('2d'), btnSkip = $('btnSkip');
 function sizeCanvas() { const dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
 function frame(ts) {
   if (!running) return;
@@ -1796,6 +1843,7 @@ function frame(ts) {
   let n = 0; while (acc >= 1 / 60 && n < 6) { update(1 / 60); acc -= 1 / 60; n++; }
   if (n === 6) acc = 0;
   drawMatch(ctx);
+  const sk = G.active && G.state === 'replay'; if (btnSkip.hidden === sk) btnSkip.hidden = !sk;
   requestAnimationFrame(frame);
 }
 function launchMatch(cfg, info) {
@@ -1809,7 +1857,7 @@ function launchMatch(cfg, info) {
 function matchBase(a, b, humans, names, extra) {
   const forms = [humans[0] ? formationPoints(CFG.form, CFG.customForm) : formationPoints(rivalFormation()),
                  formationPoints(rivalFormation(humans[0] ? CFG.form : null))];
-  return Object.assign({ teams: [a, b], humans, names, duration: CFG.duration, difficulty: CFG.level, allowDraw: true, aiNoise: 1, formations: forms }, extra || {});
+  return Object.assign({ teams: [a, b], humans, names, duration: CFG.duration, goals: CFG.goals, difficulty: CFG.level, allowDraw: true, aiNoise: 1, formations: forms }, extra || {});
 }
 function startFriendly(a, b, vs) {
   const two = vs === 'two';
@@ -1850,6 +1898,7 @@ function initMatchUI() {
     else if (a === 'tour') { const res = JSON.parse($('ovl').dataset.res); running = false; onTourMatchEnd(res); }
   });
   $('btnPause').addEventListener('click', () => { Sound.init(); showPause(); });
+  btnSkip.addEventListener('click', () => { skipReplay(); btnSkip.hidden = true; });
   $('btnCam').addEventListener('click', () => { if (V3.ready) V3.setCam(V3.cam === 'tv' ? 'top' : 'tv'); });
   $('btnFull').addEventListener('click', () => {
     const st = $('stage');
@@ -2199,12 +2248,18 @@ function renderTour() {
   else btn = '<button class="btn big" data-tour="again">Jogar outro torneio</button>';
   if ((out || T.type === 'league') && T.phase !== 'finished') btn += '<button class="btn ghost" data-tour="all">Simular até o fim</button>';
   h += '<div class="actions">' + btn + '<button class="btn ghost" data-tour="menu">Salvar e sair para o menu</button></div>';
+  if (T.phase !== 'finished' && !out) h += '<details class="tourOpts"' + (TOUR_OPTS_OPEN ? ' open' : '') + '><summary>Formação, bola e regras das suas partidas</summary>' + levelSeg() + winBlock() + formBlock(1) + ballBlock() + '<p class="sub">Vale a partir do seu próximo jogo.</p></details>';
   if (out) h = '<p class="warn">Seu time foi eliminado. Você pode simular o resto e ver quem leva o título.</p>' + h;
   $('tourBody').innerHTML = h;
+  drawFormCanvases(); drawBallPreviews($('tourBody'));
   saveTour();
 }
+let TOUR_OPTS_OPEN = false;
 function initTour() {
+  initFormDrag($('tourBody'), renderTour);
+  $('tourBody').addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('tourOpts')) TOUR_OPTS_OPEN = e.target.open; }, true);
   $('tourBody').addEventListener('click', e => {
+    const ob = e.target.closest('.tourOpts button'); if (ob && matchOptClick(ob)) { renderTour(); return; }
     const b = e.target.closest('button[data-tour]'); if (!b) return;
     Sound.init();
     const a = b.dataset.tour;
@@ -2231,10 +2286,26 @@ function renderTeam() {
     let h = '<h2>Meus times</h2><p class="sub">Crie seu time de tampinha com nome, cores e estilo. Ele fica salvo neste aparelho e vale em todos os modos.</p><div class="grid">' +
       USER_TEAMS.map(t => '<button class="tile" data-edit="' + t.id + '">' + teamChip(t) + '<b>' + esc(t.name) + '</b><small>Força ' + t.rating + '</small></button>').join('');
     if (USER_TEAMS.length < 8) h += '<button class="tile" data-new="1"><span class="plus">+</span><b>Novo time</b></button>';
-    h += '</div><button class="btn ghost" data-go="menu">Voltar</button>';
-    box.innerHTML = h; return;
+    h += '</div><h2>Mudar a aparência de um time</h2><p class="sub">Troque as cores, o nome, a sigla e o estilo de qualquer seleção ou clube do jogo. Vale em todos os modos, inclusive nos campeonatos em andamento.</p>';
+    const ids = Object.keys(LOOKS);
+    if (ids.length) h += '<h3>Personalizados por você</h3><div class="grid">' + ids.map(id => '<button class="tile" data-look="' + id + '">' + teamChip(TEAM_BY_ID[id]) + '<b>' + esc(TEAM_BY_ID[id].name) + '</b><small>Original: ' + esc(lookOrig(TEAM_BY_ID[id]).name) + '</small></button>').join('') + '</div>';
+    h += '<input id="lookQ" class="search" type="search" placeholder="Buscar seleção ou clube (ex.: Brasil, Flamengo)" autocomplete="off" value="' + esc(E.lookQ || '') + '"><div id="lookGrid" class="grid"></div>';
+    h += '<button class="btn ghost" data-go="menu">Voltar</button>';
+    box.innerHTML = h; fillLookGrid(); return;
   }
   const t = E.cur;
+  if (E.look) {
+    const base = TEAM_BY_ID[E.look], nat = base.kind === 'nat', flag = nat && !t.noFlag;
+    box.innerHTML = '<h2>Aparência: ' + esc(lookOrig(base).name) + '</h2>' +
+      '<div class="editor"><canvas id="tmPrev" width="160" height="160"></canvas><div class="ef">' +
+      '<label>Nome<input id="tmName" maxlength="16" autocomplete="off" value="' + esc(t.name) + '"></label>' +
+      '<label>Sigla (3 letras)<input id="tmShort" maxlength="3" autocomplete="off" value="' + esc(t.short) + '"></label>' +
+      (flag ? '' : '<div class="colors"><label>Cor 1<input type="color" id="tmC1" value="' + t.c1 + '"></label><label>Cor 2<input type="color" id="tmC2" value="' + t.c2 + '"></label></div>') + '</div></div>' +
+      (nat ? '<h3>Desenho da tampinha</h3><div class="seg"><button data-flag="1" class="' + (flag ? 'on' : '') + '">Bandeira</button><button data-flag="0" class="' + (flag ? '' : 'on') + '">Cores e estilo</button></div>' : '') +
+      (flag ? '' : '<h3>Estilo</h3><div class="seg">' + PATS.map((n, i) => '<button data-pat="' + i + '" class="' + (t.pat === i ? 'on' : '') + '">' + n + '</button>').join('') + '</div>') +
+      '<div class="actions"><button class="btn big" data-save="1">Salvar aparência</button>' + (LOOKS[base.id] ? '<button class="btn ghost" data-lookreset="1">Voltar ao original</button>' : '') + '<button class="btn ghost" data-cancel="1">Cancelar</button></div>';
+    paintPreview(); return;
+  }
   box.innerHTML = '<h2>' + (E.isNew ? 'Novo time' : 'Editar time') + '</h2>' +
     '<div class="editor"><canvas id="tmPrev" width="160" height="160"></canvas><div class="ef">' +
     '<label>Nome<input id="tmName" maxlength="16" autocomplete="off" value="' + esc(t.name) + '"></label>' +
@@ -2245,9 +2316,17 @@ function renderTeam() {
     '<div class="actions"><button class="btn big" data-save="1">Salvar time</button>' + (E.isNew ? '' : '<button class="btn ghost" data-del="1">' + (E.confirmDel ? 'Confirmar exclusão' : 'Excluir time') + '</button>') + '<button class="btn ghost" data-cancel="1">Cancelar</button></div>';
   paintPreview();
 }
+function fillLookGrid() {
+  const g = $('lookGrid'); if (!g) return;
+  const q = norm((TEAMED.lookQ || '').trim());
+  if (q.length < 2) { g.innerHTML = '<p class="sub">Digite pelo menos 2 letras para buscar.</p>'; return; }
+  const list = ALL_TEAMS.filter(t => norm(t.name).includes(q) || norm(t.short).includes(q) || norm(lookOrig(t).name).includes(q)).slice(0, 30);
+  g.innerHTML = list.length ? list.map(t => '<button class="tile" data-look="' + t.id + '">' + teamChip(t) + '<b>' + esc(t.name) + '</b><small>' + (t.kind === 'nat' ? 'Seleção' : esc(LEAGUE_NAMES[t.lg] || 'Clube')) + '</small></button>').join('') : '<p class="sub">Nenhum time encontrado.</p>';
+}
 function initTeam() {
   const box = $('teamBody'), E = TEAMED;
   box.addEventListener('input', e => {
+    if (e.target.id === 'lookQ') { E.lookQ = e.target.value; fillLookGrid(); return; }
     if (!E.cur) return;
     if (e.target.id === 'tmName') E.cur.name = e.target.value.slice(0, 16);
     else if (e.target.id === 'tmShort') E.cur.short = e.target.value.replace(/\s/g, '').slice(0, 3).toUpperCase();
@@ -2258,12 +2337,25 @@ function initTeam() {
   box.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.go === 'menu') { show('sMenu'); return; }
-    if (b.dataset.new) { E.isNew = true; E.confirmDel = false; E.cur = { id: 'u' + Date.now().toString(36), kind: 'club', user: true, lg: 'USR', name: 'Meu Time', short: 'MEU', rating: 75, c1: '#e53935', c2: '#ffffff', pat: 1 }; renderTeam(); return; }
-    if (b.dataset.edit) { E.isNew = false; E.confirmDel = false; E.cur = Object.assign({}, TEAM_BY_ID[b.dataset.edit]); renderTeam(); return; }
+    if (b.dataset.look) {
+      const t = TEAM_BY_ID[b.dataset.look]; if (!t) return;
+      E.look = t.id; E.isNew = false; E.confirmDel = false;
+      E.cur = { id: 'look_' + t.id, kind: t.kind, iso: t.iso, name: t.name, short: t.short, c1: t.c1, c2: t.c2, pat: t.pat != null ? t.pat : hash(t.id) % 5, noFlag: !!t.noFlag };
+      renderTeam(); window.scrollTo(0, 0); return;
+    }
+    if (b.dataset.new) { E.look = null; E.isNew = true; E.confirmDel = false; E.cur = { id: 'u' + Date.now().toString(36), kind: 'club', user: true, lg: 'USR', name: 'Meu Time', short: 'MEU', rating: 75, c1: '#e53935', c2: '#ffffff', pat: 1 }; renderTeam(); return; }
+    if (b.dataset.edit) { E.look = null; E.isNew = false; E.confirmDel = false; E.cur = Object.assign({}, TEAM_BY_ID[b.dataset.edit]); renderTeam(); return; }
     if (!E.cur) return;
     if (b.dataset.pat) { E.cur.pat = Number(b.dataset.pat); renderTeam(); }
     else if (b.dataset.str) { E.cur.rating = Number(b.dataset.str); renderTeam(); }
-    else if (b.dataset.cancel) { E.cur = null; renderTeam(); }
+    else if (b.dataset.flag) { E.cur.noFlag = b.dataset.flag === '0'; renderTeam(); }
+    else if (b.dataset.cancel) { E.cur = null; E.look = null; renderTeam(); }
+    else if (b.dataset.lookreset) { delete LOOKS[E.look]; lookOn(TEAM_BY_ID[E.look], null); saveLooks(); E.cur = null; E.look = null; renderTeam(); }
+    else if (b.dataset.save && E.look) {
+      const t = TEAM_BY_ID[E.look], l = lookClean(E.cur);
+      if (l) { LOOKS[t.id] = l; lookOn(t, l); saveLooks(); }
+      E.cur = null; E.look = null; renderTeam();
+    }
     else if (b.dataset.del) {
       if (!E.confirmDel) { E.confirmDel = true; renderTeam(); return; }
       const i = USER_TEAMS.findIndex(t => t.id === E.cur.id); if (i >= 0) USER_TEAMS.splice(i, 1);
@@ -2320,7 +2412,7 @@ function renderAcct() {
 }
 function snapshotLocal() {
   let tour = null; try { const r = localStorage.getItem(SAVE_KEY); if (r) tour = JSON.parse(r); } catch (e) {}
-  return { teams: USER_TEAMS.map(t => Object.assign({}, t)), tour, cfg: { name: CFG.name, level: CFG.level, duration: CFG.duration, form: CFG.form, customForm: CFG.customForm } };
+  return { teams: USER_TEAMS.map(t => Object.assign({}, t)), tour, cfg: { looks: LOOKS, name: CFG.name, level: CFG.level, duration: CFG.duration, goals: CFG.goals, form: CFG.form, customForm: CFG.customForm } };
 }
 async function pushNow() {
   if (!CLOUD.sb || !CLOUD.user) return true;
@@ -2344,7 +2436,7 @@ async function syncDown() {
     let localSave = null; try { localSave = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) {}
     const rt = data.tour, rts = rt && rt.savedAt || 0, lts = localSave && localSave.savedAt || 0;
     if (rt && rts > lts) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(rt)); } catch (e) {} }
-    if (data.cfg) { if (data.cfg.name && CFG.name === 'Jogador') { CFG.name = String(data.cfg.name).slice(0, 14); $('inName').value = CFG.name; } if (data.cfg.level != null) CFG.level = Number(data.cfg.level) | 0; if (FORMS[data.cfg.form] || data.cfg.form === 'custom') CFG.form = data.cfg.form; if (Array.isArray(data.cfg.customForm) && data.cfg.customForm.length === 5 && data.cfg.customForm.every(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite))) CFG.customForm = fitFormation(data.cfg.customForm); if (CFG.form === 'custom' && !CFG.customForm) CFG.form = '2-2'; saveCfg(); }
+    if (data.cfg) { if (data.cfg.name && CFG.name === 'Jogador') { CFG.name = String(data.cfg.name).slice(0, 14); $('inName').value = CFG.name; } if (data.cfg.level != null) CFG.level = Number(data.cfg.level) | 0; if (FORMS[data.cfg.form] || data.cfg.form === 'custom') CFG.form = data.cfg.form; if (Array.isArray(data.cfg.customForm) && data.cfg.customForm.length === 5 && data.cfg.customForm.every(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite))) CFG.customForm = fitFormation(data.cfg.customForm); if (CFG.form === 'custom' && !CFG.customForm) CFG.form = '2-2'; if (data.cfg.looks && typeof data.cfg.looks === 'object') { try { localStorage.setItem('tampinhas_looks', JSON.stringify(Object.assign({}, data.cfg.looks, LOOKS))); } catch (e) {} loadLooks(); } saveCfg(); }
   }
   await pushNow(); refreshResume();
 }
@@ -2403,10 +2495,16 @@ const netGuest = () => netOn() && G.cfg.online.role === 'guest';
 const netHost = () => netOn() && G.cfg.online.role === 'host';
 const netName = () => (CFG.name || 'Jogador').slice(0, 14);
 function netSend(k, data) { if (NET.ch) NET.ch.send({ type: 'broadcast', event: 'm', payload: Object.assign({ k, from: NET.me }, data || {}) }); }
-function teamWire(t) { return t.user ? { id: t.id, user: true, name: t.name, short: t.short, rating: t.rating, c1: t.c1, c2: t.c2, pat: t.pat } : { id: t.id }; }
+function teamWire(t) { return t.user ? { id: t.id, user: true, name: t.name, short: t.short, rating: t.rating, c1: t.c1, c2: t.c2, pat: t.pat } : { id: t.id, look: LOOKS[t.id] || null }; }
 function teamFromWire(w) {
   if (!w || typeof w.id !== 'string') return null;
-  if (!w.user) return TEAM_BY_ID[w.id] && !TEAM_BY_ID[w.id].user ? TEAM_BY_ID[w.id] : null;
+  if (!w.user) {
+    const b = TEAM_BY_ID[w.id]; if (!b || b.user) return null;
+    const l = lookClean(w.look); if (!l && !LOOKS[b.id]) return b;
+    const t = Object.assign({}, b, lookOrig(b), { id: 'net_' + b.id });
+    if (l) Object.assign(t, { name: l.name || t.name, short: l.short || t.short, c1: l.c1, c2: l.c2, pat: l.pat }, b.kind === 'nat' ? { noFlag: l.noFlag } : {});
+    spriteCache.delete(t.id); return t;
+  }
   if (typeof w.name !== 'string' || !HEX.test(w.c1) || !HEX.test(w.c2)) return null;
   const id = 'net_' + w.id.replace(/[^\w]/g, '').slice(0, 24); spriteCache.delete(id);
   return { id, kind: 'club', user: true, lg: 'USR', name: w.name.slice(0, 16), short: String(w.short || w.name).slice(0, 3).toUpperCase(), rating: [62, 75, 84, 92].includes(w.rating) ? w.rating : 75, c1: w.c1, c2: w.c2, pat: Math.max(0, Math.min(6, w.pat | 0)) };
@@ -2485,6 +2583,7 @@ function netMsg(p) {
     case 'sync': if (NET.role === 'guest' && NET.inMatch) { NET.pendSync = p; if (G.state === 'aim' || G.state === 'wait' || G.state === 'moving') netApplySync(); } break;
     case 'goal': if (NET.role === 'guest' && NET.inMatch) netApplyGoal(p); break;
     case 'end': if (NET.role === 'guest' && NET.inMatch) NET.pendEnd = p; break;
+    case 'skip': if (!NET.inMatch) break; if (G.state === 'replay') skipReplay(true); else if (G.state === 'goal') NET.skipNext = true; break;
   }
 }
 function netBegin() {
@@ -2492,7 +2591,7 @@ function netBegin() {
   const p = {
     matchId: NET.code + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     teams: [teamWire(NET.myTeam), teamWire(NET.oppTeam)], names: [netName(), NET.opp.nome],
-    forms: [myForm(), NET.oppForm || FORMS['2-2'].p], duration: CFG.duration, first: Math.random() < 0.5 ? 0 : 1, ball: matchBallId()
+    forms: [myForm(), NET.oppForm || FORMS['2-2'].p], duration: CFG.duration, goals: CFG.goals, first: Math.random() < 0.5 ? 0 : 1, ball: matchBallId()
   };
   netSend('start', p); netStartMatch(p);
 }
@@ -2501,10 +2600,10 @@ function netStartMatch(p) {
   const host = NET.role === 'host';
   const cfg = {
     teams, humans: [host, !host], names: (p.names || []).map(n => String(n || 'Jogador').slice(0, 14)), difficulty: 2, allowDraw: true, aiNoise: 1,
-    duration: [60, 90, 120, 180].includes(p.duration) ? p.duration : 120, formations: (p.forms || []).map(formFromWire),
+    duration: [60, 90, 120, 180].includes(p.duration) ? p.duration : 120, goals: [2, 3, 5].includes(p.goals) ? p.goals : 0, formations: (p.forms || []).map(formFromWire),
     firstTurn: p.first === 1 ? 1 : 0, ball: BALL_BY_ID[p.ball] ? p.ball : 'classica', online: { role: NET.role }
   };
-  Object.assign(NET, { matchId: String(p.matchId || ''), seq: 0, ready: false, pendSync: null, pendShot: null, pendEnd: null, inMatch: true, reported: false, lastKey: null });
+  Object.assign(NET, { skipNext: false, matchId: String(p.matchId || ''), seq: 0, ready: false, pendSync: null, pendShot: null, pendEnd: null, inMatch: true, reported: false, lastKey: null });
   launchMatch(cfg, { type: 'online' });
 }
 // chute vindo do outro aparelho
@@ -2570,7 +2669,7 @@ function renderOnline() {
     const row = (nome, t, mine, wait) => '<div class="pl' + (mine ? ' mine' : '') + '">' + (t ? teamChip(t) : '<span class="chip ph"></span>') + '<div><b>' + esc(nome) + (mine ? ' (você)' : '') + '</b><small>' + (t ? esc(t.name) : (wait || 'Escolhendo o time…')) + '</small></div>' + (mine ? '<button class="btn ghost" data-on="team">' + (t ? 'Trocar time' : 'Escolher time') + '</button>' : '') + '</div>';
     h += '<div class="pls">' + row(netName(), me, true) + (NET.opp ? row(NET.opp.nome, op, false) : '<div class="pl"><span class="chip ph"></span><div><b>' + (host ? 'Esperando adversário…' : 'Conectando…') + '</b><small>' + (host ? 'Mande o código ' + esc(NET.code) + ' para um amigo' : '') + '</small></div></div>') + '</div>';
     if (host) {
-      h += '<h3>Duração da partida</h3><div class="seg">' + [[60, '1:00'], [90, '1:30'], [120, '2:00'], [180, '3:00']].map(([v, l]) => '<button data-dur="' + v + '" class="' + (CFG.duration === v ? 'on' : '') + '">' + l + '</button>').join('') + '</div>';
+      h += winBlock();
       const ok = NET.opp && me && op;
       h += '<button class="btn big" data-on="start"' + (ok ? '' : ' disabled') + '>' + (ok ? 'Começar partida' : 'Esperando os dois escolherem o time') + '</button>';
     } else h += '<p class="sub">' + (NET.opp ? 'Esperando ' + esc(NET.opp.nome) + ' começar a partida.' : '') + '</p>';
@@ -2586,7 +2685,7 @@ function initOnline() {
   $('onlineBody').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return; Sound.init();
     const a = b.dataset.on;
-    if (b.dataset.dur) { CFG.duration = Number(b.dataset.dur); saveCfg(); renderOnline(); return; }
+    if (b.dataset.dur || b.dataset.goals != null) { matchOptClick(b); renderOnline(); return; }
     if (a === 'login') openOnline();
     else if (a === 'create') { NET.status = ''; sbReady(() => netCreate()); }
     else if (a === 'join') { const c = ($('inCode').value || '').trim().toUpperCase(); if (!/^[A-Z0-9]{4}$/.test(c)) { NET.status = 'Digite o código de 4 letras da sala.'; renderOnline(); return; } NET.status = ''; NET.linkCode = ''; sbReady(() => netOpen(c, 'guest')); }
@@ -2644,6 +2743,7 @@ function initRank() {
   });
 }
 
+loadLooks();
 initMenu(); initSetup(); initMatchUI(); initTour(); initTeam(); initAuth(); initOnline(); initRank(); renderAcct();
 refreshResume(); show('sMenu');
 
