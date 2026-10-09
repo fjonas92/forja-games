@@ -7,6 +7,7 @@ import { Input } from './input.js';
 import { Sfx } from './audio.js';
 import { UI, esc } from './ui.js';
 import * as C from './career.js';
+import { Cloud } from './cloud.js';
 
 const $ = id => document.getElementById(id);
 const stage = $('stage'), canvas = $('gl');
@@ -41,6 +42,7 @@ S.input.auto = S.settings.auto;
 if (S.settings.tilt) S.input.enableTilt(true);
 
 const app = {
+  get cloud() { return cloud; },
   get settings() { return S.settings; }, get career() { return S.career; }, get input() { return S.input; }, get sfx() { return S.sfx; }, get quick() { return S.quick; }, get draft() { return S.draft; },
   get garageTab() { return S.garageTab; }, get stTab() { return S.stTab; }, get result() { return S.result; }, get race() { return S.race; },
   getTrack(i) { return S.tracks[i] || (S.tracks[i] = buildTrack(CIRCUITS[i])); },
@@ -77,7 +79,7 @@ const OPT = {
 };
 
 // ---------- previa 3D ----------
-const MENU = ['title', 'quick', 'pilot', 'teams', 'hub', 'garage', 'standings', 'settings', 'help'];
+const MENU = ['title', 'quick', 'pilot', 'teams', 'hub', 'garage', 'standings', 'settings', 'help', 'account'];
 function onScreen(s) {
   S.lastScreen = s;
   if (S.mode !== 'menu') return;
@@ -90,7 +92,7 @@ function carOpts() {
   if (sc === 'pilot' || sc === 'teams') {
     pilot = d.pilot; const id = sc === 'teams' ? (d.pv || d.teamId || 'vortex') : 'silvano';
     team = id === 'custom' ? TEAMS[TEAMS.length - 1] : TEAMS.find(t => t.id === id);
-  } else if (S.career && ['hub', 'garage', 'standings', 'title', 'settings', 'help'].includes(sc)) {
+  } else if (S.career && ['hub', 'garage', 'standings', 'title', 'settings', 'help', 'account'].includes(sc)) {
     pilot = S.career.pilot; car = S.career.car; team = TEAMS[0]; sp = [SPONSORS[car.sp[0]], SPONSORS[car.sp[1]]];
   } else {
     const t = TEAMS.find(t => t.id === S.quick.team) || TEAMS[0]; team = t; pilot = S.career ? S.career.pilot : d.pilot;
@@ -111,6 +113,28 @@ function back() {
   if (s === 'pause') return resume();
   const p = S.stack.pop(); if (p) ui.go(p); else ui.go(S.career ? 'hub' : 'title');
 }
+// ---------- conta / nuvem ----------
+const cloud = new Cloud();
+cloud.getLocal = () => S.career;
+cloud.adopt = c => { S.career = c; C.saveCareer(c, true); if (ui.screen === 'title' || ui.screen === 'account') ui.render(); refreshPreview(); };
+C.setSaveHook(() => cloud.schedulePush());
+let lastLogged = false;
+cloud.onChange = () => {
+  const logged = !!cloud.user;
+  if (ui.screen === 'account') { if (logged !== lastLogged) ui.go('account'); else accMsg(cloud.status); }
+  else if (ui.screen === 'title' && logged !== lastLogged) ui.render();
+  lastLogged = logged;
+};
+function accMsg(t) { const m = document.getElementById('acMsg'); if (m) m.textContent = t || ''; }
+async function accountAction(a) {
+  const email = ($('acEmail').value || '').trim(), pass = $('acPass').value || '';
+  if (a === 'forgot') { if (!email) return accMsg('Digite seu e-mail acima e toque de novo.'); accMsg('Aguarde...'); const r = await cloud.forgot(email); return accMsg(r.err || r.info); }
+  if (!email || !pass) return accMsg('Preencha e-mail e senha.');
+  if (a === 'signup' && pass.length < 6) return accMsg('A senha precisa ter pelo menos 6 caracteres.');
+  accMsg('Aguarde...');
+  const r = a === 'login' ? await cloud.signIn(email, pass) : await cloud.signUp(email, pass);
+  if (r.err) accMsg(r.err); else if (r.info) accMsg(r.info);
+}
 function act(a, d, el) {
   const sfx = S.sfx;
   switch (a) {
@@ -119,6 +143,10 @@ function act(a, d, el) {
     case 'quick': go('quick'); break;
     case 'settings': go('settings'); break;
     case 'help': go('help'); break;
+    case 'account': go('account'); break;
+    case 'login': case 'signup': case 'forgot': accountAction(a); break;
+    case 'savenow': accMsg('Salvando...'); cloud.pushNow().then(ok => accMsg(ok ? 'Salvo na nuvem.' : 'Não consegui salvar agora.')); break;
+    case 'logout': cloud.signOut().then(ok => { if (ok) { C.deleteCareer(); S.career = null; } S.stack = []; ui.go('title'); }); break;
     case 'standings': go('standings'); break;
     case 'garage': go('garage'); break;
     case 'back': back(); break;
@@ -398,6 +426,6 @@ if (coarse) $('btnFull').textContent = '⛶';
 for (let i = 0; i < CIRCUITS.length; i++) app.getTrack(i);
 requestAnimationFrame(() => {
   $('loading').hidden = true;
-  ui.go('title');
+  ui.go('title'); cloud.ready();
   last = performance.now(); requestAnimationFrame(frame);
 });

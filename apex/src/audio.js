@@ -36,14 +36,24 @@ export class Sfx {
   music(on) { this.musWant = on; this._musicApply(); }
   _musicApply() {
     const want = this.musWant && this.on;
-    if (!this.mus) { if (!want) return; this.mus = new Audio('intro.mp3'); this.mus.loop = true; this.mus.preload = 'auto'; this.mus.volume = 0; }
-    const a = this.mus; clearInterval(this._mf);
+    if (!this.mus) { if (!want) return; this.mus = new Audio('intro.mp3'); this.mus.loop = true; this.mus.preload = 'auto'; this.mus.volume = 0; this.mlevel = 0; }
+    const a = this.mus;
+    // no iPhone/iPad o volume do <audio> e fixo (a musica nunca sumia e seguia tocando na corrida e na pausa):
+    // com o AudioContext ligado, o volume passa por um ganho do WebAudio, que funciona em todo aparelho
+    if (this.ctx && !this.mg) {
+      try { const src = this.ctx.createMediaElementSource(a); this.mg = this.ctx.createGain(); this.mg.gain.value = this.mlevel; src.connect(this.mg); this.mg.connect(this.master); a.volume = 1; } catch (e) { this.mg = null; }
+    }
+    clearInterval(this._mf); clearTimeout(this._mt);
     if (want) { const p = a.play(); if (p && p.catch) p.catch(() => { }); }
+    const target = want ? 0.5 : 0;
     this._mf = setInterval(() => {
-      const target = want ? 0.5 : 0, d = target - a.volume;
-      if (Math.abs(d) < 0.03) { a.volume = target; clearInterval(this._mf); if (!want) a.pause(); }
-      else a.volume = Math.max(0, Math.min(1, a.volume + Math.sign(d) * 0.03));
+      const d = target - this.mlevel;
+      this.mlevel = Math.abs(d) < 0.03 ? target : this.mlevel + Math.sign(d) * 0.03;
+      if (this.mg) this.mg.gain.value = this.mlevel; else { try { a.volume = Math.max(0, Math.min(1, this.mlevel)); } catch (e) { } }
+      if (this.mlevel === target) { clearInterval(this._mf); if (!want) a.pause(); }
     }, 60);
+    // garantia: ao pedir silencio, a musica para mesmo que o volume nao responda
+    if (!want) this._mt = setTimeout(() => { clearInterval(this._mf); this.mlevel = 0; if (this.mg) this.mg.gain.value = 0; try { a.pause(); } catch (e) { } }, 1400);
   }
   update(r, thr, paused) {
     if (!this.running) return;
@@ -55,7 +65,7 @@ export class Sfx {
     const f = 55 + r.rpm * 230;
     this.o1.frequency.setTargetAtTime(f, t, 0.03); this.o2.frequency.setTargetAtTime(f * 0.5, t, 0.03); this.o3.frequency.setTargetAtTime(f * 1.51, t, 0.03);
     this.lp.frequency.setTargetAtTime(500 + r.rpm * 2600 + thr * 600, t, 0.05);
-    this.eg.gain.setTargetAtTime(0.10 + 0.12 * thr + 0.05 * r.rpm, t, 0.05);
+    this.eg.gain.setTargetAtTime(0.05 + 0.13 * thr + 0.06 * r.rpm, t, 0.05);
     this.wind.g.gain.setTargetAtTime(Math.min(0.28, v / 320), t, 0.1);
     this.wind.bq.frequency.setTargetAtTime(300 + v * 9, t, 0.1);
     const sk = Math.max(r.slipS, r.brakeOn && v > 40 ? 0.35 * Math.min(1, v / 70) : 0);

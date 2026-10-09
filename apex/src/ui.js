@@ -93,8 +93,33 @@ export class UI {
       ${hasSave ? this.btn('newcareer', 'Nova carreira') : this.btn('newcareer', 'Iniciar carreira', 'primary', 'data-def')}
       ${this.btn('quick', 'Corrida rápida')}
       ${this.btn('settings', 'Opções')}
+      ${this.btn('account', a.cloud.user ? 'Minha conta (salvando na nuvem)' : 'Criar conta para salvar o jogo')}
       ${this.btn('help', 'Controles')}
       <div class="hint">${hint}</div></div>`;
+  }
+
+  s_account() {
+    const cl = this.app.cloud, st = cl.status ? `<div class="hint">${esc(cl.status)}</div>` : '';
+    if (cl.user) {
+      return `<div class="panel">
+        <h2 class="t">Minha conta</h2>
+        <p>Logado como <b>${esc(cl.user.email || '')}</b></p>
+        <p class="hint">Sua carreira é salva na nuvem a cada corrida e compra. Entre com a mesma conta em outro aparelho para continuar de onde parou.</p>
+        ${st}<div class="hint" id="acMsg"></div>
+        ${this.app.career ? this.btn('savenow', 'Salvar agora', 'primary', 'data-def') : ''}
+        ${this.btn('logout', 'Sair da conta')}
+        ${this.btn('back', 'Voltar', '', this.app.career ? '' : 'data-def')}</div>`;
+    }
+    return `<div class="panel">
+      <h2 class="t">Conta</h2>
+      <p class="hint">Crie uma conta (a mesma do site Falzinho Games) para guardar sua carreira na nuvem e continuar em qualquer aparelho.</p>
+      <div class="lbl">E-mail</div><input class="txt nav" id="acEmail" data-id="acEmail" type="email" maxlength="80" autocomplete="email" spellcheck="false">
+      <div class="lbl">Senha (mínimo 6 caracteres)</div><input class="txt nav" id="acPass" data-id="acPass" type="password" maxlength="72" autocomplete="current-password">
+      <div class="hint" id="acMsg">${esc(cl.status)}</div>
+      ${this.btn('login', 'Entrar', 'primary', 'data-def')}
+      ${this.btn('signup', 'Criar conta')}
+      ${this.btn('forgot', 'Esqueci a senha')}
+      ${this.btn('back', 'Voltar')}</div>`;
   }
 
   s_help() {
@@ -191,6 +216,7 @@ export class UI {
       ${this.btn('garage', 'Garagem e evolução')}
       ${this.btn('standings', 'Classificação')}
       ${this.btn('settings', 'Opções')}
+      ${this.btn('account', this.app.cloud.user ? 'Minha conta (nuvem)' : 'Criar conta / salvar na nuvem')}
       ${this.btn('menu', 'Salvar e sair')}</div>`;
   }
 

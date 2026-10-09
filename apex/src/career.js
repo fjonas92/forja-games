@@ -16,7 +16,10 @@ export function saveSettings(s) { try { localStorage.setItem(SKEY, JSON.stringif
 export function loadCareer() {
   try { const c = JSON.parse(localStorage.getItem(KEY) || 'null'); return c && c.v === 1 ? c : null; } catch (e) { return null; }
 }
-export function saveCareer(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) { } }
+let saveHook = null;
+export function setSaveHook(f) { saveHook = f; }
+// quiet=true: grava sem carimbar a hora nem avisar a nuvem (usado ao baixar o save da nuvem)
+export function saveCareer(c, quiet) { try { if (!quiet && c) c.ts = Date.now(); localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) { } if (!quiet && saveHook) saveHook(c); }
 export function deleteCareer() { try { localStorage.removeItem(KEY); } catch (e) { } }
 
 export function newCareer(pilot, teamId, customName) {
