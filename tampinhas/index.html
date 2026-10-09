@@ -142,6 +142,13 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 .acct .btn{width:100%}
 .acctrow{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
 .acctrow b{color:var(--fg)}
+.joinrow{display:flex;gap:8px;margin-top:12px}.joinrow .search{flex:1;margin:0;text-transform:uppercase;letter-spacing:4px;font-weight:800;text-align:center}
+.room{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:12px}
+.room small{color:var(--muted);font-weight:700}.room b{font:900 34px var(--font-body);letter-spacing:6px;flex:1}
+.pls{display:grid;gap:8px;margin-bottom:12px}.pl{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.pl.mine{border-color:var(--ember)}.pl>div{flex:1;min-width:0}.pl b{display:block}.pl small{color:var(--muted)}.pl .btn{padding:8px 12px;min-height:36px}
+.chip.ph{background:var(--surface2);border:2px dashed var(--line)}
+.btn[disabled]{opacity:.5;cursor:default}
 .authp form{display:grid;gap:12px;max-width:420px;margin:12px 0}
 .authp label{display:grid;gap:4px;color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
 .authp input{background:var(--surface);border:1px solid var(--line);color:var(--fg);padding:13px;border-radius:12px;font:600 16px var(--font-body)}
@@ -163,16 +170,20 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
     <div id="acct" class="acct"></div>
     <button class="btn big hidden" id="btnResume" data-go="resume" style="background:var(--lime)"></button>
     <button class="btn big" data-go="friendly">Amistoso</button>
+    <button class="btn big" data-go="online">Online contra amigos</button>
     <button class="btn big" data-go="wc">Copa do Mundo</button>
     <button class="btn big" data-go="ucl">Champions League</button>
     <button class="btn big" data-go="lib">Libertadores</button>
     <button class="btn big" data-go="cup">Copa rápida</button>
     <button class="btn big" data-go="league">Campeonato</button>
+    <button class="btn" data-go="rank" style="background:var(--surface2);color:var(--fg)">Ranking online</button>
     <button class="btn" data-go="team" style="background:var(--surface2);color:var(--fg)">Meus times</button>
     <button class="btn ghost" data-go="config">Configura&ccedil;&otilde;es</button>
     <button class="btn ghost" data-go="help">Como jogar</button>
   </div>
 </section>
+<section id="sOnline" class="hidden"><div id="onlineBody" class="panel"></div></section>
+<section id="sRank" class="hidden"><div id="rankBody" class="panel"></div></section>
 <section id="sSetup" class="hidden"><div id="setupBody" class="panel"></div></section>
 <section id="sAuth" class="hidden"><div class="panel authp"><h2 id="authTitle">Entrar</h2><p class="sub">Com uma conta, seus times e seu campeonato ficam salvos e voc&ecirc; continua de qualquer aparelho.</p>
 <form id="authForm" novalidate><label>E-mail<input id="auEmail" type="email" autocomplete="email" inputmode="email"></label><label>Senha<input id="auPass" type="password" autocomplete="current-password" minlength="6"></label><div id="authMsg" class="authmsg" role="status"></div><button class="btn big" id="btnAuthGo" type="submit">Entrar</button></form>
@@ -186,6 +197,8 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 <li><b>Vez:</b> cada jogada passa a vez para o outro time, depois que tudo para de se mexer. Voc&ecirc; tem 15 segundos para jogar.</li>
 <li><b>Objetivo:</b> fa&ccedil;a mais gols que o advers&aacute;rio antes do tempo acabar. No mata-mata da Copa, empate vai para a prorroga&ccedil;&atilde;o e, se continuar empatado, para o gol de ouro: quem marcar primeiro vence. No campeonato de pontos corridos, empate vale 1 ponto.</li>
 <li><b>Modos:</b> Amistoso (contra o computador ou em 2 no mesmo aparelho), Copa do Mundo no formato de 2026 (48 seleções, 12 grupos, 16 avos de final), Libertadores (32 clubes, 8 grupos, mata-mata desde as oitavas), Champions League no formato atual (fase de liga com 36 clubes, playoff, mata-mata em ida e volta e final única), Copa r&aacute;pida (16 times) e Campeonato de pontos corridos (28 ligas e mais de 500 clubes, com os outros jogos simulados). Em Meus times voc&ecirc; cria o seu time de tampinha.</li>
+<li><b>Online:</b> com uma conta, crie uma sala e mande o c&oacute;digo para um amigo jogar no aparelho dele. As vit&oacute;rias contam no Ranking online (semana, m&ecirc;s, temporada e geral).</li>
+<li><b>Replay:</b> depois de cada gol, o lance passa de novo em c&acirc;mera lenta. D&aacute; para desligar nas Configura&ccedil;&otilde;es.</li>
 <li><b>Bolas:</b> escolha entre 18 bolas (ou uma aleat&oacute;ria a cada partida) nas Configura&ccedil;&otilde;es ou na hora de montar a partida.</li>
 <li><b>Dica:</b> no celular, deixe na horizontal e use o bot&atilde;o de tela cheia.</li>
 </ul>
@@ -598,7 +611,7 @@ function newMatch(cfg) {
   G.ball = mkBody('ball', W / 2, CY, -1, 0); G.bodies.push(G.ball);
   resetKickoff();
   G.turn = cfg.firstTurn != null ? cfg.firstTurn : (Math.random() < 0.5 ? 0 : 1);
-  G.ballId = cfg.ball || matchBallId(); G.state = 'intro'; G.stateT = 1.3; G.turnT = TURN_TIME; G.anim = 0; G.drag = null; G.ai = null; G.msg = null; G.moveT = 0; G.timeUp = false;
+  G.ballId = cfg.ball || matchBallId(); G.state = 'intro'; G.stateT = 1.3; G.turnT = TURN_TIME; G.anim = 0; G.drag = null; G.ai = null; G.msg = null; G.moveT = 0; G.timeUp = false; G.rec = null; G.replay = null;
   Sound.whistle();
 }
 function isHuman(t) { return G.cfg.humans[t]; }
@@ -610,7 +623,39 @@ function shoot(disc, ux, uy, pull) {
   disc.vx = ux * v; disc.vy = uy * v;
   G.koShot = !!G.koPending; G.koPending = false; G.koKicker = G.koShot ? disc : null;
   G.state = 'moving'; G.moveT = 0; G.drag = null; G.ai = null; G.shots = (G.shots || 0) + 1;
+  G.rec = [recFrame()]; G.recPost = 0; if (G.cfg.online) NET.ready = false;
   Sound.kick();
+}
+
+/* ---------- Replay dos gols: grava cada quadro da jogada e reprisa em câmera lenta ---------- */
+const REPLAY_MAX = 300, REPLAY_POST = 70, REPLAY_SPEED = 0.5; // até 5 s de jogada + ~1,2 s da bola na rede, a meia velocidade
+function recFrame() { return G.bodies.map(b => [b.x, b.y, b.rot, b.vx, b.vy]); }
+function recPush() {
+  if (!G.rec) return;
+  G.rec.push(recFrame());
+  if (G.rec.length > REPLAY_MAX + REPLAY_POST) G.rec.shift();
+}
+function replayApply(t) {
+  const F = G.replay.frames, i = Math.min(F.length - 2, Math.floor(t)), f = t - i, a = F[i], b = F[i + 1] || a;
+  G.bodies.forEach((o, k) => {
+    const p = a[k], q = b[k];
+    o.x = p[0] + (q[0] - p[0]) * f; o.y = p[1] + (q[1] - p[1]) * f; o.rot = p[2] + (q[2] - p[2]) * f;
+    o.vx = p[3] * REPLAY_SPEED; o.vy = p[4] * REPLAY_SPEED;
+  });
+}
+function startReplay() {
+  const frames = G.rec; G.rec = null;
+  if (!frames || frames.length < 8 || CFG.replay === false) return false;
+  G.replay = { frames, t: 0 };
+  G.state = 'replay'; G.drag = null; G.ai = null; G.msg = null;
+  replayApply(0);
+  return true;
+}
+function skipReplay() { if (netOn()) return; if (G.state === 'replay' && G.replay) G.replay.t = G.replay.frames.length; }
+// depois do gol (e do replay, se houver): fim de jogo ou bola ao centro
+function afterGoal() {
+  if (G.golden || G.time <= 0) { if (checkEnd()) return; }
+  resetKickoff(); G.turn = 1 - G.lastScorer; G.turnT = TURN_TIME; G.state = 'intro'; G.stateT = 0.9; Sound.whistle();
 }
 function physicsStep(dt) {
   const SUB = 4, h = dt / SUB;
@@ -634,22 +679,24 @@ function checkGoal() {
   let scorer = -1;
   if (b.x < L - 3 && b.y > GY0 && b.y < GY1) scorer = 1;
   else if (b.x > R + 3 && b.y > GY0 && b.y < GY1) scorer = 0;
-  if (scorer < 0) return false;
+  if (scorer < 0 || netGuest()) return false; // no online, quem decide o gol é o dono da sala
   if (G.koShot) {
     // gol no lance da saída de bola (direto ou desviado): falta, sem gol, posse pro adversário
     const kicker = G.koKicker ? G.koKicker.team : G.turn;
     resetKickoff();
     G.turn = 1 - kicker; G.turnT = TURN_TIME; G.drag = null; G.ai = null;
     G.state = 'intro'; G.stateT = 1.2; G.msg = { t: 'FALTA! Não vale gol no lance da saída', s: 2.2 };
-    Sound.whistle();
+    Sound.whistle(); if (netHost()) netSend('goal', { foul: true, turn: G.turn });
     return true;
   }
   G.score[scorer]++; G.state = 'goal'; G.stateT = 2.2; G.lastScorer = scorer; G.drag = null; G.ai = null;
   Sound.goal(); if (G.cfg.onGoal) G.cfg.onGoal(scorer);
+  if (netHost()) netSend('goal', { scorer, score: G.score });
   return true;
 }
 const aggScore = () => G.cfg.agg ? [G.score[0] + G.cfg.agg[0], G.score[1] + G.cfg.agg[1]] : G.score;
 function checkEnd() {
+  if (netGuest()) return false; // o fim do jogo vem do dono da sala
   const [a, b] = aggScore();
   if (G.golden) { if (a !== b) { endMatch(); return true; } return false; }
   if (G.time <= 0) {
@@ -664,6 +711,7 @@ function checkEnd() {
 function endMatch() {
   if (G.state === 'end') return;
   G.state = 'end'; G.over = true; Sound.whistle();
+  if (netHost()) netSend('end', { score: G.score, golden: G.golden, extra: G.extra });
   const [a, b] = G.score, [x, y] = aggScore();
   const res = { score: [a, b], winner: x > y ? 0 : (y > x ? 1 : -1), golden: G.golden, extra: G.extra, agg: G.cfg.agg ? [x, y] : null };
   if (G.cfg.onEnd) setTimeout(() => G.cfg.onEnd(res), 1400);
@@ -682,12 +730,12 @@ function update(dt) {
       tickClock(dt);
       if (G.time <= 0 && checkEnd()) break;
       G.turnT -= dt;
-      if (G.turnT <= 0) { G.msg = { t: 'Tempo esgotado', s: 1.2 }; passTurn(); break; }
-      if (!isHuman(G.turn)) aiTick(dt);
+      if (G.turnT <= 0) { if (netGuest()) { G.turnT = 0; break; } G.msg = { t: 'Tempo esgotado', s: 1.2 }; passTurn(); break; }
+      if (!isHuman(G.turn) && !G.cfg.online) aiTick(dt);
       break;
     case 'moving':
       tickClock(dt); G.moveT += dt;
-      physicsStep(dt);
+      physicsStep(dt); recPush();
       if (checkGoal()) break;
       if (allStill() || G.moveT > 14) {
         for (const b of G.bodies) b.vx = b.vy = 0;
@@ -697,13 +745,19 @@ function update(dt) {
       break;
     case 'goal':
       physicsStep(dt); G.stateT -= dt;
-      if (G.stateT <= 0) {
-        if (G.golden || G.time <= 0) { if (checkEnd()) break; }
-        resetKickoff(); G.turn = 1 - G.lastScorer; G.turnT = TURN_TIME; G.state = 'intro'; G.stateT = 0.9; Sound.whistle();
-      }
+      if (G.rec && G.recPost++ < REPLAY_POST) recPush();
+      if (G.stateT <= 0) { if (!startReplay()) afterGoal(); }
       break;
+    case 'replay': {
+      const rp = G.replay; rp.t += dt * 60 * REPLAY_SPEED;
+      if (rp.t >= rp.frames.length - 1) { G.replay = null; afterGoal(); break; }
+      replayApply(rp.t);
+      break;
+    }
+    case 'wait': tickClock(dt); break; // online: esperando o aparelho do dono da sala
     case 'end': physicsStep(dt); break;
   }
+  if (G.cfg.online) netTick();
 }
 
 /* ---------- Inteligência artificial ---------- */
@@ -983,10 +1037,32 @@ function drawTexts(ctx) {
     if (sub) { ctx.font = '800 24px Figtree, Arial, sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText(sub, W / 2, CY + 42); }
     ctx.restore();
   };
+  if (G.state === 'replay') drawReplayBadge(ctx);
+  if (G.state === 'wait') {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '800 15px Figtree, Arial, sans-serif';
+    const txt = 'Sincronizando com ' + G.cfg.names[0] + '…', w = ctx.measureText(txt).width + 28;
+    ctx.fillStyle = 'rgba(0,0,0,.55)'; roundRectPath(ctx, W / 2 - w / 2, 604, w, 28, 14); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(txt, W / 2, 618);
+  }
   if (G.state === 'goal') { const s = G.lastScorer; big('GOOOL!', G.cfg.teams[s].name, TEAM_RING[s]); }
   else if (G.state === 'intro') { big(G.score[0] + G.score[1] === 0 && G.time === G.cfg.duration ? 'COMEÇA!' : 'BOLA AO CENTRO', G.cfg.names[G.turn] + ' começa'); }
   else if (G.state === 'end') { big('FIM DE JOGO', G.score[0] + ' x ' + G.score[1]); }
   else if (G.msg) big(G.msg.t, '', '#ffd54a');
+}
+
+function drawReplayBadge(ctx) {
+  const rp = G.replay, f = rp ? clamp(rp.t / (rp.frames.length - 1), 0, 1) : 0;
+  ctx.save();
+  // faixas de cinema em cima e embaixo
+  ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0, H - 34, W, 34);
+  ctx.fillStyle = 'rgba(0,0,0,.6)'; roundRectPath(ctx, 24, 96, 132, 34, 8); ctx.fill();
+  ctx.fillStyle = (G.anim % 1) < 0.6 ? '#ff3b3b' : 'rgba(255,59,59,.25)'; ctx.beginPath(); ctx.arc(44, 113, 7, 0, 7); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = 'italic 900 19px Figtree, Arial, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText('REPLAY', 60, 114);
+  ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.fillRect(0, H - 34, W, 3);
+  ctx.fillStyle = TEAM_RING[G.lastScorer] || '#fff'; ctx.fillRect(0, H - 34, W * f, 3);
+  ctx.font = '800 14px Figtree, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,.85)';
+  ctx.fillText('Gol de ' + G.cfg.teams[G.lastScorer].name + '  ·  toque na tela para pular', W / 2, H - 16);
+  ctx.restore();
 }
 
 /* ---------- Visual 3D (Three.js). Se não carregar, o jogo usa o desenho 2D ---------- */
@@ -1233,6 +1309,10 @@ function init3D(THREE) {
     if (G.active && G.state === 'goal' && G.lastScorer != null) {
       const gx = G.lastScorer === 0 ? X(R) : X(L);
       wantLook.set(gx * 0.55, 0, 0); wantPos.set(gx * 0.42, p.pos.y * 0.62, p.pos.z * 0.62);
+    } else if (G.active && G.state === 'replay') {
+      // replay: câmera mais baixa e perto, acompanhando a bola
+      const bx = X(G.ball.x), bz = Z(G.ball.y);
+      wantLook.set(bx * 0.8, 0, bz * 0.6); wantPos.set(bx * 0.6, p.pos.y * 0.5, bz * 0.3 + p.pos.z * 0.55);
     }
     if (!V3.camCur) { camPos.copy(wantPos); camLook.copy(wantLook); V3.camCur = true; }
     const k = 1 - Math.exp(-dt * 2.6);
@@ -1270,7 +1350,7 @@ function init3D(THREE) {
       if (d > 0.01 && d < 200) { const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(dz / d, 0, -dx / d), d / BR); ball.quaternion.premultiply(q); }
     }
     prevBall = ball.position.clone();
-    const jump = G.state === 'goal' || (G.state === 'end' && G.score[0] !== G.score[1]);
+    const jump = G.state === 'goal' || G.state === 'replay' || (G.state === 'end' && G.score[0] !== G.score[1]);
     if (jump || V3.jumping) { placeCrowd(now / 1000, jump); V3.jumping = jump; }
     applyCam(dt);
     renderer.render(scene, camera);
@@ -1325,6 +1405,7 @@ function drawAim3D(ctx) {
 
 /* ---------- Entrada (mouse e toque) ---------- */
 function pointerDown(x, y) {
+  if (G.active && !G.paused && G.state === 'replay') { skipReplay(); return false; }
   if (!G.active || G.paused || G.state !== 'aim' || !isHuman(G.turn)) return false;
   let best = null, bd = 1e9;
   for (const d of G.discs[G.turn]) { const dd = Math.hypot(x - d.x, y - d.y); if (dd < DR + 22 && dd < bd) { bd = dd; best = d; } }
@@ -1340,7 +1421,7 @@ function pointerMove(x, y) {
 }
 function pointerUp() {
   const dr = G.drag; if (!dr) return;
-  if (dr.pull >= MIN_PULL && G.state === 'aim') shoot(dr.disc, dr.ux, dr.uy, dr.pull);
+  if (dr.pull >= MIN_PULL && G.state === 'aim') { if (netOn()) netSend('shot', { seq: NET.seq, i: dr.disc.idx, ux: dr.ux, uy: dr.uy, pull: dr.pull }); shoot(dr.disc, dr.ux, dr.uy, dr.pull); }
   else G.drag = null;
 }
 
@@ -1351,7 +1432,7 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const pick = (a, n) => shuffle(a).slice(0, n);
 
 /* ---------- Configurações salvas ---------- */
-const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true, form: '2-2', customForm: null, ball: 'classica' };
+const CFG = { name: 'Jogador', duration: 120, level: 2, sound: true, replay: true, form: '2-2', customForm: null, ball: 'classica' };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('tampinhas_cfg') || '{}')); } catch (e) {}
 delete CFG.form2; delete CFG.customForm2;
 if (CFG.form !== 'custom' && !FORMS[CFG.form]) CFG.form = '2-2';
@@ -1380,7 +1461,7 @@ function saveUserTeams() { try { localStorage.setItem('tampinhas_teams', JSON.st
 loadUserTeams();
 
 /* ---------- Telas ---------- */
-const SCREENS = ['sMenu', 'sSetup', 'sTour', 'sMatch', 'sConfig', 'sHelp', 'sTeam', 'sAuth'];
+const SCREENS = ['sMenu', 'sSetup', 'sTour', 'sMatch', 'sConfig', 'sHelp', 'sTeam', 'sAuth', 'sOnline', 'sRank'];
 let current = 'sMenu';
 /* sai da tela cheia e solta o travamento de orientação (senão o celular fica preso em paisagem) */
 function unlockOrientation() { try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {} }
@@ -1434,6 +1515,8 @@ function initMenu() {
     else if (g === 'auth') { window._authDraw && window._authDraw(); show('sAuth'); }
     else if (g === 'logout') doLogout();
     else if (g === 'help') show('sHelp');
+    else if (g === 'online') openOnline();
+    else if (g === 'rank') openRank();
     else if (g === 'team') { TEAMED.cur = null; renderTeam(); show('sTeam'); }
     else if (g === 'menu') { show('sMenu'); }
   }));
@@ -1447,13 +1530,14 @@ function renderConfig() {
   $('cfgBody').innerHTML =
     '<h3>Duração da partida</h3>' + seg('duration', [[60, '1:00'], [90, '1:30'], [120, '2:00'], [180, '3:00']]) +
     '<h3>Dificuldade do computador</h3>' + seg('level', LEVELS) +
-    '<h3>Som</h3>' + seg('sound', [[true, 'Ligado'], [false, 'Desligado']]) + ballBlock();
+    '<h3>Som</h3>' + seg('sound', [[true, 'Ligado'], [false, 'Desligado']]) +
+    '<h3>Replay dos gols</h3>' + seg('replay', [[true, 'Ligado'], [false, 'Desligado']]) + ballBlock();
   drawBallPreviews($('cfgBody'));
   $('cfgBody').onclick = e => {
     const bb = e.target.closest('button[data-ball]'); if (bb) { CFG.ball = bb.dataset.ball; saveCfg(); renderConfig(); return; }
     const b = e.target.closest('button[data-k]'); if (!b) return;
     const k = b.dataset.k, v = b.dataset.v;
-    CFG[k] = (k === 'sound') ? v === 'true' : Number(v); if (k === 'sound') { Sound.setOn(CFG.sound); if (CFG.sound && current !== 'sMatch') Sound.startMusic(); $('btnSound').textContent = Sound.on ? '🔊' : '🔇'; }
+    CFG[k] = (k === 'sound' || k === 'replay') ? v === 'true' : Number(v); if (k === 'sound') { Sound.setOn(CFG.sound); if (CFG.sound && current !== 'sMatch') Sound.startMusic(); $('btnSound').textContent = Sound.on ? '🔊' : '🔇'; }
     saveCfg(); renderConfig();
   };
 }
@@ -1575,11 +1659,12 @@ function renderSetup() {
     $('setupBody').innerHTML = h; drawFormCanvases(); drawBallPreviews($('setupBody')); return;
   }
   const comp = S.comp && !S.comp.free ? S.comp : null;
-  const titles = { friendly: S.step === 1 ? 'Escolha seu time' : (S.vs === 'two' ? 'Time do Jogador 2' : 'Escolha o adversário'), cup: (S.comp ? S.comp.name : 'Copa') + ': escolha seu time', league: (S.comp ? S.comp.name : 'Campeonato') + ': escolha seu time' };
+  const titles = { online: 'Online: escolha seu time', friendly: S.step === 1 ? 'Escolha seu time' : (S.vs === 'two' ? 'Time do Jogador 2' : 'Escolha o adversário'), cup: (S.comp ? S.comp.name : 'Copa') + ': escolha seu time', league: (S.comp ? S.comp.name : 'Campeonato') + ': escolha seu time' };
   let h = '<h2>' + titles[S.mode] + '</h2>';
   if (S.mode === 'friendly' && S.step === 1) h += '<div class="seg"><button data-vs="cpu" class="' + (S.vs === 'cpu' ? 'on' : '') + '">Contra o computador</button><button data-vs="two" class="' + (S.vs === 'two' ? 'on' : '') + '">2 jogadores</button></div>';
   if (S.mode === 'friendly' && S.step === 1 && S.vs === 'cpu') h += levelSeg();
   if (S.mode === 'friendly' && S.step === 1) h += formBlock(1) + ballBlock();
+  if (S.mode === 'online') h += '<p class="sub">O adversário escolhe o time dele no aparelho dele.</p>' + formBlock(1) + (NET.role === 'guest' ? '' : ballBlock());
   if (S.mode === 'cup') h += '<p class="sub">' + (S.comp ? esc(S.comp.desc) : '16 times, fase de grupos e mata-mata.') + ' Você joga as partidas do seu time.</p>' + levelSeg() + formBlock(1) + ballBlock();
   if (S.mode === 'league') {
     if (comp) h += '<p class="sub">' + comp.teams.length + ' times, ' + (S.dbl ? 'ida e volta' : 'turno único') + '. Quem somar mais pontos é o campeão.</p>';
@@ -1632,13 +1717,14 @@ function initSetup() {
     else if (t.dataset.vs) { S.vs = t.dataset.vs; renderSetup(); }
     else if (t.dataset.tab) { S.tab = t.dataset.tab; S.lg = 'ALL'; S.q = ''; renderSetup(); }
     else if (t.dataset.lg) { S.lg = t.dataset.lg; renderSetup(); }
-    else if (t.dataset.back) { if (S.mode === 'friendly' && S.step === 2) { S.step = 1; renderSetup(); } else if (S.mode === 'league' && S.comp) { S.comp = null; S.tab = 'nat'; renderSetup(); } else show('sMenu'); }
+    else if (t.dataset.back) { if (S.mode === 'friendly' && S.step === 2) { S.step = 1; renderSetup(); } else if (S.mode === 'league' && S.comp) { S.comp = null; S.tab = 'nat'; renderSetup(); } else if (S.mode === 'online') show('sOnline'); else show('sMenu'); }
     else if (t.dataset.random) { const l = ALL_TEAMS.concat(USER_TEAMS).filter(x => x.id !== S.first.id); chooseTeam(l[Math.floor(Math.random() * l.length)]); }
     else if (t.dataset.id) chooseTeam(TEAM_BY_ID[t.dataset.id]);
   });
 }
 function chooseTeam(t) {
   const S = SETUP;
+  if (S.mode === 'online') { netPickTeam(t); return; }
   if (S.mode === 'friendly') {
     if (S.step === 1) { S.first = t; S.step = 2; S.tab = t.kind; S.lg = 'ALL'; S.q = ''; renderSetup(); window.scrollTo(0, 0); }
     else startFriendly(S.first, t, S.vs);
@@ -1678,15 +1764,18 @@ function startFriendly(a, b, vs) {
 function showEnd(res) {
   const info = lastMatchInfo, o = $('ovl'); o.classList.remove('hidden'); setTimeout(() => Sound.stopCrowd(), 1500);
   const [sa, sb] = res.score, names = G.cfg.names;
-  let title = res.winner === -1 ? 'Empate' : (G.cfg.humans[0] && G.cfg.humans[1] ? names[res.winner] + ' venceu!' : (res.winner === 0 ? 'Você venceu!' : 'Você perdeu'));
+  const meT = G.cfg.online ? (G.cfg.online.role === 'host' ? 0 : 1) : 0;
+  let title = res.winner === -1 ? 'Empate' : G.cfg.online ? (res.winner === meT ? 'Você venceu!' : 'Você perdeu') : (G.cfg.humans[0] && G.cfg.humans[1] ? names[res.winner] + ' venceu!' : (res.winner === 0 ? 'Você venceu!' : 'Você perdeu'));
   let btns;
-  if (info.type === 'friendly') btns = '<button class="btn" data-end="again">Jogar de novo</button><button class="btn ghost" data-end="teams">Trocar times</button><button class="btn ghost" data-end="menu">Menu</button>';
+  if (info.type === 'online') { btns = '<p class="sub" id="netRep">Registrando no ranking…</p><button class="btn" data-end="online">Voltar à sala</button><button class="btn ghost" data-end="rank">Ver ranking</button>'; NET.inMatch = false; setTimeout(() => netReport(res), 0); }
+  else if (info.type === 'friendly') btns = '<button class="btn" data-end="again">Jogar de novo</button><button class="btn ghost" data-end="teams">Trocar times</button><button class="btn ghost" data-end="menu">Menu</button>';
   else btns = '<button class="btn" data-end="tour">Continuar</button>';
   o.innerHTML = '<div class="card"><h2>' + title + '</h2><div class="final"><span>' + esc(G.cfg.teams[0].name) + '</span><strong>' + sa + ' x ' + sb + '</strong><span>' + esc(G.cfg.teams[1].name) + '</span></div>' + (res.agg ? '<p class="sub">Placar agregado: ' + res.agg[0] + ' x ' + res.agg[1] + '</p>' : '') + (res.golden ? '<p class="sub">Decidido no gol de ouro</p>' : (res.extra ? '<p class="sub">Decidido na prorrogação</p>' : '')) + btns + '</div>';
   o.dataset.res = JSON.stringify(res);
 }
 function showPause() {
   if (!G.active || G.over) return;
+  if (G.cfg.online) { const o = $('ovl'); o.classList.remove('hidden'); o.innerHTML = '<div class="card"><h2>Partida online</h2><p class="sub">O jogo não para enquanto este menu está aberto.</p><button class="btn" data-end="close">Continuar</button><button class="btn ghost" data-end="quit">Desistir da partida</button></div>'; return; }
   G.paused = true; Sound.stopCrowd(); const o = $('ovl'); o.classList.remove('hidden');
   o.innerHTML = '<div class="card"><h2>Pausado</h2><button class="btn" data-end="resume">Continuar</button><button class="btn ghost" data-end="quit">Desistir da partida</button></div>';
 }
@@ -1694,7 +1783,11 @@ function initMatchUI() {
   $('ovl').addEventListener('click', e => {
     const b = e.target.closest('button[data-end]'); if (!b) return;
     const a = b.dataset.end, info = lastMatchInfo;
-    if (a === 'resume') { G.paused = false; $('ovl').classList.add('hidden'); Sound.startCrowd(); }
+    if (a === 'close') { $('ovl').classList.add('hidden'); }
+    else if (a === 'online') { G.active = false; running = false; NET.inMatch = false; renderOnline(); show('sOnline'); }
+    else if (a === 'rank') { G.active = false; running = false; NET.inMatch = false; openRank(); }
+    else if (a === 'resume') { G.paused = false; $('ovl').classList.add('hidden'); Sound.startCrowd(); }
+    else if (a === 'quit' && info.type === 'online') { G.active = false; running = false; netLeave(); NET.status = 'Você desistiu da partida.'; renderOnline(); show('sOnline'); }
     else if (a === 'quit') { G.active = false; running = false; if (info.type === 'friendly') show('sMenu'); else { TOUR.abort = true; renderTour(); show('sTour'); } }
     else if (a === 'again') startFriendly(info.a, info.b, info.vs);
     else if (a === 'teams') startSetup('friendly');
@@ -1715,9 +1808,9 @@ function initMatchUI() {
   cv.addEventListener('pointermove', e => { const [x, y] = pt(e); pointerMove(x, y); });
   cv.addEventListener('pointerup', () => pointerUp());
   cv.addEventListener('pointercancel', () => { G.drag = null; });
-  window.addEventListener('keydown', e => { if (e.key === 'Escape' && current === 'sMatch') { G.paused ? ($('ovl').classList.add('hidden'), G.paused = false, Sound.startCrowd()) : showPause(); } });
+  window.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && current === 'sMatch' && G.state === 'replay' && !G.paused) { skipReplay(); e.preventDefault(); return; } if (e.key === 'Escape' && current === 'sMatch') { G.paused ? ($('ovl').classList.add('hidden'), G.paused = false, Sound.startCrowd()) : showPause(); } });
   window.addEventListener('resize', () => { if (current === 'sMatch') sizeCanvas(); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden && current === 'sMatch' && G.active && !G.over && !G.paused) showPause(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && current === 'sMatch' && G.active && !G.over && !G.paused && !G.cfg.online) showPause(); });
 }
 
 /* ---------- Torneios ---------- */
@@ -2167,7 +2260,8 @@ function renderAcct() {
   const el = $('acct'); if (!el) return;
   if (CLOUD.user) el.innerHTML = '<div class="acctrow"><span>Conta: <b>' + esc(CLOUD.user.email || '') + '</b>' + (CLOUD.status ? ' <small>' + esc(CLOUD.status) + '</small>' : '') + '</span><button class="linkbtn" data-go="logout">Sair</button></div>';
   else el.innerHTML = '<button class="btn ghost" data-go="auth">Entrar ou criar conta (salva seu progresso)</button>' + (CLOUD.status ? '<small class="sub">' + esc(CLOUD.status) + '</small>' : '');
-  const m = $('authMsg'); if (m && CLOUD.user && current === 'sAuth') show('sMenu');
+  const m = $('authMsg'); if (m && CLOUD.user && current === 'sAuth') { const to = NET.afterAuth || 'sMenu'; NET.afterAuth = null; if (to === 'sOnline') renderOnline(); show(to); }
+  if (current === 'sOnline') renderOnline();
 }
 function snapshotLocal() {
   let tour = null; try { const r = localStorage.getItem(SAVE_KEY); if (r) tour = JSON.parse(r); } catch (e) {}
@@ -2243,7 +2337,259 @@ async function doLogout() {
 }
 
 /* ---------- Início ---------- */
-initMenu(); initSetup(); initMatchUI(); initTour(); initTeam(); initAuth(); renderAcct();
+/* ---------- Online: salas com código (Supabase Realtime) e ranking ----------
+   O dono da sala (host) manda no jogo: decide gols, tempo e fim. Cada jogador envia só o chute
+   dele (tampinha, direção e força); os dois aparelhos simulam o lance e, quando tudo para, o host
+   manda as posições finais ("sync") para os dois ficarem iguais. */
+const NET = { ch: null, role: null, code: null, me: null, opp: null, myTeam: null, oppTeam: null, oppForm: null, seq: 0, ready: false, pendSync: null, pendShot: null, pendEnd: null, matchId: null, inMatch: false, reported: false, lastKey: null, status: '', afterAuth: null, joinT: null, goneT: null, linkCode: '' };
+const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const netOn = () => !!(G.cfg && G.cfg.online);
+const netGuest = () => netOn() && G.cfg.online.role === 'guest';
+const netHost = () => netOn() && G.cfg.online.role === 'host';
+const netName = () => (CFG.name || 'Jogador').slice(0, 14);
+function netSend(k, data) { if (NET.ch) NET.ch.send({ type: 'broadcast', event: 'm', payload: Object.assign({ k, from: NET.me }, data || {}) }); }
+function teamWire(t) { return t.user ? { id: t.id, user: true, name: t.name, short: t.short, rating: t.rating, c1: t.c1, c2: t.c2, pat: t.pat } : { id: t.id }; }
+function teamFromWire(w) {
+  if (!w || typeof w.id !== 'string') return null;
+  if (!w.user) return TEAM_BY_ID[w.id] && !TEAM_BY_ID[w.id].user ? TEAM_BY_ID[w.id] : null;
+  if (typeof w.name !== 'string' || !HEX.test(w.c1) || !HEX.test(w.c2)) return null;
+  const id = 'net_' + w.id.replace(/[^\w]/g, '').slice(0, 24); spriteCache.delete(id);
+  return { id, kind: 'club', user: true, lg: 'USR', name: w.name.slice(0, 16), short: String(w.short || w.name).slice(0, 3).toUpperCase(), rating: [62, 75, 84, 92].includes(w.rating) ? w.rating : 75, c1: w.c1, c2: w.c2, pat: Math.max(0, Math.min(6, w.pat | 0)) };
+}
+function formFromWire(f) { return Array.isArray(f) && f.length === 5 && f.every(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)) ? fitFormation(f) : FORMS['2-2'].p; }
+const myForm = () => formationPoints(CFG.form, CFG.customForm);
+
+function netLeave(silent) {
+  if (NET.ch) { if (!silent) netSend('bye'); const ch = NET.ch; NET.ch = null; try { CLOUD.sb.removeChannel(ch); } catch (e) {} }
+  clearTimeout(NET.joinT); clearTimeout(NET.goneT);
+  Object.assign(NET, { role: null, code: null, opp: null, oppTeam: null, oppForm: null, pendSync: null, pendShot: null, pendEnd: null, matchId: null, inMatch: false });
+}
+function netOpen(code, role) {
+  netLeave(true);
+  Object.assign(NET, { code, role, me: CLOUD.user.id, status: role === 'host' ? '' : 'Procurando a sala…' });
+  const ch = CLOUD.sb.channel('tampinhas:' + code, { config: { broadcast: { self: false }, presence: { key: NET.me } } });
+  NET.ch = ch;
+  ch.on('broadcast', { event: 'm' }, ({ payload }) => { try { netMsg(payload || {}); } catch (e) {} });
+  ch.on('presence', { event: 'sync' }, netPresence);
+  ch.subscribe(st => {
+    if (NET.ch !== ch) return;
+    if (st === 'SUBSCRIBED') {
+      ch.track({ role, nome: netName() });
+      if (role === 'guest') {
+        netSend('hello', { nome: netName() });
+        NET.joinT = setTimeout(() => { if (NET.ch === ch && !NET.opp) { netLeave(true); NET.status = 'Sala não encontrada. Confira o código.'; renderOnline(); } }, 6000);
+      }
+    } else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT') { netLeave(true); NET.status = 'Falha na conexão. Tente de novo.'; renderOnline(); }
+    renderOnline();
+  });
+  renderOnline();
+}
+function netCreate() { let c = ''; for (let i = 0; i < 4; i++) c += CODE_ABC[Math.floor(Math.random() * CODE_ABC.length)]; netOpen(c, 'host'); }
+function netPresence() {
+  if (!NET.ch || !NET.opp) return;
+  const here = !!NET.ch.presenceState()[NET.opp.uid];
+  clearTimeout(NET.goneT);
+  if (!here) NET.goneT = setTimeout(netOppGone, 8000); // dá um tempo para quem caiu da internet voltar
+}
+function netOppGone() {
+  const nm = NET.opp ? NET.opp.nome : 'O adversário';
+  NET.opp = null; NET.oppTeam = null;
+  if (NET.inMatch && G.active && !G.over) {
+    NET.inMatch = false; G.active = false;
+    const o = $('ovl'); o.classList.remove('hidden');
+    o.innerHTML = '<div class="card"><h2>Partida encerrada</h2><p class="sub">' + esc(nm) + ' saiu da partida. Ela não conta no ranking.</p><button class="btn" data-end="online">Voltar à sala</button></div>';
+  }
+  if (NET.role === 'guest') { netLeave(true); NET.status = 'O dono da sala saiu.'; }
+  renderOnline();
+}
+function netMsg(p) {
+  const fromOpp = NET.opp && p.from === NET.opp.uid;
+  switch (p.k) {
+    case 'hello':
+      if (NET.role !== 'host' || typeof p.from !== 'string') return;
+      if (NET.opp && NET.opp.uid !== p.from) { netSend('full', { to: p.from }); return; }
+      NET.opp = { uid: p.from, nome: String(p.nome || 'Jogador').slice(0, 14) };
+      netSend('welcome', { to: p.from, nome: netName(), team: NET.myTeam ? teamWire(NET.myTeam) : null });
+      renderOnline(); return;
+    case 'welcome':
+      if (NET.role !== 'guest' || p.to !== NET.me) return;
+      clearTimeout(NET.joinT); NET.status = '';
+      NET.opp = { uid: p.from, nome: String(p.nome || 'Jogador').slice(0, 14) }; NET.oppTeam = teamFromWire(p.team);
+      if (NET.myTeam) netSend('team', { team: teamWire(NET.myTeam), form: myForm() });
+      renderOnline(); return;
+    case 'full':
+      if (p.to !== NET.me) return;
+      netLeave(true); NET.status = 'Essa sala já está cheia.'; renderOnline(); return;
+  }
+  if (!fromOpp) return;
+  switch (p.k) {
+    case 'team': NET.oppTeam = teamFromWire(p.team); NET.oppForm = formFromWire(p.form); renderOnline(); break;
+    case 'bye': clearTimeout(NET.goneT); netOppGone(); break;
+    case 'start': if (NET.role === 'guest') netStartMatch(p); break;
+    case 'shot': NET.pendShot = p; break;
+    case 'sync': if (NET.role === 'guest' && NET.inMatch) { NET.pendSync = p; if (G.state === 'aim' || G.state === 'wait' || G.state === 'moving') netApplySync(); } break;
+    case 'goal': if (NET.role === 'guest' && NET.inMatch) netApplyGoal(p); break;
+    case 'end': if (NET.role === 'guest' && NET.inMatch) NET.pendEnd = p; break;
+  }
+}
+function netBegin() {
+  if (NET.role !== 'host' || !NET.opp || !NET.myTeam || !NET.oppTeam) return;
+  const p = {
+    matchId: NET.code + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    teams: [teamWire(NET.myTeam), teamWire(NET.oppTeam)], names: [netName(), NET.opp.nome],
+    forms: [myForm(), NET.oppForm || FORMS['2-2'].p], duration: CFG.duration, first: Math.random() < 0.5 ? 0 : 1, ball: matchBallId()
+  };
+  netSend('start', p); netStartMatch(p);
+}
+function netStartMatch(p) {
+  const teams = (p.teams || []).map(teamFromWire); if (!teams[0] || !teams[1]) return;
+  const host = NET.role === 'host';
+  const cfg = {
+    teams, humans: [host, !host], names: (p.names || []).map(n => String(n || 'Jogador').slice(0, 14)), difficulty: 2, allowDraw: true, aiNoise: 1,
+    duration: [60, 90, 120, 180].includes(p.duration) ? p.duration : 120, formations: (p.forms || []).map(formFromWire),
+    firstTurn: p.first === 1 ? 1 : 0, ball: BALL_BY_ID[p.ball] ? p.ball : 'classica', online: { role: NET.role }
+  };
+  Object.assign(NET, { matchId: String(p.matchId || ''), seq: 0, ready: false, pendSync: null, pendShot: null, pendEnd: null, inMatch: true, reported: false, lastKey: null });
+  launchMatch(cfg, { type: 'online' });
+}
+// chute vindo do outro aparelho
+function netApplyShot() {
+  const s = NET.pendShot; NET.pendShot = null;
+  const d = G.discs[G.turn][s.i | 0], l = Math.hypot(s.ux, s.uy);
+  if (!d || !Number.isFinite(l) || l < 0.5 || !Number.isFinite(s.pull)) return;
+  shoot(d, s.ux / l, s.uy / l, clamp(s.pull, MIN_PULL, MAX_PULL));
+}
+function netApplySync() {
+  const p = NET.pendSync; NET.pendSync = null;
+  if (!Array.isArray(p.b) || p.b.length !== G.bodies.length) return;
+  G.bodies.forEach((o, k) => { const v = p.b[k]; o.x = +v[0]; o.y = +v[1]; o.rot = +v[2] || 0; o.vx = o.vy = 0; });
+  G.score = [p.score[0] | 0, p.score[1] | 0]; G.time = +p.time; G.turn = p.turn ? 1 : 0; G.extra = !!p.extra; G.golden = !!p.golden;
+  G.koPending = !!p.ko; G.koShot = false; G.koKicker = null;
+  G.state = 'aim'; G.turnT = TURN_TIME; G.drag = null; NET.seq = p.seq; NET.ready = true;
+}
+function netApplyGoal(p) {
+  G.drag = null;
+  if (p.foul) { G.rec = null; resetKickoff(); G.turn = p.turn ? 1 : 0; G.state = 'intro'; G.stateT = 1.2; G.msg = { t: 'FALTA! Não vale gol no lance da saída', s: 2.2 }; Sound.whistle(); return; }
+  G.score = [p.score[0] | 0, p.score[1] | 0]; G.lastScorer = p.scorer ? 1 : 0; G.state = 'goal'; G.stateT = 2.2; G.recPost = 0; Sound.goal();
+}
+// roda a cada passo do jogo durante uma partida online
+function netTick() {
+  if (G.state === 'end') return;
+  if (NET.role === 'host') {
+    if (G.state !== 'aim') return;
+    const key = G.turn + '_' + G.shots;
+    if (key !== NET.lastKey) { NET.lastKey = key; NET.seq++; NET.pendShot = null; netSend('sync', { seq: NET.seq, b: recFrame(), score: G.score, time: G.time, turn: G.turn, extra: G.extra, golden: G.golden, ko: G.koPending }); }
+    if (NET.pendShot && G.turn === 1 && NET.pendShot.seq === NET.seq) netApplyShot();
+  } else {
+    if (NET.pendEnd && G.state !== 'goal' && G.state !== 'replay') { const p = NET.pendEnd; NET.pendEnd = null; G.score = [p.score[0] | 0, p.score[1] | 0]; G.golden = !!p.golden; G.extra = !!p.extra; endMatch(); return; }
+    if (G.state === 'aim' && !NET.ready) G.state = 'wait';
+    if (G.state === 'wait' && NET.pendSync) netApplySync();
+    if (G.state === 'aim' && NET.pendShot && G.turn === 0 && NET.pendShot.seq === NET.seq) netApplyShot();
+  }
+}
+async function netReport(res) {
+  if (NET.reported || !NET.matchId || !NET.opp || !CLOUD.sb) return; NET.reported = true;
+  const host = NET.role === 'host' ? NET.me : NET.opp.uid, guest = NET.role === 'host' ? NET.opp.uid : NET.me;
+  const { data, error } = await CLOUD.sb.rpc('tampinhas_reportar', { p_partida: NET.matchId, p_host: host, p_guest: guest, p_gols_host: res.score[0], p_gols_guest: res.score[1], p_nome: netName() });
+  const el = $('netRep'); if (el) el.textContent = error ? 'Não consegui registrar no ranking.' : (data ? 'Resultado confirmado no ranking!' : 'Resultado enviado para o ranking.');
+}
+
+/* tela da sala */
+function openOnline() {
+  if (!CLOUD.user) { NET.afterAuth = 'sOnline'; window._authDraw && window._authDraw(); show('sAuth'); return; }
+  renderOnline(); show('sOnline');
+}
+function renderOnline() {
+  const el = $('onlineBody'); if (!el) return;
+  let h = '<h2>Online</h2>';
+  if (!CLOUD.user) {
+    h += '<p class="sub">Para jogar online e entrar no ranking você precisa de uma conta.</p><button class="btn big" data-on="login">Entrar ou criar conta</button>';
+  } else if (!NET.code) {
+    h += '<p class="sub">Jogue contra um amigo, cada um no seu aparelho. Crie uma sala e mande o código, ou entre com o código que recebeu. As vitórias contam no ranking.</p>';
+    h += '<div class="field"><label for="inNetName">Seu nome no ranking</label><input id="inNetName" maxlength="14" autocomplete="off" value="' + esc(netName()) + '"></div>';
+    h += '<button class="btn big" data-on="create">Criar sala</button>';
+    h += '<div class="joinrow"><input id="inCode" class="search" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="Código" value="' + esc(NET.linkCode) + '"><button class="btn" data-on="join">Entrar na sala</button></div>';
+  } else {
+    const me = NET.myTeam, op = NET.oppTeam, host = NET.role === 'host';
+    h += '<div class="room"><small>Código da sala</small><b>' + esc(NET.code) + '</b><button class="btn ghost" data-on="share">Convidar amigo</button></div>';
+    const row = (nome, t, mine, wait) => '<div class="pl' + (mine ? ' mine' : '') + '">' + (t ? teamChip(t) : '<span class="chip ph"></span>') + '<div><b>' + esc(nome) + (mine ? ' (você)' : '') + '</b><small>' + (t ? esc(t.name) : (wait || 'Escolhendo o time…')) + '</small></div>' + (mine ? '<button class="btn ghost" data-on="team">' + (t ? 'Trocar time' : 'Escolher time') + '</button>' : '') + '</div>';
+    h += '<div class="pls">' + row(netName(), me, true) + (NET.opp ? row(NET.opp.nome, op, false) : '<div class="pl"><span class="chip ph"></span><div><b>' + (host ? 'Esperando adversário…' : 'Conectando…') + '</b><small>' + (host ? 'Mande o código ' + esc(NET.code) + ' para um amigo' : '') + '</small></div></div>') + '</div>';
+    if (host) {
+      h += '<h3>Duração da partida</h3><div class="seg">' + [[60, '1:00'], [90, '1:30'], [120, '2:00'], [180, '3:00']].map(([v, l]) => '<button data-dur="' + v + '" class="' + (CFG.duration === v ? 'on' : '') + '">' + l + '</button>').join('') + '</div>';
+      const ok = NET.opp && me && op;
+      h += '<button class="btn big" data-on="start"' + (ok ? '' : ' disabled') + '>' + (ok ? 'Começar partida' : 'Esperando os dois escolherem o time') + '</button>';
+    } else h += '<p class="sub">' + (NET.opp ? 'Esperando ' + esc(NET.opp.nome) + ' começar a partida.' : '') + '</p>';
+    h += '<button class="btn ghost" data-on="leave">Sair da sala</button>';
+  }
+  if (NET.status) h += '<p class="authmsg" role="status">' + esc(NET.status) + '</p>';
+  h += '<p><button class="btn ghost" data-on="rank">Ver ranking</button> <button class="btn ghost" data-on="menu">Voltar</button></p>';
+  el.innerHTML = h;
+}
+function initOnline() {
+  try { const c = new URLSearchParams(location.search).get('sala'); if (c && /^[A-Za-z0-9]{4}$/.test(c)) NET.linkCode = c.toUpperCase(); } catch (e) {}
+  $('onlineBody').addEventListener('input', e => { if (e.target.id === 'inNetName') { CFG.name = e.target.value.trim().slice(0, 14) || 'Jogador'; $('inName').value = CFG.name; saveCfg(); } if (e.target.id === 'inCode') e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+  $('onlineBody').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return; Sound.init();
+    const a = b.dataset.on;
+    if (b.dataset.dur) { CFG.duration = Number(b.dataset.dur); saveCfg(); renderOnline(); return; }
+    if (a === 'login') openOnline();
+    else if (a === 'create') { NET.status = ''; sbReady(() => netCreate()); }
+    else if (a === 'join') { const c = ($('inCode').value || '').trim().toUpperCase(); if (!/^[A-Z0-9]{4}$/.test(c)) { NET.status = 'Digite o código de 4 letras da sala.'; renderOnline(); return; } NET.status = ''; NET.linkCode = ''; sbReady(() => netOpen(c, 'guest')); }
+    else if (a === 'share') {
+      const url = location.origin + location.pathname + '?sala=' + NET.code, txt = 'Bora jogar Tampinhas? Entra na minha sala: ' + NET.code;
+      if (navigator.share) navigator.share({ title: 'Tampinhas', text: txt, url }).catch(() => {});
+      else { try { navigator.clipboard.writeText(txt + ' ' + url); NET.status = 'Link copiado!'; } catch (er) { NET.status = url; } renderOnline(); }
+    }
+    else if (a === 'team') startSetup('online');
+    else if (a === 'start') netBegin();
+    else if (a === 'leave') { netLeave(); NET.status = ''; renderOnline(); }
+    else if (a === 'rank') openRank();
+    else if (a === 'menu') show('sMenu');
+  });
+  if (NET.linkCode) { renderOnline(); show('sOnline'); }
+}
+function netPickTeam(t) {
+  NET.myTeam = t;
+  if (NET.opp) netSend('team', { team: teamWire(t), form: myForm() });
+  renderOnline(); show('sOnline');
+}
+
+/* ranking */
+const RANK = { per: 'semana', rows: null, err: '' };
+function seasonLabel() { const d = new Date(), q = Math.floor(d.getMonth() / 3); return 'T' + (q + 1) + ' ' + d.getFullYear() + ' (' + ['jan–mar', 'abr–jun', 'jul–set', 'out–dez'][q] + ')'; }
+function openRank() { show('sRank'); loadRank(); }
+function loadRank() {
+  RANK.rows = null; RANK.err = ''; renderRank();
+  const per = RANK.per;
+  sbReady(async sb => {
+    const { data, error } = await sb.rpc('tampinhas_ranking', { p_periodo: per });
+    if (per !== RANK.per) return;
+    RANK.rows = error ? [] : data || []; RANK.err = error ? 'Não consegui carregar o ranking.' : ''; renderRank();
+  });
+}
+function renderRank() {
+  const P = [['semana', 'Semana'], ['mes', 'Mês'], ['temporada', 'Temporada'], ['geral', 'Geral']];
+  let h = '<h2>Ranking online</h2><div class="seg">' + P.map(([v, l]) => '<button data-per="' + v + '" class="' + (RANK.per === v ? 'on' : '') + '">' + l + '</button>').join('') + '</div>';
+  h += '<p class="sub">' + ({ semana: 'Vitórias desde segunda-feira.', mes: 'Vitórias neste mês.', temporada: 'Temporada ' + seasonLabel() + '.', geral: 'Desde o começo.' })[RANK.per] + ' Só contam partidas online confirmadas pelos dois jogadores. Desempate: saldo de gols e gols marcados.</p>';
+  const uid = CLOUD.user && CLOUD.user.id;
+  if (!RANK.rows) h += '<p class="sub">Carregando…</p>';
+  else if (RANK.err) h += '<p class="authmsg">' + esc(RANK.err) + '</p>';
+  else if (!RANK.rows.length) h += '<p class="sub">Ninguém jogou nesse período ainda. Seja o primeiro!</p>';
+  else h += '<table class="tb"><thead><tr><th></th><th>Jogador</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th></tr></thead><tbody>' +
+    RANK.rows.map(r => '<tr class="' + (r.user_id === uid ? 'mine' : '') + '"><td>' + (r.pos <= 3 ? ['🥇', '🥈', '🥉'][r.pos - 1] : r.pos) + '</td><td class="nm">' + esc(r.nome) + '</td><td>' + r.jogos + '</td><td><b>' + r.vitorias + '</b></td><td>' + r.empates + '</td><td>' + r.derrotas + '</td><td>' + (r.gols_pro - r.gols_contra) + '</td></tr>').join('') + '</tbody></table>';
+  h += '<p><button class="btn" data-rk="online">Jogar online</button> <button class="btn ghost" data-rk="menu">Voltar</button></p>';
+  $('rankBody').innerHTML = h;
+}
+function initRank() {
+  $('rankBody').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.per) { RANK.per = b.dataset.per; loadRank(); }
+    else if (b.dataset.rk === 'online') openOnline();
+    else if (b.dataset.rk === 'menu') show('sMenu');
+  });
+}
+
+initMenu(); initSetup(); initMatchUI(); initTour(); initTeam(); initAuth(); initOnline(); initRank(); renderAcct();
 refreshResume(); show('sMenu');
 
 </script>
