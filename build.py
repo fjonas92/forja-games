@@ -56,7 +56,7 @@ COOKIES_JS = """(function(){
   var k='forja_cookie_ok';
   try { if (localStorage.getItem(k)) return; } catch(e) {}
   var d=document.createElement('div'); d.className='ck'; d.setAttribute('role','region'); d.setAttribute('aria-label','Aviso de cookies');
-  d.innerHTML='<p>Usamos cookies para o site funcionar e, quando houver anúncios, para exibir publicidade do Google. Veja os detalhes na <a href="/privacidade.html">Política de Privacidade</a>.</p><button type="button" id="ck-ok">Entendi</button>';
+  d.innerHTML='<p>Usamos cookies para o site funcionar, medir as visitas com o Google Analytics e, quando houver anúncios, exibir publicidade do Google. Veja os detalhes na <a href="/privacidade.html">Política de Privacidade</a>.</p><button type="button" id="ck-ok">Entendi</button>';
   document.body.appendChild(d);
   document.getElementById('ck-ok').addEventListener('click',function(){ try{localStorage.setItem(k,'1');}catch(e){} d.remove(); });
 })();
@@ -76,6 +76,7 @@ def shell(title, desc, path, body):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Figtree:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/style.css">
+<script src="/analytics.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -164,7 +165,7 @@ def game_page(g):
 
 PRIV = """    <article class="txt">
       <h1>Política de Privacidade e Cookies</h1>
-      <p class="upd">Atualizada em 02/10/2026</p>
+      <p class="upd">Atualizada em 09/10/2026</p>
       <p>Esta página explica quais informações o site Falzinho Games e os jogos disponíveis nele podem coletar, para que servem e quais são os seus direitos, conforme a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018).</p>
 
       <h2>Quem somos</h2>
@@ -173,12 +174,14 @@ PRIV = """    <article class="txt">
       <h2>Quais informações coletamos</h2>
       <ul>
         <li><strong>Navegação:</strong> dados técnicos comuns, como tipo de navegador, dispositivo e páginas visitadas, que ficam registrados pelo servidor onde o site é hospedado.</li>
+        <li><strong>Estatísticas de visita:</strong> usamos o Google Analytics para saber quantas pessoas visitam o site, quais páginas e jogos são mais acessados, de qual região e por qual tipo de aparelho. Os endereços IP são anonimizados pelo Google e os dados aparecem para nós apenas de forma agregada.</li>
         <li><strong>Contas nos jogos:</strong> alguns jogos permitem criar conta. Nesse caso, podem ser guardados o nome de usuário e o progresso no jogo. Cada jogo usa essas informações apenas para o próprio funcionamento.</li>
         <li><strong>Armazenamento no seu navegador:</strong> o site guarda localmente a sua escolha sobre o aviso de cookies, e os jogos podem guardar preferências e progresso.</li>
       </ul>
 
       <h2>Cookies e publicidade</h2>
       <p>Cookies são pequenos arquivos que o navegador guarda para lembrar informações. Usamos cookies essenciais para o site funcionar.</p>
+      <p>O Google Analytics só grava cookies de estatística depois que você toca em <strong>Entendi</strong> no aviso de cookies. Antes disso, o Google recebe apenas sinais anônimos, sem identificador. Saiba como o Google usa esses dados em <a href="https://policies.google.com/technologies/partner-sites?hl=pt-BR" target="_blank" rel="noopener">policies.google.com</a> e, se quiser, bloqueie a medição com o <a href="https://tools.google.com/dlpage/gaoptout?hl=pt-BR" target="_blank" rel="noopener">complemento de desativação do Google Analytics</a>.</p>
       <p>Quando houver anúncios, eles serão exibidos pelo Google AdSense. O Google e seus parceiros podem usar cookies para mostrar anúncios com base nas suas visitas a este e a outros sites. Você pode gerenciar ou desativar a personalização de anúncios em <a href="https://adssettings.google.com" target="_blank" rel="noopener">adssettings.google.com</a>. Saiba mais sobre como o Google usa dados em <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">policies.google.com/technologies/partner-sites</a>.</p>
       <p>Você também pode bloquear ou apagar cookies nas configurações do seu navegador. Alguns recursos podem deixar de funcionar.</p>
 
@@ -198,7 +201,7 @@ PRIV = """    <article class="txt">
       <p>Podemos atualizar esta página quando necessário. A data da última atualização aparece no topo.</p>
     </article>"""
 
-SITEMAP_PAGES = ["/", "/atelon.html", "/novo-mundo.html", "/master-fut.html", "/privacidade.html"]
+SITEMAP_PAGES = ["/", "/atelon.html", "/novo-mundo.html", "/master-fut.html", "/privacidade.html", "/sobre.html", "/contato.html", "/tampinhas/", "/mestre-do-taco/", "/mente-em-jogo/", "/xadrez/", "/elydran/"]
 
 def write(name, text):
     with open(name, "w", encoding="utf-8", newline="\n") as f:
