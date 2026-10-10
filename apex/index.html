@@ -29,7 +29,8 @@ main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
 #stage:fullscreen{width:min(100vw,calc(100vh*16/9));border-radius:0;box-shadow:none;margin:auto}
 #gl{position:absolute;inset:0;width:100%;height:100%;display:block}
 #ui,#hud,#touch{position:absolute;inset:0}
-#ui{z-index:5;font-family:var(--font-hud);font-size:max(12px,calc(var(--u)*17px))}
+#ui{z-index:5;font-family:var(--font-hud);font-size:max(12px,calc(var(--u)*17px));pointer-events:none}
+#ui>*{pointer-events:auto}
 #hud{z-index:3;pointer-events:none;font-family:var(--font-hud)}
 #touch{z-index:4;pointer-events:none}
 #btnFull{position:absolute;bottom:8px;right:8px;z-index:8;background:rgba(10,13,20,.75);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;font:700 12px var(--font-body);padding:6px 10px;cursor:pointer}

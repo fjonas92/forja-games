@@ -193,6 +193,10 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 .tourOpts{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 .tourOpts summary{cursor:pointer;font-weight:800}
 .tourOpts[open] summary{margin-bottom:6px}
+.actions.top{margin-top:14px;margin-bottom:6px}
+.tourTbl{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.tourTbl summary{cursor:pointer;font-weight:800}
+.tourTbl[open] summary{margin-bottom:10px}
 .joinrow{display:flex;gap:8px;margin-top:12px}.joinrow .search{flex:1;margin:0;text-transform:uppercase;letter-spacing:4px;font-weight:800;text-align:center}
 .room{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:12px}
 .room small{color:var(--muted);font-weight:700}.room b{font:900 34px var(--font-body);letter-spacing:6px;flex:1}
@@ -2112,7 +2116,7 @@ function uclBody(T, uid) {
     h += '<p class="sub">Verde: direto às oitavas (1º ao 8º) · amarelo: playoff (9º ao 24º) · vermelho: eliminado (25º ao 36º)</p>';
     h += '<h3>Seu jogo da rodada</h3>' + T.cur.filter(f => f.a.id === uid || f.b.id === uid).map(f => fxRow(f, uid)).join('');
     h += '<details><summary>Todos os jogos da rodada</summary>' + T.cur.map(f => fxRow(f, uid)).join('') + '</details>';
-    h += '<h3>Classificação</h3>' + tbl;
+    h += tblBox('Ver tabela de classificação', tbl);
   } else {
     ['final', 'sf', 'qf', 'r16', 'po'].forEach(st => { const ties = st === T.stage ? T.ties : (T.hist || {})[st]; if (ties && ties.length) h += '<h3>' + STAGE_NAME[st] + '</h3>' + ties.map(t => tieHTML(t, uid)).join(''); });
     h += '<details><summary>Classificação final da fase de liga</summary>' + tbl + '</details>';
@@ -2218,21 +2222,29 @@ const STAGE_NAME = { group: 'Fase de grupos', league: 'Fase de liga', po: 'Playo
 function renderTour() {
   const T = TOUR; let h = '';
   const uid = T.user.id;
+  const out = T.userOut && T.phase !== 'finished';
+  let btn = '';
+  if (T.phase === 'ready') btn = userFx() ? '<button class="btn big" data-tour="play">Jogar partida</button>' + (T.type === 'league' || T.fmt === 'ucl' ? '<button class="btn ghost" data-tour="sim">Simular a rodada inteira</button>' : '') : '<button class="btn big" data-tour="sim">Simular rodada</button>';
+  else if (T.phase === 'played') btn = '<button class="btn big" data-tour="next">Avançar</button>';
+  else btn = '<button class="btn big" data-tour="again">Jogar outro torneio</button>';
+  if ((out || T.type === 'league') && T.phase !== 'finished') btn += '<button class="btn ghost" data-tour="all">Simular até o fim</button>';
+  const acts = '<div class="actions top">' + btn + '<button class="btn ghost" data-tour="menu">Salvar e sair para o menu</button></div>';
   if (T.phase === 'finished') {
     const champ = T.champion, me = champ.id === uid;
     h += '<div class="card champ"><div class="trophy">🏆</div><h2>' + esc(champ.name) + ' é campeão!</h2><p class="sub">' + (me ? 'Parabéns, o título é seu!' : 'Seu time ficou pelo caminho. Tente de novo!') + '</p></div>';
   }
   h += '<h2>' + esc(T.title) + '</h2><div class="who">' + teamChip(T.user) + '<span>' + esc(T.user.name) + '</span></div>';
+  h += acts;
   if (T.type === 'league') {
     h += '<p class="sub">Rodada ' + (T.round + 1) + ' de ' + T.rounds.length + (T.zones ? ' • verde: vaga no topo, vermelho: zona de rebaixamento' : '') + '</p>';
-    h += tableHTML(standings(T.teams, T.history), uid, T.zones ? 4 : 0, T.zones ? 4 : 0);
     h += '<h3>Jogos da rodada</h3>' + T.cur.map(f => fxRow(f, uid)).join('');
+    h += tblBox('Ver tabela de classificação', tableHTML(standings(T.teams, T.history), uid, T.zones ? 4 : 0, T.zones ? 4 : 0));
   } else if (T.fmt === 'ucl') { h += uclBody(T, uid); } else {
     h += '<p class="sub">' + (T.stage === 'done' ? 'Fim da Copa' : STAGE_NAME[T.stage] + (T.stage === 'group' ? ' • Rodada ' + (T.round + 1) + ' de 3' : '')) + '</p>';
     if (T.stage === 'group') {
       const gi = T.groups.findIndex(g => g.includes(T.user));
-      h += '<h3>Seu grupo (' + 'ABCDEFGHIJKL'[gi] + ')</h3>' + tableHTML(groupTable(gi), uid, 2);
       h += '<h3>Jogos da rodada</h3>' + T.cur.filter(f => f.g === gi).map(f => fxRow(f, uid)).join('');
+      h += tblBox('Ver tabela do seu grupo (' + 'ABCDEFGHIJKL'[gi] + ')', tableHTML(groupTable(gi), uid, 2));
       if (T.groups.length === 12) h += '<details><summary>Ranking dos terceiros colocados (os 8 melhores avançam)</summary>' + tableHTML(thirdsTable(T), uid, 8) + '</details>';
       h += '<details><summary>Outros grupos</summary>' + T.groups.map((_, g) => g === gi ? '' : '<h4>Grupo ' + 'ABCDEFGHIJKL'[g] + '</h4>' + tableHTML(groupTable(g), uid, 2) + T.cur.filter(f => f.g === g).map(f => fxRow(f, uid)).join('')).join('') + '</details>';
     } else {
@@ -2242,23 +2254,17 @@ function renderTour() {
       });
     }
   }
-  const out = T.userOut && T.phase !== 'finished';
-  let btn = '';
-  if (T.phase === 'ready') btn = userFx() ? '<button class="btn big" data-tour="play">Jogar partida</button>' + (T.type === 'league' || T.fmt === 'ucl' ? '<button class="btn ghost" data-tour="sim">Simular a rodada inteira</button>' : '') : '<button class="btn big" data-tour="sim">Simular rodada</button>';
-  else if (T.phase === 'played') btn = '<button class="btn big" data-tour="next">Avançar</button>';
-  else btn = '<button class="btn big" data-tour="again">Jogar outro torneio</button>';
-  if ((out || T.type === 'league') && T.phase !== 'finished') btn += '<button class="btn ghost" data-tour="all">Simular até o fim</button>';
-  h += '<div class="actions">' + btn + '<button class="btn ghost" data-tour="menu">Salvar e sair para o menu</button></div>';
   if (T.phase !== 'finished' && !out) h += '<details class="tourOpts"' + (TOUR_OPTS_OPEN ? ' open' : '') + '><summary>Formação, bola e regras das suas partidas</summary>' + levelSeg() + winBlock() + formBlock(1) + ballBlock() + '<p class="sub">Vale a partir do seu próximo jogo.</p></details>';
   if (out) h = '<p class="warn">Seu time foi eliminado. Você pode simular o resto e ver quem leva o título.</p>' + h;
   $('tourBody').innerHTML = h;
   drawFormCanvases(); drawBallPreviews($('tourBody'));
   saveTour();
 }
-let TOUR_OPTS_OPEN = false;
+let TOUR_OPTS_OPEN = false, TOUR_TBL_OPEN = false;
+function tblBox(title, html) { return '<details class="tourTbl"' + (TOUR_TBL_OPEN ? ' open' : '') + '><summary>📊 ' + title + '</summary>' + html + '</details>'; }
 function initTour() {
   initFormDrag($('tourBody'), renderTour);
-  $('tourBody').addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('tourOpts')) TOUR_OPTS_OPEN = e.target.open; }, true);
+  $('tourBody').addEventListener('toggle', e => { const c = e.target.classList; if (!c) return; if (c.contains('tourOpts')) TOUR_OPTS_OPEN = e.target.open; else if (c.contains('tourTbl')) TOUR_TBL_OPEN = e.target.open; }, true);
   $('tourBody').addEventListener('click', e => {
     const ob = e.target.closest('.tourOpts button'); if (ob && matchOptClick(ob)) { renderTour(); return; }
     const b = e.target.closest('button[data-tour]'); if (!b) return;
