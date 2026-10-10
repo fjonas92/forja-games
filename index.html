@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal, APEX (corrida 3D), Laylla (plataforma 3D), Corrida dos Heróis (corrida 3D), Blocos Cristal 3D, Império da Fazenda 3D, Meu Escritório 3D, Minha Fazendinha, Pebolim, Palavras Cruzadas e Cartas (Truco, Blackjack e Poker).">
+<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal, APEX (corrida 3D), Laylla (plataforma 3D), Corrida dos Heróis (corrida 3D), Blocos Cristal 3D, Império da Fazenda 3D, Meu Escritório 3D, Damas 3D, Minha Fazendinha, Pebolim, Palavras Cruzadas e Cartas (Truco, Blackjack e Poker).">
 <title>Falzinho Games</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -172,6 +172,9 @@ const GAMES = [
   { nome: "Meu Escritório 3D", genero: "Simulação 3D · Gerência", status: "Jogue agora",
     texto: "Atenda visitantes, limpe a bagunça, apague incêndios, contrate funcionários e expanda o prédio alugando salas. Teclado, controle ou toque, com save na conta.",
     url: "/escritorio/", c1: "#1F4E8C", c2: "#FFD23C", arte: "escritorio", pagina: "" },
+  { nome: "Damas 3D", genero: "Tabuleiro 3D · Estratégia", status: "Jogue agora",
+    texto: "Damas brasileiras em 3D, com captura obrigatória, dama voadora e computador em três níveis. Jogue também com um amigo, no mouse ou no toque, com ranking.",
+    url: "/damas/", c1: "#1D5A3A", c2: "#F4E6C6", arte: "damas", pagina: "" },
   { nome: "Minha Fazendinha", genero: "Fazenda · Relaxante", status: "Jogue agora",
     texto: "Are a terra, plante, regue, colha e venda na loja. Cuide das galinhas, enfrente dias de chuva e salve sua fazenda na nuvem entrando na conta.",
     url: "/fazendinha/", c1: "#2F8A3D", c2: "#FFD23C", arte: "fazenda", pagina: "" },
@@ -329,6 +332,14 @@ const ARTES = {
     <g transform="translate(125 58)"><rect x="-9" y="14" width="18" height="30" rx="7" fill="#D9473B"/><circle cx="0" cy="8" r="9" fill="#F6D2B5"/><path d="M-9 6Q0 -4 9 6Z" fill="#1A1A22"/></g>
     <g transform="translate(205 130)"><rect x="-9" y="14" width="18" height="30" rx="7" fill="#FFD23C"/><circle cx="0" cy="8" r="9" fill="#F6D2B5"/><path d="M-9 6Q0 -4 9 6Z" fill="#5A3A22"/></g>
     <path d="M40 40L80 40L60 12Z" fill="#FF7A1A"/><circle cx="270" cy="170" r="14" fill="#FFD23C"/><path d="M270 160l3 7 7 1-5 5 2 7-7-4-7 4 2-7-5-5 7-1z" fill="#fff"/>
+  </svg>`
+  ,damas: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#1D5A3A"/><path d="M70 30L250 30L290 180L30 180Z" fill="#4A2A14"/>
+    <path d="M82 38L238 38L274 172L46 172Z" fill="#EED3A0"/>
+    <g fill="#7A4A26"><path d="M82 38L104 38L98 72L76 72Z" opacity="0"/>
+    <path d="M104 38L126 38L122 72L98 72Z"/><path d="M148 38L170 38L168 72L146 72Z"/><path d="M192 38L214 38L214 72L192 72Z"/><path d="M76 72L98 72L94 106L68 106Z"/><path d="M122 72L146 72L144 106L120 106Z"/><path d="M168 72L192 72L192 106L168 106Z"/><path d="M214 72L238 72L242 106L216 106Z"/><path d="M98 106L120 106L118 140L92 140Z"/><path d="M144 106L168 106L168 140L144 140Z"/><path d="M192 106L216 106L218 140L192 140Z"/><path d="M68 140L92 140L88 172L60 172Z"/><path d="M118 140L144 140L144 172L116 172Z"/><path d="M168 140L192 140L194 172L168 172Z"/><path d="M218 140L242 140L250 172L220 172Z"/></g>
+    <g><ellipse cx="135" cy="58" rx="13" ry="8" fill="#8C1F2E"/><ellipse cx="135" cy="54" rx="10" ry="6" fill="#B03A4A"/><ellipse cx="205" cy="90" rx="13" ry="8" fill="#8C1F2E"/><ellipse cx="205" cy="86" rx="10" ry="6" fill="#B03A4A"/>
+    <ellipse cx="108" cy="124" rx="14" ry="9" fill="#D8C18C"/><ellipse cx="108" cy="119" rx="11" ry="7" fill="#F4E6C6"/><ellipse cx="180" cy="124" rx="14" ry="9" fill="#D8C18C"/><ellipse cx="180" cy="119" rx="11" ry="7" fill="#F4E6C6"/><ellipse cx="180" cy="112" rx="8" ry="4" fill="#FFC72C"/></g>
   </svg>`
   ,fazenda: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <rect width="320" height="200" fill="#9BE0FF"/><circle cx="270" cy="38" r="20" fill="#FFE066"/>

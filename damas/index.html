@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Damas 3D | Falzinho Games</title>
+<meta name="description" content="Jogo de damas 3D grátis com regras brasileiras: captura obrigatória, dama voadora, contra o computador em três níveis ou com um amigo. Com save e ranking.">
+<link rel="canonical" href="https://falzinhogames.com.br/damas/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
+<style>
+:root{--bg:#10306b;--sf:#1f4fa8;--ln:#5f9bff;--tx:#fffdf6;--mut:#cfe0ff;--gold:#ffd23c;--pink:#ff5fa2;--gt:16px;
+--font-display:'Bungee',Impact,sans-serif;--font-body:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--tx);font-family:var(--font-body);font-size:16px;line-height:1.5;padding-inline:var(--gt);background:radial-gradient(900px 500px at 50% -120px,rgba(255,210,60,.28),transparent 70%),var(--bg)}
+[hidden]{display:none!important}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px}
+.bar{max-width:1000px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.bar .back{text-decoration:none;color:var(--mut);font-weight:600;font-size:14px}
+.bar .logo{font-family:var(--font-display);font-size:16px;color:var(--gold);letter-spacing:1px}
+main{max-width:1000px;margin-inline:auto;padding-bottom:40px}
+#stage{position:relative;width:100%;aspect-ratio:16/9;max-height:82vh;border-radius:18px;overflow:hidden;border:3px solid var(--ln);background:#7fd0ff;touch-action:none;user-select:none;-webkit-user-select:none}
+@media (max-aspect-ratio:1/1){#stage{aspect-ratio:9/14;max-height:80vh}}
+#stage:fullscreen{max-height:none;aspect-ratio:auto;border-radius:0;border:0}
+canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;left:8px;right:8px;top:6px;display:flex;justify-content:space-between;gap:6px;pointer-events:none;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.4);flex-wrap:wrap}
+.hud .p{background:rgba(10,30,80,.55);border-radius:999px;padding:2px 11px;font-size:15px;white-space:nowrap}
+.hud .g{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#score{font-family:var(--font-display);font-size:clamp(18px,3.4vw,28px);background:none;padding:0;color:#fff}
+#meter{position:absolute;left:8px;bottom:8px;width:min(46%,260px);pointer-events:none}
+#meter .b{height:14px;background:rgba(10,30,80,.6);border:2px solid #fff;border-radius:999px;overflow:hidden}
+#meter .b i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd23c,#ff5fa2);transition:width .15s}
+#meter small{display:block;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.45);font-size:13px}
+#meter.rdy .b{box-shadow:0 0 12px 3px #ffd23c;animation:pl .7s infinite alternate}
+@keyframes pl{to{box-shadow:0 0 20px 7px #ff5fa2}}
+#spBtn{position:absolute;right:12px;bottom:12px;width:84px;height:84px;border-radius:50%;border:3px solid #fff;background:rgba(255,95,162,.85);color:#fff;font:700 13px var(--font-body);display:none;z-index:2}
+.touch #spBtn{display:block}
+#flash{position:absolute;left:0;right:0;top:24%;text-align:center;font-family:var(--font-display);font-size:clamp(20px,5vw,44px);color:var(--gold);text-shadow:0 4px 0 rgba(0,0,0,.4);pointer-events:none;opacity:0;transition:opacity .35s;padding:0 10px}
+#flash.on{opacity:1}
+.btn{font:inherit;font-weight:700;color:var(--tx);background:var(--sf);border:2px solid var(--ln);border-radius:12px;padding:8px 16px;cursor:pointer;min-height:44px}
+.btn:hover:not(:disabled){border-color:var(--gold)}
+.btn.primary{background:var(--gold);color:#3a2a00;border-color:var(--gold)}
+.ov{position:absolute;inset:0;background:rgba(10,25,70,.55);display:flex;align-items:center;justify-content:center;padding:10px;overflow:auto;z-index:3}
+.ov.sel{background:linear-gradient(transparent 40%,rgba(10,25,70,.85));align-items:flex-end}
+.box{background:linear-gradient(#3a72d4,#2b5cb0);border:3px solid var(--ln);border-radius:20px;padding:16px;max-width:520px;width:100%;text-align:center}
+.box h1,.box h2{font-family:var(--font-display);font-weight:400;margin:0 0 6px;color:var(--gold)}
+.box p{margin:5px 0;color:var(--mut)}
+.box .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.help{font-size:13px;text-align:left;color:var(--mut);margin-top:8px}
+.help span{display:block;margin:2px 0}
+.selbox{width:100%;max-width:640px;text-align:center;display:flex;gap:8px;align-items:center;justify-content:center}
+.selbox .mid{flex:1;background:rgba(15,40,100,.8);border:3px solid var(--ln);border-radius:16px;padding:8px 12px}
+.selbox h2{font-family:var(--font-display);font-weight:400;margin:0;color:var(--gold);font-size:clamp(18px,3vw,26px)}
+.selbox p{margin:2px 0;font-size:14px;color:var(--mut)}
+.arr{width:48px;height:48px;border-radius:50%;font-size:22px;padding:0}
+.tools{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.info{max-width:760px;margin:28px auto 0;color:var(--mut)}
+.info h2{color:var(--tx);font-size:20px}
+</style>
+<style>
+.hud2{position:absolute;left:8px;right:8px;top:6px;display:flex;justify-content:space-between;gap:6px;pointer-events:none;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.4);flex-wrap:wrap;z-index:2}
+.hud2 .p{background:rgba(10,30,80,.6);border-radius:999px;padding:2px 11px;font-size:15px;white-space:nowrap}
+.hud2 .g{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.panel{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(rgba(10,25,70,.0),rgba(10,25,70,.88) 28%);padding:18px 8px 8px;z-index:2}
+.tabs{display:flex;gap:4px;justify-content:center;margin-bottom:6px;flex-wrap:nowrap}
+.tabs .btn{min-height:34px;padding:2px 7px;font-size:12.5px;white-space:nowrap}
+.tabs .btn.on{background:var(--gold);color:#3a2a00;border-color:var(--gold)}
+.shop{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;-webkit-overflow-scrolling:touch}
+.card{flex:0 0 auto;min-width:122px;background:rgba(20,50,120,.92);border:2px solid var(--ln);border-radius:14px;padding:6px 10px;text-align:center;font-size:13px;color:var(--mut)}
+.card b{display:block;color:#fff;font-size:14px}
+.card .btn{min-height:32px;padding:1px 10px;font-size:13px;margin-top:4px;width:100%}
+.card.sel{border-color:var(--gold);box-shadow:0 0 10px rgba(255,210,60,.6)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.toast{position:absolute;left:50%;top:14%;transform:translateX(-50%);background:rgba(10,30,80,.85);border:2px solid var(--gold);border-radius:14px;padding:6px 14px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .3s;z-index:4;text-align:center}
+.toast.on{opacity:1}
+#joy{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;touch-action:none}
+#joyBase,#joyKnob{position:absolute;border-radius:50%;pointer-events:none;display:none;z-index:2}
+#joyBase{width:110px;height:110px;border:3px solid rgba(255,255,255,.7);background:rgba(255,255,255,.14)}
+#joyKnob{width:48px;height:48px;background:rgba(255,255,255,.75)}
+</style>
+</head>
+<body>
+<script src="/analytics.js"></script>
+<div class="bar"><a class="back" href="/">← Falzinho Games</a><span class="logo">DAMAS 3D</span><span id="acc"></span></div>
+<main>
+  <div id="stage">
+    <canvas id="gl" aria-label="Tabuleiro de damas 3D"></canvas>
+    <div class="hud2" id="hud" hidden><div class="g"><span class="p" id="hTurn">Sua vez</span><span class="p" id="hCnt">12 x 12</span></div><div class="g"><button class="btn" id="bUndo" type="button" style="min-height:32px;padding:0 10px;pointer-events:auto">Desfazer</button><button class="btn" id="bMenu" type="button" style="min-height:32px;padding:0 10px;pointer-events:auto">Menu</button></div></div>
+    <div class="toast" id="toast"></div>
+    <div class="ov" id="ovTitle"><div class="box">
+      <h1>DAMAS 3D</h1><p>Damas brasileiras em 3D: captura obrigatória, peça que captura para trás e dama voadora. Jogue contra o computador ou com um amigo.</p>
+      <div class="btns" id="levels"><button class="btn primary" data-lv="facil" type="button">Fácil</button><button class="btn primary" data-lv="normal" type="button">Normal</button><button class="btn primary" data-lv="dificil" type="button">Difícil</button></div>
+      <div class="btns"><button class="btn" id="b2p" type="button">2 jogadores</button><button class="btn" id="bCont" type="button" hidden>Continuar partida</button><button class="btn" id="bRank" type="button">Ranking</button></div>
+      <p id="saveInfo"></p><div id="acc2"></div>
+      <div class="help"><span><b>Como jogar:</b> toque numa peça sua e depois na casa verde para onde quer ir. Se houver captura, ela é obrigatória, e você deve pegar o maior número de peças possível.</span><span><b>Dama:</b> a peça que chega na última fileira vira dama e anda quantas casas quiser na diagonal.</span></div>
+    </div></div>
+    <div class="ov" id="ovOver" hidden><div class="box"><h2 id="oT">Fim de jogo</h2><p id="oD"></p><p id="oR"></p><div class="btns"><button class="btn primary" id="bAgain" type="button">Jogar de novo</button><button class="btn" id="bMenu2" type="button">Menu</button><button class="btn" id="bRank2" type="button">Ranking</button></div></div></div>
+  </div>
+  <div class="tools"><button class="btn" id="bSnd" type="button">Som: ligado</button><button class="btn" id="bFull" type="button">Tela cheia</button></div>
+  <section class="info">
+    <h1 style="font-family:var(--font-display);font-weight:400;font-size:26px;margin:0 0 6px;color:var(--tx)">Jogo de damas 3D online e grátis</h1>
+    <p><strong>Damas 3D</strong> é um jogo de damas em 3D no navegador, com as regras brasileiras: captura obrigatória com lei da maioria, peças que capturam para trás e dama voadora. Jogue contra o computador em três níveis ou com um amigo no mesmo aparelho, no mouse ou no toque do celular. A partida em andamento e as suas vitórias ficam salvas.</p>
+    <h2>Pontos do ranking</h2>
+    <p>Vitórias contra o computador rendem pontos para o ranking geral (mais pontos nos níveis mais difíceis). Entrando na sua conta, o histórico fica salvo na nuvem.</p>
+  </section>
+</main>
+<script src="/fg.js"></script>
+<script src="core.js"></script>
+<script type="module">
+import * as THREE from 'three';
+const $ = (i) => document.getElementById(i), stage = $('stage'), cvs = $('gl');
+if (matchMedia('(pointer:coarse)').matches) document.body.classList.add('touch');
+let snd = true, ac = null;
+function beep(f, d, ty, v, f2) { if (!snd) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.type = ty || 'sine'; o.frequency.setValueAtTime(f, ac.currentTime); if (f2) o.frequency.exponentialRampToValueAtTime(f2, ac.currentTime + d); g.gain.value = v || 0.05; g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d); } catch (e) { } }
+const seq = (fs, d, ty, v, gap) => fs.forEach((f, i) => setTimeout(() => beep(f, d, ty, v), i * (gap || 70)));
+$('bSnd').onclick = () => { snd = !snd; $('bSnd').textContent = 'Som: ' + (snd ? 'ligado' : 'desligado'); };
+$('bFull').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else if (stage.requestFullscreen) stage.requestFullscreen().catch(() => { }); };
+const renderer = new THREE.WebGLRenderer({ canvas: cvs, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75)); renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 300);
+let onResize = () => { };
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); onResize(w, h); }
+new ResizeObserver(resize).observe(stage);
+const grad = new THREE.DataTexture(new Uint8Array([120, 195, 255]), 3, 1, THREE.RedFormat); grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
+const toon = (c, e, o) => new THREE.MeshToonMaterial(Object.assign({ color: c, gradientMap: grad, emissive: e || 0 }, o || {}));
+const BOX = new THREE.BoxGeometry(1, 1, 1), CYL = new THREE.CylinderGeometry(1, 1, 1, 12), SPH = new THREE.SphereGeometry(1, 12, 10), CONE = new THREE.ConeGeometry(1, 1, 10);
+const mesh = (g, m, sx, sy, sz, x, y, z, par) => { const o = new THREE.Mesh(g, m); o.scale.set(sx, sy, sz); o.position.set(x || 0, y || 0, z || 0); if (par) par.add(o); return o; };
+function makeSave(key, game, def, onLoad) {
+  const S = Object.assign({ t: 0 }, def);
+  try { const s = JSON.parse(localStorage.getItem(key)); if (s && typeof s === 'object') Object.assign(S, s); } catch (e) { }
+  const save = () => { S.t = Date.now(); try { localStorage.setItem(key, JSON.stringify(S)); } catch (e) { } FG.schedulePush(() => S); };
+  FG.init(game); FG.mountBar($('acc')); if ($('acc2')) FG.mountBar($('acc2'));
+  FG.onLogin = async () => { const c = await FG.cloudLoad(); if (c && typeof c === 'object' && (c.t || 0) > (S.t || 0)) { Object.assign(S, c); try { localStorage.setItem(key, JSON.stringify(S)); } catch (e) { } if (onLoad) onLoad(S); } else FG.cloudSave(S); };
+  return { S, save };
+}
+function report(pts, el, win) {
+  pts = Math.max(0, Math.min(100, Math.floor(pts))); if (!el) return;
+  if (pts <= 0) { el.textContent = ''; return; }
+  if (FG.user) { el.textContent = 'Registrando no ranking...'; FG.report(pts, !!win).then((r) => { el.textContent = r && r.err ? 'Não consegui registrar agora (espere uns segundos entre partidas).' : '+' + pts + ' pontos no ranking geral!'; }); }
+  else { el.innerHTML = 'Entre na sua conta para registrar <b>' + pts + '</b> pontos no ranking. <button class="btn" id="bLg" type="button" style="min-height:34px;padding:2px 12px">Entrar</button>'; const b = el.querySelector('#bLg'); if (b) b.onclick = () => FG.openAuth('Entre na sua conta para salvar e entrar no ranking.'); }
+}
+let toastT = 0; function toast(t, ms) { const e = $('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('on'), ms || 1600); }
+
+const D = window.Damas;
+const sv = makeSave('fg_damas', 'damas', { w: { facil: 0, normal: 0, dificil: 0 }, l: { facil: 0, normal: 0, dificil: 0 }, d: 0, cur: null }, () => { info(); });
+const S = sv.S;
+function info() { const w = S.w.facil + S.w.normal + S.w.dificil, l = S.l.facil + S.l.normal + S.l.dificil; $('saveInfo').textContent = (w + l + S.d) ? 'Vitórias: ' + w + ' · Derrotas: ' + l + ' · Empates: ' + S.d : 'Nenhuma partida ainda.'; $('bCont').hidden = !S.cur; }
+info(); $('bRank').onclick = $('bRank2').onclick = () => FG.showRanking('Ranking do Damas 3D');
+scene.background = new THREE.Color(0x1d5a3a); scene.add(new THREE.HemisphereLight(0xfff6e5, 0x5a4030, 1.15)); const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(-5, 12, 6); scene.add(sun);
+mesh(BOX, toon(0x1f6b44), 60, 1, 60, 0, -0.9, 0, scene);
+const frame0 = mesh(BOX, toon(0x4a2a14), 9.4, 0.5, 9.4, 0, -0.3, 0, scene);
+const LIGHT = toon(0xeed3a0), DARK = toon(0x7a4a26), sqM = []; const sqMesh = [];
+for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) { const m = mesh(BOX, (r + c) % 2 ? DARK : LIGHT, 1, 0.12, 1, c - 3.5, -0.04, r - 3.5, scene); sqMesh[r * 8 + c] = m; m.userData.sq = r * 8 + c; }
+const TARGET = new THREE.Vector3(0, 0, 0.4); let yaw = 0, yawT = 0;
+onResize = (w, h) => { const a = w / h, t = Math.tan(camera.fov * Math.PI / 360); camDist = Math.max(4.9 / t, 4.7 / (a * t)); };
+let camDist = 14;
+// pecas
+const PM = [toon(0xf4e6c6), toon(0x8c1f2e)], PR = [toon(0xd8c18c), toon(0x5a1019)], GOLD = toon(0xffc72c, 0xb07a00, { emissiveIntensity: 0.4 });
+const pieces = new Array(64).fill(null); const pieceG = new THREE.Group(); scene.add(pieceG);
+function pos(sq) { return new THREE.Vector3((sq % 8) - 3.5, 0, ((sq / 8) | 0) - 3.5); }
+function mkPiece(v) { const g = new THREE.Group(), s = v > 0 ? 0 : 1; mesh(CYL, PR[s], 0.42, 0.26, 0.42, 0, 0.19, 0, g); mesh(CYL, PM[s], 0.34, 0.07, 0.34, 0, 0.35, 0, g); mesh(CYL, PR[s], 0.2, 0.05, 0.2, 0, 0.38, 0, g); if (Math.abs(v) === 2) crown(g); return g; }
+function crown(g) { const c = mesh(CYL, GOLD, 0.26, 0.2, 0.26, 0, 0.5, 0, g); for (let i = 0; i < 5; i++) { const a = i / 5 * 6.283; mesh(CONE, GOLD, 0.06, 0.14, 0.06, Math.cos(a) * 0.2, 0.67, Math.sin(a) * 0.2, g); } g.userData.king = true; }
+function syncPieces() { while (pieceG.children.length) pieceG.remove(pieceG.children[0]); for (let i = 0; i < 64; i++) { pieces[i] = null; const v = G.b[i]; if (v) { const m = mkPiece(v); m.position.copy(pos(i)); m.position.y = 0.02; m.userData.v = v; pieceG.add(m); pieces[i] = m; } } }
+// marcadores
+const markG = new THREE.Group(); scene.add(markG); const mkM = new THREE.MeshBasicMaterial({ color: 0x4cff7a, transparent: true, opacity: 0.8 }), selM = new THREE.MeshBasicMaterial({ color: 0xffe14a, transparent: true, opacity: 0.85 }), hintM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 }), lastM = new THREE.MeshBasicMaterial({ color: 0xffe14a, transparent: true, opacity: 0.28 });
+const ringG = new THREE.RingGeometry(0.36, 0.48, 28).rotateX(-Math.PI / 2), dotG = new THREE.CircleGeometry(0.2, 20).rotateX(-Math.PI / 2);
+function clearMarks() { while (markG.children.length) markG.remove(markG.children[0]); }
+function addMark(sq, geo, mat, y) { const m = new THREE.Mesh(geo, mat); m.position.copy(pos(sq)); m.position.y = y || 0.03; markG.add(m); return m; }
+// jogo
+let G = new D.Game(), mode = 'ai', level = 'normal', human = 1, sel = -1, myMoves = [], busy = false, playing = false, anim = null, last = [];
+const parts = []; const pg = new THREE.SphereGeometry(0.08, 6, 5);
+function burst(sq, col) { const p0 = pos(sq); for (let i = 0; i < 10; i++) { const m = new THREE.Mesh(pg, new THREE.MeshBasicMaterial({ color: col, transparent: true })); m.position.set(p0.x, 0.4, p0.z); const a = Math.random() * 6.28, sp = 1.5 + Math.random() * 2.5; parts.push({ m, vx: Math.cos(a) * sp, vy: 2 + Math.random() * 3, vz: Math.sin(a) * sp, t: 0.7 }); scene.add(m); } }
+function refreshHints() {
+  clearMarks(); last.forEach((q) => addMark(q, new THREE.CircleGeometry(0.5, 4).rotateX(-Math.PI / 2), lastM, 0.02));
+  if (!playing || busy || G.over || (mode === 'ai' && G.turn !== human)) { hud(); return; }
+  myMoves = G.moves(); const froms = new Set(myMoves.map((m) => m.from)); const mand = myMoves.length && myMoves[0].caps.length > 0;
+  if (sel >= 0 && froms.has(sel)) { addMark(sel, ringG, selM, 0.04); myMoves.filter((m) => m.from === sel).forEach((m) => addMark(m.to, dotG, mkM, 0.05)); }
+  else { sel = -1; froms.forEach((q) => addMark(q, ringG, hintM, 0.04)); }
+  hud(mand);
+}
+function hud(mand) {
+  $('hCnt').textContent = G.count(1) + ' x ' + G.count(-1);
+  const t = G.over ? 'Fim de jogo' : mode === 'ai' ? (G.turn === human ? 'Sua vez' : 'Computador pensando...') : (G.turn === 1 ? 'Vez das claras' : 'Vez das escuras'); $('hTurn').textContent = t + (mand && G.turn === human || mand && mode === '2p' ? ' · captura obrigatória!' : '');
+  $('bUndo').disabled = !G.hist.length || busy || G.over;
+}
+function persist() { S.cur = G.over ? null : { mode, level, s: G.save() }; sv.save(); info(); }
+function start(m, lv, cont) {
+  mode = m; level = lv || level; sel = -1; busy = false; anim = null; last = [];
+  if (cont && S.cur) { mode = S.cur.mode; level = S.cur.level; G = new D.Game(); G.load(S.cur.s); } else G = new D.Game();
+  playing = true; $('ovTitle').hidden = true; $('ovOver').hidden = true; $('hud').hidden = false; $('bUndo').style.display = ''; syncPieces(); yawT = mode === '2p' && G.turn === -1 ? Math.PI : 0; refreshHints(); persist(); maybeAI();
+}
+$('levels').addEventListener('click', (e) => { const b = e.target.closest('[data-lv]'); if (b) start('ai', b.dataset.lv, false); });
+$('b2p').onclick = () => start('2p', level, false); $('bCont').onclick = () => start(S.cur.mode, S.cur.level, true);
+$('bAgain').onclick = () => start(mode, level, false); $('bMenu').onclick = $('bMenu2').onclick = () => { playing = false; $('ovTitle').hidden = false; $('ovOver').hidden = true; $('hud').hidden = true; clearMarks(); info(); };
+$('bUndo').onclick = () => { if (busy || G.over) return; if (mode === 'ai') { G.undo(); if (G.turn !== human) G.undo(); } else G.undo(); sel = -1; last = []; syncPieces(); yawT = mode === '2p' && G.turn === -1 ? Math.PI : 0; refreshHints(); persist(); };
+// interacao
+const ray = new THREE.Raycaster(), nd = new THREE.Vector2();
+cvs.addEventListener('pointerdown', (e) => {
+  if (!playing || busy || G.over || (mode === 'ai' && G.turn !== human)) return; const rc = cvs.getBoundingClientRect(); nd.set(((e.clientX - rc.left) / rc.width) * 2 - 1, -((e.clientY - rc.top) / rc.height) * 2 + 1); ray.setFromCamera(nd, camera);
+  const h = ray.intersectObjects(sqMesh.filter(Boolean), false)[0]; if (!h) return; const sq = h.object.userData.sq;
+  const froms = new Set(myMoves.map((m) => m.from));
+  if (sel >= 0) { const mv = myMoves.find((m) => m.from === sel && m.to === sq); if (mv) { doMove(mv); return; } }
+  if (froms.has(sq)) { sel = sq; beep(520, .05, 'triangle', .04); refreshHints(); } else if (sel >= 0) { sel = -1; beep(160, .08, 'sine', .04); refreshHints(); if (G.b[sq] && Math.sign(G.b[sq]) === G.turn) toast('Essa peça não pode jogar agora' + (myMoves[0] && myMoves[0].caps.length ? ': há captura obrigatória' : ''), 1600); }
+  else if (G.b[sq] && Math.sign(G.b[sq]) === G.turn) toast(myMoves[0] && myMoves[0].caps.length ? 'Captura obrigatória! Brilham as peças que podem capturar' : 'Essa peça está bloqueada', 1800);
+});
+function doMove(mv) {
+  busy = true; clearMarks(); sel = -1; const pc = pieces[mv.from]; const wp = [pos(mv.from)].concat(mv.path.map(pos)); anim = { mv, pc, wp, i: 0, t: 0, side: G.turn }; pieces[mv.from] = null; pieceG.add(pc); last = [mv.from, mv.to]; hud();
+}
+function finishMove() {
+  const a = anim; anim = null; G.play(a.mv); syncPieces(); busy = false; persist();
+  if (a.mv.caps.length) seq([392, 523], .08, 'square', .05, 70); else beep(330, .06, 'triangle', .05);
+  if (G.over) { endGame(); return; }
+  if (mode === '2p') yawT = G.turn === -1 ? Math.PI : 0;
+  refreshHints(); maybeAI();
+}
+function maybeAI() { if (mode !== 'ai' || G.over || G.turn === human || !playing) return; busy = true; hud(); setTimeout(() => { if (!playing) { busy = false; return; } const mv = G.ai(level); busy = false; if (mv) doMove(mv); }, 450); }
+function endGame() {
+  playing = false; clearMarks(); hud(); let t, d, pts = 0, win = false;
+  if (G.winner === 0) { t = 'Empate!'; d = G.reason; S.d++; pts = 2; } else if (mode === '2p') { t = G.winner === 1 ? 'As claras venceram!' : 'As escuras venceram!'; d = ''; } else if (G.winner === human) { t = 'Você venceu!'; d = 'Contra o computador no nível ' + level; S.w[level]++; pts = { facil: 5, normal: 15, dificil: 30 }[level]; win = true; seq([523, 659, 784, 1046], .15, 'triangle', .07, 110); } else { t = 'O computador venceu'; d = 'Tente de novo ou diminua o nível'; S.l[level]++; beep(200, .5, 'sawtooth', .06, 80); }
+  S.cur = null; sv.save(); info(); $('oT').textContent = t; $('oD').textContent = d; $('oR').textContent = ''; setTimeout(() => { $('ovOver').hidden = false; if (mode === 'ai') report(pts, $('oR'), win); }, 900);
+}
+// loop
+const clock = new THREE.Clock(); let T = 0; const camP = new THREE.Vector3();
+function frame() {
+  requestAnimationFrame(frame); const dt = Math.min(0.05, clock.getDelta()); T += dt;
+  yaw += (yawT - yaw) * Math.min(1, dt * 4);
+  camP.set(Math.sin(yaw) * 0.0, 0.84, 0.54).normalize(); const cx = Math.sin(yaw) * camDist * 0.54, cz = Math.cos(yaw) * camDist * 0.54; camera.position.set(cx, camDist * 0.84, cz + 0.4); camera.lookAt(TARGET.x, 0, TARGET.z);
+  if (anim) { const a = anim, p0 = a.wp[a.i], p1 = a.wp[a.i + 1], dist = p0.distanceTo(p1); a.t += dt * 6 / Math.max(1, dist * 0.7); const k = Math.min(1, a.t); a.pc.position.lerpVectors(p0, p1, k); a.pc.position.y = Math.sin(k * Math.PI) * (a.mv.caps.length ? 0.8 : 0.35) + 0.02;
+    if (k >= 1) { const ci = a.mv.caps[a.i]; if (ci !== undefined && pieces[ci]) { burst(ci, a.side > 0 ? 0xf4e6c6 : 0xb03a4a); pieceG.remove(pieces[ci]); pieces[ci] = null; beep(300, .08, 'square', .05, 150); } a.i++; a.t = 0; if (a.i >= a.mv.path.length) { const tr = (a.mv.to / 8) | 0, pv = G.b[a.mv.from]; if (Math.abs(pv) === 1 && ((pv > 0 && tr === 0) || (pv < 0 && tr === 7))) { crown(a.pc); seq([660, 880, 1320], .1, 'triangle', .06, 70); } finishMove(); } } }
+  for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.t -= dt; p.vy -= 12 * dt; p.m.position.x += p.vx * dt; p.m.position.y += p.vy * dt; p.m.position.z += p.vz * dt; p.m.material.opacity = Math.max(0, p.t * 1.4); if (p.t <= 0) { scene.remove(p.m); p.m.material.dispose(); parts.splice(i, 1); } }
+  markG.children.forEach((m) => { if (m.material === hintM) m.material.opacity = 0.45 + Math.sin(T * 5) * 0.2; });
+  pieces.forEach((p) => { if (p && p.userData.king) p.children[p.children.length - 1].rotation.y += 0; });
+  renderer.render(scene, camera);
+}
+resize(); syncPieces(); frame();
+window.__dm = { get G() { return G; }, doMove, start, get busy() { return busy; }, scr: (sq) => { const p = pos(sq).clone(); p.y = 0.2; p.project(camera); const rc = cvs.getBoundingClientRect(); return [rc.left + (p.x + 1) / 2 * rc.width, rc.top + (1 - p.y) / 2 * rc.height]; } };
+
+</script>
+</body>
+</html>
