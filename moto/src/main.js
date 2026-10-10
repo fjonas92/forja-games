@@ -209,7 +209,7 @@ function act(a, d, el) {
 // ---------- corrida ----------
 const H = {
   pos: $('hPos'), lap: $('hLap'), tower: $('tower'), times: $('hTimes'), speed: $('hSpeed'), n: $('hSpeed').querySelector('.n'), rpm: $('rpm'), gear: $('hGear'),
-  tyre: $('hTyre').querySelector('i'), cmp: $('hCmp'), wx: $('hWx'), pit: $('hPit'), fx: $('hFx'), mini: $('hMini'), lights: [...$('lights').children], lightsBox: $('lights'), msg: $('hMsg'), slip: $('hSlip'), pad: $('hPad'),
+  tyre: $('hTyre').querySelector('i'), turbo: $('hTurbo').querySelector('i'), turboBox: $('hTurbo'), cmp: $('hCmp'), wx: $('hWx'), pit: $('hPit'), fx: $('hFx'), mini: $('hMini'), lights: [...$('lights').children], lightsBox: $('lights'), msg: $('hMsg'), slip: $('hSlip'), pad: $('hPad'),
 };
 for (let i = 0; i < 16; i++) H.rpm.appendChild(document.createElement('i'));
 const rpmEls = [...H.rpm.children];
@@ -282,7 +282,7 @@ function onRaceEvent(e, race) {
     case 'finish': if (e.car === p && S.opts && S.opts.qualify) { sfx.fanfare(); msg('VOLTA COMPLETA', 2000, '#ffc83d'); } else if (e.car === p) { sfx.fanfare(); msg(e.car.finishPos === 1 ? 'VITÓRIA!' : 'BANDEIRADA  P' + e.car.finishPos, 3000, '#ffc83d'); } break;
     case 'pit':
       if (e.car !== p) break;
-      if (e.ph === 'in') msg('BOX!', 1200, '#4ab3ff');
+      if (e.ph === 'in') msg('BOX!', 1200, '#00e5c8');
       else if (e.ph === 'stop') { sfx.beep(700, .12, .2, 'square'); H.msg.classList.remove('show'); }
       else if (e.ph === 'done') { S.pitSel = 0; sfx.fanfare(); msg('PNEUS ' + (e.tyre === 'W' ? 'DE CHUVA' : 'LISOS') + ' · VAI!', 1600, '#7be37b'); }
       break;
@@ -349,7 +349,7 @@ function drawMini(race, p) {
       for (let i = 0; i <= t.n; i += 2) { const k = i % t.n; const px = ox + t.x[k] * s, py = oz + t.z[k] * s; i ? o.lineTo(px, py) : o.moveTo(px, py); }
       o.closePath(); o.stroke();
     }
-    o.fillStyle = '#ff3b30'; o.fillRect(ox + t.x[0] * s - 3, oz + t.z[0] * s - 3, 7, 7);
+    o.fillStyle = '#ff8a00'; o.fillRect(ox + t.x[0] * s - 3, oz + t.z[0] * s - 3, 7, 7);
     miniCache = { oc, s, ox, oz };
   }
   g.clearRect(0, 0, W, Hh); g.drawImage(miniCache.oc, 0, 0);
@@ -371,6 +371,9 @@ function updateHud(race, dt) {
   setTxt(H.gear, 'gear', p.v < -0.5 ? 'R' : p.v < 1 ? 'N' : String(p.gear || 1));
   const on = Math.round((p.rpm || 0) * rpmEls.length);
   if (lastHud.rpm !== on) { lastHud.rpm = on; rpmEls.forEach((e, i) => { e.className = i < on ? 'on' + (i > 12 ? ' r' : i > 9 ? ' y' : '') : ''; }); }
+  const nf = Math.round(p.nitroF * 50);
+  if (lastHud.nf !== nf) { lastHud.nf = nf; H.turbo.style.width = (nf * 2) + '%'; }
+  H.turboBox.classList.toggle('on', (p.boost || 0) > 0.3);
   const w = Math.round(p.wear * 100);
   if (lastHud.wear !== w) { lastHud.wear = w; H.tyre.style.width = Math.max(0, (p.wear - 0.5) * 200) + '%'; H.tyre.style.background = p.wear > 0.85 ? '#7be37b' : p.wear > 0.7 ? '#ffd23f' : '#ff5a4d'; }
   const cmpT = p.tyre === 'W' ? 'CHUVA' : 'LISO';
@@ -427,7 +430,7 @@ function raceFrame(dt) {
           S.pitSel = ((S.pitSel || 0) + 1) % 3;
           const best = race.wet > 0.2 ? 'W' : 'S', pick = S.pitSel === 1 ? best : S.pitSel === 2 ? (best === 'W' ? 'S' : 'W') : null;
           p.pitReq = pick;
-          msg(pick ? 'BOX PEDIDO' : 'BOX CANCELADO', 1000, pick ? '#4ab3ff' : '#fff');
+          msg(pick ? 'BOX PEDIDO' : 'BOX CANCELADO', 1000, pick ? '#00e5c8' : '#fff');
         }
       }
     }
@@ -439,7 +442,7 @@ function raceFrame(dt) {
     acc += dt; let steps = 0; const H0 = 1 / 120;
     const p = race.player;
     const v = p ? Math.abs(p.v) : 0;
-    let pin = { steer: inp.steer, throttle: inp.throttle, brake: inp.brake };
+    let pin = { steer: inp.steer, throttle: inp.throttle, brake: inp.brake, nitro: inp.nitro };
     if (S.autopilot && p && !p.finished) { // gancho de teste: IA dirige a moto do jogador
       if (!S.apDrv || S.apDrv.r !== p) S.apDrv = new AIDriver(p, race.t, buildProfile(race.t, p.spec, 0.97), Math.random);
       pin = S.apDrv.drive(H0, race.cars, p.prog, 1);
@@ -458,7 +461,14 @@ function raceFrame(dt) {
   view.setWeather(race.rain, race.wet, S.paused ? 0 : dt); S.sfx.rain(S.paused ? 0 : race.rain);
   const orbit = race.phase === 'countdown' ? Math.max(0, 1 - race.cd / 3.6) * 2.4 : (p.finished ? Math.min(3.0, finishT * 0.45) : 0);
   view.shake *= Math.pow(0.02, dt);
-  view.updateCamera(p, S.camMode, dt, { orbit, shake: view.shake });
+  const pa = race.phase === 'race' && !p.finished ? p : null;
+  view.updateCamera(p, S.camMode, dt, { orbit, shake: view.shake, roll: pa ? -(view.cars.get(p.id)?.leanCur || 0) * 0.28 : 0, fovAdd: pa ? (p.boost || 0) * 9 : 0 });
+  // ultrapassagem recarrega o turbo
+  if (pa && !S.paused) {
+    const pl = race.cars.filter(c => c.prog > p.prog).length + 1;
+    if (S._pl && pl < S._pl && race.raceTime > 4) { p.nitroF = Math.min(1, p.nitroF + 0.18); msg('ULTRAPASSAGEM! +TURBO', 900, '#00e5c8'); }
+    S._pl = pl;
+  } else S._pl = 0;
   view.followSun(p.x, p.y, p.z);
   if (!S.paused) { updateHud(race, dt); S.sfx.update(p, S.input.throttle, false); } else S.sfx.update(null, 0, true);
 }
@@ -496,7 +506,7 @@ function frame(now) {
 let tvT = 0; function updateTouchVisThrottled() { tvT++; if (tvT % 20 === 0) updateTouchVis(); }
 
 // ---------- eventos globais ----------
-S.input.bindTouch({ left: $('tL'), right: $('tR'), gas: $('tG'), brake: $('tB') });
+S.input.bindTouch({ left: $('tL'), right: $('tR'), gas: $('tG'), brake: $('tB'), nitro: $('tN') });
 $('tP').addEventListener('click', () => pauseGame());
 $('tC').addEventListener('click', () => { S.camMode = (S.camMode + 1) % 3; });
 $('tX').addEventListener('click', () => { S.input._edge.pit = true; });

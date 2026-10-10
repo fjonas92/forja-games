@@ -9,11 +9,11 @@ export class Input {
     this.lastDevice = 'kb';
     this.pad = null;
     this.padName = '';
-    this.touch = { left: false, right: false, gas: false, brake: false };
+    this.touch = { left: false, right: false, gas: false, brake: false, nitro: false };
     this.touchActive = false;
     this.steerRaw = 0;       // [-1,1] bruto do dispositivo (+ direita)
     this.steer = 0;          // suavizado
-    this.throttle = 0; this.brake = 0;
+    this.throttle = 0; this.brake = 0; this.nitro = false;
     this.auto = false;       // acelerar automatico
     this.tilt = false; this.tiltVal = 0;
     this._edge = {};         // acoes (borda de subida)
@@ -82,7 +82,7 @@ export class Input {
   // chamada 1x por quadro
   update(dt) {
     const k = this.keys, any = a => KEYMAP[a].some(c => k.has(c));
-    let steer = 0, thr = 0, brk = 0, usedPad = false;
+    let steer = 0, thr = 0, brk = 0, usedPad = false, nit = k.has('ShiftLeft') || k.has('ShiftRight') || k.has('KeyN');
     const p = this._gp();
     const pe = {}; // acoes do joystick nesse quadro
     if (p) {
@@ -92,7 +92,8 @@ export class Input {
       const dl = this.btn(p, 14), dr = this.btn(p, 15);
       const padSteer = ax || (dr ? 1 : dl ? -1 : 0);
       const padThr = Math.max(rt, this.btn(p, 0) ? 1 : 0, this.btn(p, 5) ? 1 : 0);
-      const padBrk = Math.max(lt, this.btn(p, 2) ? 1 : 0, this.btn(p, 1) ? 1 : 0, this.btn(p, 4) ? 1 : 0);
+      const padBrk = Math.max(lt, this.btn(p, 2) ? 1 : 0, this.btn(p, 1) ? 1 : 0);
+      if (this.btn(p, 4)) nit = true;
       const names = { 3: 'camera', 9: 'pause', 8: 'reset', 12: 'pit', 0: 'confirm', 1: 'back', 2: 'alt' };
       for (const [i, n] of Object.entries(names)) {
         const d = this.btn(p, +i), was = this._prevBtn[i]; this._prevBtn[i] = d;
@@ -118,6 +119,8 @@ export class Input {
       }
       if (this.auto && !brk) thr = 1;
     }
+    if (this.touch.nitro) nit = true;
+    this.nitro = nit;
     this.steerRaw = steer; this.throttle = thr; this.brake = brk;
     // suavizacao do volante (digital sobe devagar, volta rapido)
     const digital = !usedPad && !this.tilt;

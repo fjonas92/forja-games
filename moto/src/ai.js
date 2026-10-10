@@ -32,7 +32,7 @@ export class AIDriver {
     this.r = racer; this.t = track; this.prof = profile;
     this.lane = 0; this.pref = (rnd() - 0.5) * 3; this.laneNow = this.pref;
     this.skillJ = 0.985 + rnd() * 0.03;
-    this.react = 0;
+    this.react = 0; this.vmax = 0; for (let i = 0; i < profile.length; i++) if (profile[i] > this.vmax) this.vmax = profile[i];
   }
   // devolve {steer, throttle, brake}
   drive(dt, cars, playerProg, boost) {
@@ -76,6 +76,13 @@ export class AIDriver {
     if (v > vt * 1.015 && v - vt < 1.5) { brake = 0; throttle = 0; }
     // recuperacao se estiver parado
     if (v < 1.5 && !r.finished) { this.stuck = (this.stuck || 0) + dt; } else this.stuck = 0;
-    return { steer, throttle, brake, stuck: this.stuck > 3.5 };
+    // turbo: so em reta longa e com carga
+    let nitro = false;
+    if (!brake && throttle > 0.5 && r.nitroF != null) {
+      const far = (r.idx + Math.round(v * 1.8 / ds)) % n;
+      if (this.prof[far] >= this.vmax * 0.97 && Math.abs(steer) < 0.25) { if (r.nitroF > 0.35 || (this.nit && r.nitroF > 0.05)) nitro = true; }
+    }
+    this.nit = nitro;
+    return { steer, throttle, brake, nitro, stuck: this.stuck > 3.5 };
   }
 }

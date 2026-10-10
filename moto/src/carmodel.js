@@ -109,7 +109,8 @@ export function makeCar(o) {
   });
   g.traverse(m => { if (m.isMesh) m.castShadow = true; });
   var api = {
-    group: g, body, wheels: [rw, fwl], lean: true, leanK: 8,
+    group: g, body, rider, wheels: [rw, fwl], lean: true, leanK: 8,
+    setLean(a) { body.rotation.z = a; rider.rotation.z = a * 0.28; },
     setBrake(on) { brakeMat.emissiveIntensity = on ? 3.5 : 0.5; },
     spin(dist) { rw.spin.rotation.x += dist / RR; fwl.spin.rotation.x += dist / RF; },
     steer(a) { fork.rotation.y = a * 0.7; },

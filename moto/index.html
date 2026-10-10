@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#0a0d14">
+<meta name="theme-color" content="#06131a">
 <title>TURBO MOTO: Campeonato de Corrida de Moto 3D | Falzinho Games</title>
 <meta name="description" content="TURBO MOTO, jogo de corrida de moto 3D no navegador com carreira, 8 equipes, 16 motos, 14 circuitos, chuva, box com troca de pneus e pinturas. Crie seu piloto, evolua o carro e dispute o campeonato. Joga com teclado, controle (joystick) ou toque no celular.">
 <link rel="canonical" href="https://falzinhogames.com.br/moto/">
@@ -13,10 +13,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Figtree:wght@400;600;700&display=swap">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
 <style>
-:root{--bg:#090b12;--surface:#141824;--line:#2a3150;--fg:#f2f5ff;--muted:#9ba6c8;--red:#ff3b30;--gold:#ffc83d;--blue:#4ab3ff;--gutter:16px;--font-body:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--font-hud:'Rajdhani','Figtree',system-ui,sans-serif;--u:1}
+:root{--bg:#06121a;--surface:#0f1f27;--line:#21464f;--fg:#f2f5ff;--muted:#9ba6c8;--red:#ff8a00;--gold:#ffc83d;--blue:#00e5c8;--gutter:16px;--font-body:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--font-hud:'Rajdhani','Figtree',system-ui,sans-serif;--u:1}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;min-height:100vh;background:radial-gradient(900px 500px at 50% -10%,#2a1630 0%,#090b12 65%) fixed,var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.55;padding-inline:var(--gutter);-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:radial-gradient(900px 500px at 50% -10%,#124037 0%,#06121a 65%) fixed,var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.55;padding-inline:var(--gutter);-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 a{color:inherit}
 .bar{max-width:1200px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
@@ -44,9 +44,9 @@ main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
 .panel.right{left:auto;right:2.5%}
 h2.t{margin:0 0 calc(var(--u)*10px);font-size:calc(var(--u)*30px);letter-spacing:2px;text-transform:uppercase;font-weight:700}
 .sub{color:var(--muted);font-size:calc(var(--u)*17px);margin-bottom:calc(var(--u)*10px)}
-.big-logo{background:linear-gradient(180deg,#fff 30%,#ff8a80);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:calc(var(--u)*96px);font-weight:700;letter-spacing:calc(var(--u)*14px);line-height:1;text-shadow:0 0 30px rgba(255,59,48,.55);margin-bottom:calc(var(--u)*2px)}
+.big-logo{background:linear-gradient(180deg,#fff 30%,#c6ff3d);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:calc(var(--u)*96px);font-weight:700;letter-spacing:calc(var(--u)*14px);line-height:1;text-shadow:0 0 30px rgba(255,138,0,.55);margin-bottom:calc(var(--u)*2px)}
 .btn{transition:transform .12s,border-color .12s,box-shadow .12s;display:block;width:100%;min-height:max(34px,calc(var(--u)*46px));margin:calc(var(--u)*7px) 0;padding:0 calc(var(--u)*16px);background:linear-gradient(180deg,rgba(44,52,86,.92),rgba(24,30,52,.92));color:#fff;border:2px solid #36406d;border-radius:calc(var(--u)*8px);font:700 calc(var(--u)*20px)/1 var(--font-hud);letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;text-align:center}
-.btn.primary{background:linear-gradient(180deg,#ff4a3f,#c9211a);border-color:#ff8077}
+.btn.primary{background:linear-gradient(180deg,#ffb02e,#e06a00);border-color:#ffd08a}
 .btn.small{display:inline-block;width:auto;min-height:max(30px,calc(var(--u)*38px));font-size:calc(var(--u)*16px);margin-right:calc(var(--u)*6px)}
 .btn:hover,.btn.focus,.btn:focus-visible,.nav:focus-visible,.nav.focus{outline:0;border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,200,61,.45),0 0 18px rgba(255,200,61,.3);transform:translateY(-1px)}
 .btn[disabled]{opacity:.4;pointer-events:none}
@@ -65,7 +65,7 @@ input.txt:focus,input.txt.focus{border-color:var(--gold)}
 .sw button:hover,.sw button.focus,.sw button:focus-visible{outline:0;box-shadow:0 0 0 3px var(--gold)}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*8px)}
 .card{position:relative;text-align:left;background:rgba(24,29,48,.92);border:2px solid #2f3860;border-radius:calc(var(--u)*8px);padding:calc(var(--u)*8px) calc(var(--u)*10px);color:#fff;cursor:pointer;font-family:var(--font-hud);outline:0;min-height:calc(var(--u)*74px)}
-.card.sel{border-color:var(--red);background:rgba(60,24,28,.92)}
+.card.sel{border-color:var(--red);background:rgba(52,34,10,.92)}
 .card:hover,.card.focus,.card:focus-visible{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,200,61,.4)}
 .card b{display:block;font-size:calc(var(--u)*17px);line-height:1.1}
 .card small{color:var(--muted);font-size:calc(var(--u)*13px)}
@@ -74,15 +74,15 @@ input.txt:focus,input.txt.focus{border-color:var(--gold)}
 .dot{display:inline-block;width:.7em;height:.7em;border-radius:50%;margin-right:.4em;vertical-align:middle}
 .bars{display:grid;grid-template-columns:auto 1fr;gap:2px calc(var(--u)*8px);font-size:calc(var(--u)*13px);color:var(--muted);margin-top:4px}
 .bar2{height:calc(var(--u)*6px);background:#222844;border-radius:4px;align-self:center;overflow:hidden}
-.bar2 i{display:block;height:100%;background:linear-gradient(90deg,#4ab3ff,#7fe0ff)}
+.bar2 i{display:block;height:100%;background:linear-gradient(90deg,#00e5c8,#c6ff3d)}
 table.tb{width:100%;border-collapse:collapse;font-size:calc(var(--u)*17px)}
 table.tb th,table.tb td{padding:calc(var(--u)*4px) calc(var(--u)*6px);text-align:left;border-bottom:1px solid #222a48;white-space:nowrap}
 table.tb th{color:var(--muted);font-size:calc(var(--u)*13px);letter-spacing:1px;text-transform:uppercase}
-table.tb tr.me td{background:rgba(255,59,48,.22);font-weight:700}
+table.tb tr.me td{background:rgba(255,138,0,.22);font-weight:700}
 table.tb td.r,table.tb th.r{text-align:right}
 .tabs{display:flex;gap:calc(var(--u)*6px);margin-bottom:calc(var(--u)*8px);flex-wrap:wrap}
 .tabs .btn{margin:0;flex:1;min-height:max(30px,calc(var(--u)*38px));font-size:calc(var(--u)*15px)}
-.tabs .btn.sel{background:var(--red);border-color:#ff8077}
+.tabs .btn.sel{background:var(--red);border-color:#ffd08a}
 .pips{display:inline-flex;gap:3px}
 .pips i{width:calc(var(--u)*14px);height:calc(var(--u)*8px);background:#2a3150;border-radius:2px}
 .pips i.on{background:var(--gold)}
@@ -111,8 +111,12 @@ table.tb td.r,table.tb th.r{text-align:right}
 #hSpeed .u{font-size:calc(var(--u)*17px);color:#ddd;letter-spacing:2px}
 #rpm{display:flex;gap:2px;justify-content:center;margin:4px 0}
 #rpm i{width:calc(var(--u)*11px);height:calc(var(--u)*9px);background:rgba(255,255,255,.2);border-radius:2px;transform:skewX(-20deg)}
-#rpm i.on{background:#7be37b}#rpm i.on.y{background:#ffd23f}#rpm i.on.r{background:#ff3b30}
+#rpm i.on{background:#7be37b}#rpm i.on.y{background:#ffd23f}#rpm i.on.r{background:#ff8a00}
 #hGear{font-size:calc(var(--u)*28px);font-weight:700;color:var(--gold)}
+#hTurbo{right:2%;bottom:calc(var(--u)*92px);width:calc(var(--u)*130px);font-size:calc(var(--u)*13px);text-align:right;letter-spacing:2px;color:#7ffbe9;background:rgba(10,20,24,.55);padding:calc(var(--u)*6px) calc(var(--u)*10px);border-radius:10px;border-right:3px solid #00e5c8}
+#hTurbo .tb{height:calc(var(--u)*8px);background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;margin-top:3px}
+#hTurbo .tb i{display:block;height:100%;width:50%;background:linear-gradient(90deg,#00e5c8,#c6ff3d)}
+#hTurbo.on{box-shadow:0 0 18px #00e5c8;color:#fff}
 #hTyre{right:2%;bottom:calc(var(--u)*22px);width:calc(var(--u)*130px);font-size:calc(var(--u)*14px);text-align:right;letter-spacing:1px}
 #hTyre .tb{height:calc(var(--u)*8px);background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;margin-top:3px}
 #hTyre .tb i{display:block;height:100%;background:#7be37b;transition:width .2s}
@@ -140,7 +144,8 @@ table.tb td.r,table.tb th.r{text-align:right}
 #tL{left:2.5%;bottom:5%;width:calc(var(--u)*130px);height:calc(var(--u)*130px)}
 #tR{left:calc(2.5% + var(--u)*144px);bottom:5%;width:calc(var(--u)*130px);height:calc(var(--u)*130px)}
 #tG{right:2.5%;bottom:5%;width:calc(var(--u)*150px);height:calc(var(--u)*150px);background:rgba(60,200,90,.35);font-size:calc(var(--u)*22px);letter-spacing:1px}
-#tB{right:calc(2.5% + var(--u)*166px);bottom:5%;width:calc(var(--u)*110px);height:calc(var(--u)*110px);background:rgba(255,59,48,.35);font-size:calc(var(--u)*18px)}
+#tB{right:calc(2.5% + var(--u)*166px);bottom:5%;width:calc(var(--u)*110px);height:calc(var(--u)*110px);background:rgba(255,138,0,.35);font-size:calc(var(--u)*18px)}
+#tN{right:calc(2.5% + var(--u)*166px);bottom:calc(5% + var(--u)*124px);width:calc(var(--u)*96px);height:calc(var(--u)*96px);background:rgba(0,229,200,.38);font-size:calc(var(--u)*17px)}
 #tX{right:calc(2.5% + var(--u)*112px);top:calc(var(--u)*90px);width:calc(var(--u)*56px);height:calc(var(--u)*40px);font-size:calc(var(--u)*15px);border-radius:10px}
 #tP{right:2.5%;top:calc(var(--u)*90px);width:calc(var(--u)*46px);height:calc(var(--u)*40px);font-size:calc(var(--u)*20px);border-radius:10px}
 #tC{right:calc(2.5% + var(--u)*56px);top:calc(var(--u)*90px);width:calc(var(--u)*46px);height:calc(var(--u)*40px);font-size:calc(var(--u)*17px);border-radius:10px}
@@ -176,6 +181,7 @@ body.tv #tower{display:none}
       <canvas class="h" id="hMini" width="300" height="220"></canvas>
       <div class="h" id="hSpeed"><div id="rpm"></div><div class="n">0</div><div class="u">KM/H <span id="hGear">N</span></div></div>
       <div class="h" id="hFx"></div>
+      <div class="h" id="hTurbo">TURBO<div class="tb"><i></i></div></div>
       <div class="h" id="hTyre">PNEUS <b id="hCmp" class="s">LISO</b><div class="tb"><i></i></div></div>
       <div class="h" id="hWx" style="display:none"></div>
       <div class="h" id="hPit" style="display:none"></div>
@@ -186,6 +192,7 @@ body.tv #tower{display:none}
     <div id="touch" hidden>
       <button class="tbtn" id="tL" type="button" aria-label="Esquerda">&#9664;</button>
       <button class="tbtn" id="tR" type="button" aria-label="Direita">&#9654;</button>
+      <button class="tbtn" id="tN" type="button">TURBO</button>
       <button class="tbtn" id="tB" type="button">FREIO</button>
       <button class="tbtn" id="tG" type="button">ACELERA</button>
       <button class="tbtn" id="tC" type="button" aria-label="Camera">&#128247;</button>
@@ -206,6 +213,7 @@ body.tv #tower{display:none}
     <table>
       <tr><th>Ação</th><th>Teclado</th><th>Joystick</th><th>Toque</th></tr>
       <tr><td>Virar</td><td>Setas ou A / D</td><td>Analógico esquerdo ou direcional</td><td>Botões ◀ ▶ (ou inclinar o celular)</td></tr>
+      <tr><td>Turbo</td><td>Shift ou N</td><td>LB</td><td>Botão TURBO (ultrapasse para recarregar)</td></tr>
       <tr><td>Acelerar</td><td>Seta cima ou W</td><td>RT / R2 (ou A)</td><td>Botão ACELERA (ou modo automático)</td></tr>
       <tr><td>Frear</td><td>Seta baixo, S ou Espaço</td><td>LT / L2 (ou X / B)</td><td>Botão FREIO</td></tr>
       <tr><td>Trocar câmera</td><td>C</td><td>Y / triângulo</td><td>Botão da câmera</td></tr>

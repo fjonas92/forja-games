@@ -55,7 +55,7 @@ export function grassTex(c1, c2) {
 export function kerbTex() {
   const c = cv(64, 64), g = c.getContext('2d');
   g.fillStyle = '#e8e8e8'; g.fillRect(0, 0, 64, 64);
-  g.fillStyle = '#d3202b'; g.fillRect(0, 0, 64, 32);
+  g.fillStyle = '#ff8a00'; g.fillRect(0, 0, 64, 32);
   return mk(c);
 }
 
@@ -116,7 +116,7 @@ export function bannerTex(text) {
   g.fillStyle = '#101216'; g.fillRect(0, 0, 1024, 128);
   for (let y = 0; y < 2; y++) for (let x = 0; x < 64; x++) { g.fillStyle = (x + y) % 2 ? '#fff' : '#111'; g.fillRect(x * 16, y * 16 + (y ? 96 : 0), 16, 16); }
   g.font = '900 78px Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillStyle = '#ff3b30'; g.fillText(text, 512, 66);
+  g.fillStyle = '#ff8a00'; g.fillText(text, 512, 66);
   return mk(c, false);
 }
 

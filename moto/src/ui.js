@@ -234,7 +234,7 @@ export class UI {
       body = `<div class="sub">Créditos: <b class="gold">${c.credits}</b> · passe o cursor (ou foque) para ver na moto</div><div class="grid" style="grid-template-columns:repeat(2,1fr)">` + PAINTS.map(p => {
         const own = c.paints.includes(p.id), eq = cur === p.id;
         const act = eq ? '' : own ? `data-act="equip"` : (c.credits >= p.price ? `data-act="buyp"` : '');
-        const tag = eq ? '<span class="pill">EQUIPADA</span>' : own ? '<span class="pill">EQUIPAR</span>' : `<span class="pill" style="color:${c.credits >= p.price ? 'var(--gold)' : '#ff8077'}">${p.price} créditos</span>`;
+        const tag = eq ? '<span class="pill">EQUIPADA</span>' : own ? '<span class="pill">EQUIPAR</span>' : `<span class="pill" style="color:${c.credits >= p.price ? 'var(--gold)' : '#ffd08a'}">${p.price} créditos</span>`;
         return `<button class="card nav ${eq ? 'sel' : ''}" type="button" ${act} data-v="${p.id}" data-pp="${p.id}" data-id="pn${p.id}"><b>${p.name}</b><small>${tag}</small><canvas width="112" height="80" data-lv="${p.id}"></canvas></button>`;
       }).join('') + '</div>';
     }
@@ -306,7 +306,7 @@ export class UI {
       <div class="card" style="cursor:default;margin-bottom:8px"><b style="font-size:calc(var(--u)*22px)">${esc(ci.name)}</b><small><span class="dot" style="background:${THEMES[ci.theme].sky[0]}"></span>${ci.country} · ${(ci.len / 1000).toFixed(1)} km · ${a.settings.laps} voltas</small></div>
       <div class="row" style="margin-bottom:6px"><div><div class="lbl">Clima</div>${this.cyc('wx')}</div><div><div class="lbl">Pneus de largada</div>${this.cyc('ptyre')}</div></div>
       <div class="lbl">Número de voltas</div>${this.cyc('qlaps')}
-      <div class="sub">Previsão: <b class="gold">${esc(a.wxText(a.pre.wx))}</b>${a.pre.wx.r0 > 0.3 && a.pre.tyre === 'S' ? ' · <span style="color:#ff8077">pista molhada pede pneus de chuva</span>' : ''}</div>
+      <div class="sub">Previsão: <b class="gold">${esc(a.wxText(a.pre.wx))}</b>${a.pre.wx.r0 > 0.3 && a.pre.tyre === 'S' ? ' · <span style="color:#ffd08a">pista molhada pede pneus de chuva</span>' : ''}</div>
       <div class="sub">Quer fazer uma volta de classificação? Você corre sozinho na pista e o tempo define a sua posição de largada.</div>
       ${this.btn('qualify', 'Volta de classificação', 'primary', 'data-def')}${this.btn('direct', 'Largar direto (grid pela moto)')}${this.btn('back', 'Voltar')}</div>`;
   }
@@ -337,7 +337,7 @@ export class UI {
       g.clearRect(0, 0, W, H); g.lineWidth = 6; g.lineJoin = 'round'; g.strokeStyle = '#e8edff'; g.beginPath();
       for (let i = 0; i <= t.n; i += 3) { const k = i % t.n, px = ox + (t.x[k] - minx) * s, py = oz + (t.z[k] - minz) * s; i ? g.lineTo(px, py) : g.moveTo(px, py); }
       g.closePath(); g.stroke();
-      g.fillStyle = '#ff3b30'; g.beginPath(); g.arc(ox + (t.x[0] - minx) * s, oz + (t.z[0] - minz) * s, 6, 0, 7); g.fill();
+      g.fillStyle = '#ff8a00'; g.beginPath(); g.arc(ox + (t.x[0] - minx) * s, oz + (t.z[0] - minz) * s, 6, 0, 7); g.fill();
     }
   }
 }

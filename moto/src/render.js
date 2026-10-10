@@ -241,8 +241,17 @@ export class View {
       api.group.rotation.y = r.yaw - r.slipS * Math.sign(r.yawRate || 1) * 0.12;
       const i = r.idx, j = (i + 4) % t.n;
       const slope = Math.atan2(t.y[j] - t.y[i], 4 * t.ds);
-      api.body.rotation.x = r.pitch - slope;
-      api.body.rotation.z = -r.roll * (api.leanK || 1);
+      // inclinacao na curva: segue a aceleracao lateral (positivo = para a direita), com mola
+      const av = Math.abs(r.v);
+      const tl = Math.max(-1, Math.min(1, r.latAcc / 26)) * 0.78 * Math.min(1, av / 14) + 0.22 * r.leanS * Math.min(1, av / 25);
+      const lc = api.leanCur || 0, lv = api.leanVel || 0;
+      const lacc = (tl - lc) * 90 - lv * 13;
+      api.leanVel = lv + lacc * dt * (dt > 0 ? 1 : 0); api.leanCur = lc + api.leanVel * dt;
+      if (api.setLean) api.setLean(api.leanCur); else api.body.rotation.z = -r.roll;
+      // empina com o turbo e na saida de curva lenta
+      const wl = (r.boost || 0) * 0.16 * Math.min(1, av / 30);
+      api.wheelie = (api.wheelie || 0) + (wl - (api.wheelie || 0)) * Math.min(1, dt * 5);
+      api.body.rotation.x = r.pitch - slope - api.wheelie;
       api.body.position.y = r.surf === 1 ? Math.sin(performance.now() * 0.09 + r.number) * 0.012 * Math.min(1, r.v / 40) : 0;
       if (api._tyre !== r.tyre) { api._tyre = r.tyre; api.setTyre(TYRE_COL[r.tyre] || TYRE_COL.S); }
       api.spin(r.v * dt);
@@ -267,6 +276,15 @@ export class View {
             }
           }
         }
+      }
+      if (r.v > 20 && this._camDist(r) < 60) {
+        const fx = Math.sin(r.yaw), fz = Math.cos(r.yaw), lc = api.leanCur || 0;
+        if (Math.abs(lc) > 0.5 && Math.random() < 0.7) { // faiscas do joelho/pedaleira
+          const sd = Math.sign(lc), d = 0.55 + Math.abs(lc) * 0.3;
+          this.emit(r.x + (-fz) * sd * d, r.y + 0.08, r.z + fx * sd * d, (Math.random() - .5) * 3 - fx * 4, 0.8 + Math.random() * 1.5, (Math.random() - .5) * 3 - fz * 4, 0.3, 0.22, 1, 0.7, 0.2);
+        }
+        if ((r.boost || 0) > 0.4) for (let k = 0; k < 2; k++) // chama do turbo
+          this.emit(r.x - fx * 1.3, r.y + 0.42, r.z - fz * 1.3, -fx * (6 + Math.random() * 4) + (Math.random() - .5), 0.3 + Math.random() * 0.5, -fz * (6 + Math.random() * 4) + (Math.random() - .5), 0.22, 0.5, 0.2, 0.95, 0.9);
       }
       if (r.hit > 0.05) {
         for (let k = 0; k < 14; k++) this.emit(r.x, r.y + 0.5, r.z, (Math.random() - .5) * 14, Math.random() * 6, (Math.random() - .5) * 14, 0.45, 0.35, 1, 0.75, 0.3);
@@ -314,6 +332,8 @@ export class View {
     const sh = (r.surf >= 1 ? 0.012 * Math.min(1, v / 50) : 0) + Math.min(0.03, v * 0.00018) * (r.surf >= 1 ? 1 : 0.4) + (extra.shake || 0);
     cam.position.set(px + (Math.random() - .5) * sh, py + (Math.random() - .5) * sh, pz + (Math.random() - .5) * sh);
     cam.lookAt(lx, ly, lz);
+    if (mode !== 2 || true) { const rl = extra.roll || 0; this._camRoll = (this._camRoll || 0) + (rl - (this._camRoll || 0)) * Math.min(1, dt * 6); cam.rotateZ(this._camRoll); }
+    fov += (extra.fovAdd || 0);
     cam.fov += (fov - cam.fov) * Math.min(1, dt * 4); cam.updateProjectionMatrix();
     this.sky.position.copy(cam.position); this.sky.scale.setScalar(3000);
     // esconde o capacete do jogador no capo
@@ -329,19 +349,19 @@ export class View {
       floor.receiveShadow = true; g.add(floor);
       const plate = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 4.4, 0.18, 64), new THREE.MeshStandardMaterial({ color: 0x232733, roughness: 0.35, metalness: 0.7 }));
       plate.position.y = 0.09; plate.receiveShadow = true; g.add(plate);
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(4.3, 0.04, 8, 80).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xff3b30 })); ring.position.y = 0.19; g.add(ring);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(4.3, 0.04, 8, 80).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xff8a00 })); ring.position.y = 0.19; g.add(ring);
       for (let i = 0; i < 14; i++) {
         const a = (i / 14) * Math.PI * 2;
-        const bar = new THREE.Mesh(new THREE.BoxGeometry(0.25, 7, 0.25), new THREE.MeshBasicMaterial({ color: i % 2 ? 0x4ab3ff : 0xff5da2 }));
+        const bar = new THREE.Mesh(new THREE.BoxGeometry(0.25, 7, 0.25), new THREE.MeshBasicMaterial({ color: i % 2 ? 0x00e5c8 : 0xc6ff3d }));
         bar.position.set(Math.cos(a) * 18, 3.5, Math.sin(a) * 18); g.add(bar);
       }
-      const wallM = new THREE.Mesh(new THREE.CylinderGeometry(22, 22, 14, 48, 1, true), new THREE.MeshStandardMaterial({ color: 0x0c0e14, roughness: 0.9, side: THREE.BackSide }));
+      const wallM = new THREE.Mesh(new THREE.CylinderGeometry(22, 22, 14, 48, 1, true), new THREE.MeshStandardMaterial({ color: 0x081412, roughness: 0.9, side: THREE.BackSide }));
       wallM.position.y = 7; g.add(wallM);
       this._garage = { group: g, car: null, t: 0, sig: '' };
     }
     this.scene.add(this._garage.group);
     this.sky.visible = false; this.parts.visible = false;
-    this.scene.fog = null; this.scene.background = new THREE.Color(0x07090f);
+    this.scene.fog = null; this.scene.background = new THREE.Color(0x05100f);
     this.hemi.color.set(0xa8bcff); this.hemi.groundColor.set(0x2a2a38); this.hemi.intensity = 1.1;
     this.sun.color.set(0xfff0dc); this.sun.intensity = 2.8; this.sunDir.set(-0.4, 0.8, 0.5).normalize();
     this.followSun(0, 0, 0);
@@ -354,8 +374,8 @@ export class View {
     this.clearRace(); this.mode = 'podium'; this._hideGarage();
     const T = THREE, g = new T.Group(), std = (c, m = 0.3, ro = 0.45) => new T.MeshStandardMaterial({ color: c, metalness: m, roughness: ro });
     const floor = new T.Mesh(new T.CircleGeometry(40, 64).rotateX(-Math.PI / 2), std(0x14161d, 0.6, 0.28)); floor.receiveShadow = true; g.add(floor);
-    const wall = new T.Mesh(new T.CylinderGeometry(24, 24, 16, 48, 1, true), new T.MeshStandardMaterial({ color: 0x0c0e14, roughness: 0.9, side: T.BackSide })); wall.position.y = 8; g.add(wall);
-    for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2, bar = new T.Mesh(new T.BoxGeometry(0.25, 9, 0.25), new T.MeshBasicMaterial({ color: i % 2 ? 0x4ab3ff : 0xff5da2 })); bar.position.set(Math.cos(a) * 20, 4.5, Math.sin(a) * 20 - 2); g.add(bar); }
+    const wall = new T.Mesh(new T.CylinderGeometry(24, 24, 16, 48, 1, true), new T.MeshStandardMaterial({ color: 0x081412, roughness: 0.9, side: T.BackSide })); wall.position.y = 8; g.add(wall);
+    for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2, bar = new T.Mesh(new T.BoxGeometry(0.25, 9, 0.25), new T.MeshBasicMaterial({ color: i % 2 ? 0x00e5c8 : 0xc6ff3d })); bar.position.set(Math.cos(a) * 20, 4.5, Math.sin(a) * 20 - 2); g.add(bar); }
     const label = (txt, big) => { const cv = document.createElement('canvas'); cv.width = 512; cv.height = 128; const x = cv.getContext('2d'); x.font = '700 ' + (big ? 62 : 52) + 'px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 10; x.strokeStyle = 'rgba(0,0,0,.85)'; x.strokeText(txt, 256, 64); x.fillStyle = big ? '#ffd24a' : '#fff'; x.fillText(txt, 256, 64); const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; const s = new T.Sprite(new T.SpriteMaterial({ map: t, depthTest: false, transparent: true })); s.scale.set(3.2, 0.8, 1); s.renderOrder = 8; return s; };
     const steps = [{ x: 0, h: 1.3, col: 0xf2c200, n: '1' }, { x: -2.5, h: 0.9, col: 0xc3cad6, n: '2' }, { x: 2.5, h: 0.6, col: 0xcd7f32, n: '3' }];
     const figs = [];
@@ -399,7 +419,7 @@ export class View {
     this.scene.add(g);
     this._podium = { group: g, figs, t: 0, spot: new THREE.PointLight(0xffe2a0, 110, 40, 1.4) }; this._podium.spot.position.set(0, 6, 4); g.add(this._podium.spot);
     this.sky.visible = false; this.parts.visible = true;
-    this.scene.fog = null; this.scene.background = new THREE.Color(0x07090f);
+    this.scene.fog = null; this.scene.background = new THREE.Color(0x05100f);
     this.hemi.color.set(0xa8bcff); this.hemi.groundColor.set(0x2a2a38); this.hemi.intensity = 1.1;
     this.sun.color.set(0xfff0dc); this.sun.intensity = 2.6; this.sunDir.set(-0.4, 0.8, 0.6).normalize();
     this.followSun(0, 0, 0); this.renderer.toneMappingExposure = 1.05;

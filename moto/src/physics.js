@@ -33,7 +33,7 @@ export class Racer {
     this.wear = 1; this.surf = 0; this.wallCd = 0; this.hits = 0; this.slipS = 0; this.yawRate = 0;
     this.pitch = 0; this.roll = 0; this.brakeOn = false; this.out = 0; this.stuckT = 0; this.latAcc = 0; this.bump = 0;
     this.loc = { i: 0, lat: 0, along: 0, s: 0, y: 0 };
-    this.dmg = 0; this.tyre = 'S'; this.gm = 1; this.ghost = false; this.pit = null; this.pitReq = null; this.pull = 0; this.pitCount = 0;
+    this.leanS = 0; this.nitroF = 0.5; this.boost = 0; this.dmg = 0; this.tyre = 'S'; this.gm = 1; this.ghost = false; this.pit = null; this.pitReq = null; this.pull = 0; this.pitCount = 0;
     this.thr = 0; this.brk = 0; this.str = 0; this.accNow = 0;
   }
   place(track, s, lat) {
@@ -66,9 +66,13 @@ export function stepCar(r, inp, dt, track, slip = 0) {
   if (al > w + K) { kind = 2; sg = 0.6; }
   r.surf = kind;
   // aceleracao
-  const drag = DRAG0 * sp.drag * (1 - 0.28 * slip);
+  const drag = DRAG0 * sp.drag * (1 - 0.28 * slip) * (1 - 0.1 * (r.boost || 0));
   const gm = r.gm == null ? 1 : r.gm, dm = r.isPlayer ? (r.dmg || 0) : 0, af = 1 - 0.32 * dm;
-  let acc = thr * ACC * sp.power * (1 - 0.10 * dm) * (0.55 + 0.45 * gm) * (kind === 2 ? 0.6 : 1) - drag * v * Math.abs(v);
+  // turbo: gasta a barra, recarrega sozinho
+  let nb = 0;
+  if (inp.nitro && r.nitroF > 0.02 && thr > 0.05 && !(brk > 0.05)) { nb = 1; r.nitroF = Math.max(0, r.nitroF - dt * 0.26); } else r.nitroF = Math.min(1, r.nitroF + dt * 0.04);
+  r.boost += (nb - r.boost) * Math.min(1, dt * 8);
+  let acc = thr * ACC * sp.power * (1 + 0.45 * r.boost) * (1 - 0.10 * dm) * (0.55 + 0.45 * gm) * (kind === 2 ? 0.6 : 1) - drag * v * Math.abs(v);
   if (thr < 0.05 && brk < 0.05) acc -= 2.4 * Math.sign(v);
   let brakeLoad = 0;
   if (brk > 0.02) {
@@ -84,7 +88,9 @@ export function stepCar(r, inp, dt, track, slip = 0) {
   const geo = Math.max(av, 3) * TAN / L;
   const gf = gripForce(sp, av, r.wear, gm, af);
   const gn = 1.15 * gf / Math.max(av, 3);
-  const demand = inp.steer * Math.min(geo, gn);
+  // moto: a inclinacao (lean) vai atras do comando de forma progressiva, entrando e saindo da curva com suavidade
+  r.leanS += (inp.steer - r.leanS) * Math.min(1, dt * (10 - 4 * Math.min(1, av / 80)));
+  const demand = r.leanS * Math.min(geo, gn);
   const avail = gf * sg * (1 - 0.38 * brakeLoad) / Math.max(av, 3);
   let yr = Math.max(-avail, Math.min(avail, demand));
   const exc = Math.abs(demand) - avail;
