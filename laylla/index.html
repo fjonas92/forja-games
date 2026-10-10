@@ -52,7 +52,10 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
 .nodeBtn{cursor:pointer}
 #touch{position:absolute;inset:0;z-index:1;pointer-events:none;display:none}
 .touch #touch{display:block}
-#joy{position:absolute;left:14px;bottom:14px;width:126px;height:126px;border-radius:50%;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.55);pointer-events:auto;touch-action:none}
+#joyZone{position:absolute;left:0;top:22%;bottom:0;width:50%;pointer-events:auto;touch-action:none}
+#joy{position:absolute;left:14px;bottom:14px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.16);border:3px solid rgba(255,255,255,.5);pointer-events:none;touch-action:none;opacity:.6;transition:opacity .15s}
+#joy.on{opacity:1;background:rgba(255,255,255,.26)}
+#joy i{left:39px!important;top:39px!important}
 #joy i{position:absolute;left:37px;top:37px;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.7)}
 .tb{position:absolute;border-radius:50%;border:3px solid #fff;font:700 15px var(--font-body);pointer-events:auto;touch-action:none;color:#3a2a00}
 #bJ{right:16px;bottom:30px;width:86px;height:86px;background:rgba(255,210,60,.9)}
@@ -71,13 +74,13 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
     <canvas id="gl" aria-label="Jogo 3D da Laylla"></canvas>
     <div class="hud" id="hud" hidden><div class="g"><span class="p" id="hHp" style="color:#ff7f9f"></span><span class="p">💎 <span id="hGem">0</span></span><span class="p">⭐ <span id="hStar">0</span>/3</span></div><div class="g"><span class="p" id="hLv"></span><span class="p">Vidas x<span id="hLives">5</span></span><button class="btn" id="bPause" type="button" style="min-height:34px;padding:2px 12px;pointer-events:auto">II</button></div></div>
     <div id="flash"></div>
-    <div id="touch"><div id="joy"><i id="knob"></i></div><button class="tb" id="bS" type="button" aria-label="Giro">GIRO</button><button class="tb" id="bJ" type="button" aria-label="Pular">PULAR</button></div>
+    <div id="touch"><div id="joyZone"></div><div id="joy"><i id="knob"></i></div><button class="tb" id="bS" type="button" aria-label="Giro">GIRO</button><button class="tb" id="bJ" type="button" aria-label="Pular">PULAR</button></div>
     <div class="ov" id="ovTitle"><div class="box">
       <h1>LAYLLA</h1><p style="font-family:var(--font-display);color:#fff">e os Cristais</p>
       <p>Os quatro Cristais Solares caíram nas ilhas flutuantes. Ajude a Laylla a pular de ilha em ilha, vencer as gelinhas e trazer a luz de volta ao céu.</p>
       <div class="btns"><button class="btn primary" id="bPlay" type="button">Jogar</button><button class="btn" id="bNew" type="button">Novo jogo</button></div>
       <p id="saveInfo"></p><div id="acc2"></div>
-      <div class="help"><span><b>Teclado:</b> WASD ou setas andam · Espaço pula (aperte de novo no ar para pulo duplo) · Shift ou J dá o giro · Q e E giram a câmera · P pausa</span><span><b>Controle:</b> analógico esquerdo anda, A pula, X ou B dá o giro, analógico direito ou LB/RB giram a câmera, Start pausa</span><span><b>Celular:</b> joystick à esquerda, PULAR e GIRO à direita, arraste o dedo no cenário para girar a câmera</span><span>Pise nas gelinhas para derrotá-las. Pegue as 3 estrelas grandes de cada fase!</span></div>
+      <div class="help"><span><b>Teclado:</b> WASD ou setas andam · Espaço pula (aperte de novo no ar para pulo duplo) · Shift ou J dá o giro · Q e E giram a câmera · P pausa</span><span><b>Controle:</b> analógico esquerdo anda, A pula, X ou B dá o giro, analógico direito ou LB/RB giram a câmera, Start pausa</span><span><b>Celular:</b> encoste o dedo em qualquer lugar da metade esquerda para o joystick aparecer ali, PULAR e GIRO à direita, arraste o dedo na metade direita para girar a câmera</span><span>Pise nas gelinhas para derrotá-las. Pegue as 3 estrelas grandes de cada fase!</span></div>
     </div></div>
     <div id="map" hidden><h2>Mapa do Céu</h2><svg id="mapSvg" viewBox="0 0 800 340" role="group" aria-label="Mapa das fases"></svg><div id="mapInfo"></div><div style="margin-top:6px;display:flex;gap:8px"><button class="btn primary" id="bGo" type="button">Entrar na fase</button><button class="btn" id="bMapBack" type="button">Voltar</button></div></div>
     <div class="ov" id="ovPause" hidden><div class="box"><h2>Pausado</h2><div class="btns"><button class="btn primary" id="bResume" type="button">Continuar</button><button class="btn" id="bRetry" type="button">Reiniciar fase</button><button class="btn" id="bToMap" type="button">Mapa</button></div></div></div>
@@ -282,16 +285,20 @@ addEventListener('keydown', (e) => {
   keys[k] = true; if (k === ' ') jumpHeld = true;
 });
 addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); keys[k] = false; if (k === ' ') jumpHeld = false; });
-let jid = null; const jr = $('joy');
-function jmove(e) { const r = jr.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2; let dx = e.clientX - cx, dy = e.clientY - cy; const m = Math.hypot(dx, dy), lim = r.width / 2; if (m > lim) { dx *= lim / m; dy *= lim / m; } $('knob').style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; joy.x = Math.abs(dx) > 10 ? dx / lim : 0; joy.y = Math.abs(dy) > 10 ? -dy / lim : 0; }
-jr.addEventListener('pointerdown', (e) => { jid = e.pointerId; jr.setPointerCapture(jid); jmove(e); e.preventDefault(); });
-jr.addEventListener('pointermove', (e) => { if (e.pointerId === jid) jmove(e); });
-const jend = (e) => { if (e.pointerId === jid) { jid = null; joy.x = joy.y = 0; $('knob').style.transform = ''; } };
-jr.addEventListener('pointerup', jend); jr.addEventListener('pointercancel', jend);
+let jid = null; const jr = $('joy'), jz = $('joyZone'); let jc = null;
+function jmove(e) { const lim = jr.offsetWidth / 2; let dx = e.clientX - jc.x, dy = e.clientY - jc.y; const m = Math.hypot(dx, dy); if (m > lim) { dx *= lim / m; dy *= lim / m; } $('knob').style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; joy.x = Math.abs(dx) > 8 ? dx / lim : 0; joy.y = Math.abs(dy) > 8 ? -dy / lim : 0; }
+jz.addEventListener('pointerdown', (e) => {
+  if (jid !== null) return; jid = e.pointerId; jz.setPointerCapture(jid); const sr = stage.getBoundingClientRect(), half = jr.offsetWidth / 2;
+  const cx = Math.max(sr.left + half + 6, Math.min(sr.left + sr.width * 0.5 - half, e.clientX)), cy = Math.max(sr.top + half + 6, Math.min(sr.bottom - half - 6, e.clientY));
+  jc = { x: cx, y: cy }; jr.style.left = (cx - sr.left - half) + 'px'; jr.style.bottom = 'auto'; jr.style.top = (cy - sr.top - half) + 'px'; jr.classList.add('on'); jmove(e); e.preventDefault();
+});
+jz.addEventListener('pointermove', (e) => { if (e.pointerId === jid) jmove(e); });
+const jend = (e) => { if (e.pointerId === jid) { jid = null; joy.x = joy.y = 0; $('knob').style.transform = ''; jr.classList.remove('on'); jr.style.left = ''; jr.style.top = ''; jr.style.bottom = ''; } };
+jz.addEventListener('pointerup', jend); jz.addEventListener('pointercancel', jend);
 $('bJ').addEventListener('pointerdown', (e) => { e.preventDefault(); jumpEdge = true; jumpHeld = true; }); const jup = () => { jumpHeld = false; }; $('bJ').addEventListener('pointerup', jup); $('bJ').addEventListener('pointercancel', jup); $('bJ').addEventListener('pointerleave', jup);
 $('bS').addEventListener('pointerdown', (e) => { e.preventDefault(); spinEdge = true; });
 // camera por arrasto
-let drag = null; cvs.addEventListener('pointerdown', (e) => { if (mode !== 'play') return; drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; cvs.setPointerCapture(e.pointerId); });
+let drag = null; cvs.addEventListener('pointerdown', (e) => { if (mode !== 'play') return; if (isTouch && e.clientX < stage.getBoundingClientRect().left + stage.clientWidth * 0.5) return; drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; cvs.setPointerCapture(e.pointerId); });
 cvs.addEventListener('pointermove', (e) => { if (!drag || e.pointerId !== drag.id) return; camYaw -= (e.clientX - drag.x) * 0.008; camPitch = Math.max(0.15, Math.min(1.1, camPitch + (e.clientY - drag.y) * 0.004)); drag.x = e.clientX; drag.y = e.clientY; });
 const dend = (e) => { if (drag && e.pointerId === drag.id) drag = null; }; cvs.addEventListener('pointerup', dend); cvs.addEventListener('pointercancel', dend);
 
