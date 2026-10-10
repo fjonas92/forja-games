@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal, APEX (corrida 3D), Laylla (plataforma 3D), Corrida dos Heróis (corrida 3D), Minha Fazendinha, Pebolim, Palavras Cruzadas e Cartas (Truco, Blackjack e Poker).">
+<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal, APEX (corrida 3D), Laylla (plataforma 3D), Corrida dos Heróis (corrida 3D), Blocos Cristal 3D, Império da Fazenda 3D, Meu Escritório 3D, Minha Fazendinha, Pebolim, Palavras Cruzadas e Cartas (Truco, Blackjack e Poker).">
 <title>Falzinho Games</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,6 +163,15 @@ const GAMES = [
   { nome: "Corrida dos Heróis", genero: "Corrida infinita 3D · Aventura", status: "Jogue agora",
     texto: "Corra em 3D por 5 fases, desvie, pule e deslize, junte moedas e use o poder especial. Escolha entre Laylla, Palito Trovão, Super Bela e Super Cabeção. Teclado, controle ou toque.",
     url: "/corrida/", c1: "#1E50D8", c2: "#FFD400", arte: "corrida", pagina: "" },
+  { nome: "Blocos Cristal 3D", genero: "Quebra-cabeça 3D · Combos", status: "Jogue agora",
+    texto: "Arraste peças de cristal para o tabuleiro, complete linhas e colunas para explodir tudo e encadeie combos. Mouse ou toque, com recorde salvo e ranking.",
+    url: "/blocos/", c1: "#2A1A66", c2: "#FF4D6D", arte: "blocos", pagina: "" },
+  { nome: "Império da Fazenda 3D", genero: "Fazenda · Idle 3D", status: "Jogue agora",
+    texto: "Plante, colha, compre animais, contrate fazendeiros robôs e peça chuva. A fazenda continua rendendo enquanto você está fora, com progresso salvo na conta.",
+    url: "/fazenda3d/", c1: "#2F8F3A", c2: "#FFD23C", arte: "fazenda3d", pagina: "" },
+  { nome: "Meu Escritório 3D", genero: "Simulação 3D · Gerência", status: "Jogue agora",
+    texto: "Atenda visitantes, limpe a bagunça, apague incêndios, contrate funcionários e expanda o prédio alugando salas. Teclado, controle ou toque, com save na conta.",
+    url: "/escritorio/", c1: "#1F4E8C", c2: "#FFD23C", arte: "escritorio", pagina: "" },
   { nome: "Minha Fazendinha", genero: "Fazenda · Relaxante", status: "Jogue agora",
     texto: "Are a terra, plante, regue, colha e venda na loja. Cuide das galinhas, enfrente dias de chuva e salve sua fazenda na nuvem entrando na conta.",
     url: "/fazendinha/", c1: "#2F8A3D", c2: "#FFD23C", arte: "fazenda", pagina: "" },
@@ -296,6 +305,30 @@ const ARTES = {
     <g transform="translate(160 78)"><rect x="-17" y="0" width="34" height="30" fill="#2F6FD0"/><rect x="-17" y="-3" width="34" height="5" fill="#E8ECF2"/><rect x="-12" y="6" width="24" height="10" fill="#16233F"/><circle cx="-10" cy="24" r="3" fill="#FFF2A0"/><circle cx="10" cy="24" r="3" fill="#FFF2A0"/></g>
     <g fill="#FFD400" stroke="#C99A00" stroke-width="2"><circle cx="112" cy="124" r="6"/><circle cx="108" cy="146" r="8"/></g>
     <g transform="translate(176 150)"><path d="M-16 40L16 40L8 14L-8 14Z" fill="#FF5FA2"/><rect x="-8" y="4" width="16" height="14" rx="6" fill="#F6D2B5"/><circle cx="0" cy="-4" r="13" fill="#F6D2B5"/><path d="M-14 -4Q-14 -18 0 -18Q14 -18 14 -4L14 6L8 6L8 -6L-8 -6L-8 6L-14 6Z" fill="#14101A"/></g>
+  </svg>`
+  ,blocos: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#2A1A66"/><path d="M70 30L250 30L280 160L40 160Z" fill="#4A37A8"/>
+    <g stroke="#5E49C4" stroke-width="2"><path d="M100 30L90 160M130 30L130 160M160 30L170 160M190 30L210 160M220 30L250 160M60 70L260 70M52 110L268 110"/></g>
+    <g><rect x="92" y="108" width="34" height="30" rx="5" fill="#FF4D6D"/><rect x="128" y="108" width="34" height="30" rx="5" fill="#FF4D6D"/><rect x="164" y="108" width="34" height="30" rx="5" fill="#FFA62B"/><rect x="200" y="108" width="34" height="30" rx="5" fill="#FFE14A"/><rect x="128" y="72" width="34" height="30" rx="5" fill="#2FD0FF"/><rect x="164" y="72" width="34" height="30" rx="5" fill="#2FD0FF"/><rect x="164" y="36" width="34" height="30" rx="5" fill="#4CD964"/></g>
+    <g fill="#fff" opacity=".55"><circle cx="109" cy="123" r="8"/><circle cx="145" cy="123" r="8"/><circle cx="181" cy="123" r="8"/><circle cx="217" cy="123" r="8"/></g>
+    <g fill="#C060FF"><rect x="30" y="168" width="40" height="22" rx="4"/><rect x="74" y="168" width="22" height="22" rx="4"/><rect x="236" y="168" width="22" height="40" rx="4"/></g>
+  </svg>`
+  ,fazenda3d: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#8FD8FF"/><circle cx="270" cy="34" r="18" fill="#FFE066"/><rect y="86" width="320" height="114" fill="#7BD35A"/>
+    <rect x="22" y="48" width="74" height="52" fill="#D9382D"/><path d="M16 50L59 20L102 50Z" fill="#8A1F19"/><rect x="48" y="68" width="22" height="32" fill="#fff"/>
+    <g fill="#7A4A26"><path d="M120 120L190 120L196 146L112 146Z"/><path d="M204 120L274 120L284 146L198 146Z"/><path d="M104 152L184 152L192 184L92 184Z"/><path d="M200 152L284 152L296 184L208 184Z"/></g>
+    <g fill="#E8C547"><rect x="128" y="108" width="4" height="14"/><rect x="140" y="106" width="4" height="16"/><rect x="152" y="108" width="4" height="14"/><rect x="164" y="106" width="4" height="16"/></g>
+    <g fill="#EF4036"><circle cx="218" cy="116" r="5"/><circle cx="236" cy="114" r="5"/><circle cx="254" cy="116" r="5"/></g>
+    <g fill="#fff"><ellipse cx="60" cy="150" rx="12" ry="9"/><circle cx="72" cy="143" r="6"/></g><path d="M52 150h16" stroke="#222" stroke-width="4"/>
+  </svg>`
+  ,escritorio: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#BFE3FF"/><path d="M30 60L290 60L310 190L10 190Z" fill="#D6B98F"/><rect x="30" y="40" width="260" height="24" fill="#F1ECE2"/>
+    <g fill="#CAAD82"><path d="M70 60L110 60L100 190L40 190Z"/><path d="M150 60L190 60L195 190L125 190Z"/><path d="M230 60L270 60L290 190L230 190Z"/></g>
+    <rect x="70" y="100" width="110" height="26" fill="#E8D8B8"/><rect x="70" y="126" width="110" height="26" fill="#7A4A26"/>
+    <rect x="215" y="96" width="46" height="16" fill="#2F6FD0"/><rect x="262" y="96" width="28" height="16" fill="#2F6FD0"/>
+    <g transform="translate(125 58)"><rect x="-9" y="14" width="18" height="30" rx="7" fill="#D9473B"/><circle cx="0" cy="8" r="9" fill="#F6D2B5"/><path d="M-9 6Q0 -4 9 6Z" fill="#1A1A22"/></g>
+    <g transform="translate(205 130)"><rect x="-9" y="14" width="18" height="30" rx="7" fill="#FFD23C"/><circle cx="0" cy="8" r="9" fill="#F6D2B5"/><path d="M-9 6Q0 -4 9 6Z" fill="#5A3A22"/></g>
+    <path d="M40 40L80 40L60 12Z" fill="#FF7A1A"/><circle cx="270" cy="170" r="14" fill="#FFD23C"/><path d="M270 160l3 7 7 1-5 5 2 7-7-4-7 4 2-7-5-5 7-1z" fill="#fff"/>
   </svg>`
   ,fazenda: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <rect width="320" height="200" fill="#9BE0FF"/><circle cx="270" cy="38" r="20" fill="#FFE066"/>

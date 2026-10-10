@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blocos Cristal 3D | Falzinho Games</title>
+<meta name="description" content="Quebra-cabeça de blocos 3D grátis: arraste peças de cristal para o tabuleiro, complete linhas e colunas e faça combos. Mouse ou toque no celular, com save e ranking.">
+<link rel="canonical" href="https://falzinhogames.com.br/blocos/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
+<style>
+:root{--bg:#10306b;--sf:#1f4fa8;--ln:#5f9bff;--tx:#fffdf6;--mut:#cfe0ff;--gold:#ffd23c;--pink:#ff5fa2;--gt:16px;
+--font-display:'Bungee',Impact,sans-serif;--font-body:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--tx);font-family:var(--font-body);font-size:16px;line-height:1.5;padding-inline:var(--gt);background:radial-gradient(900px 500px at 50% -120px,rgba(255,210,60,.28),transparent 70%),var(--bg)}
+[hidden]{display:none!important}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px}
+.bar{max-width:1000px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.bar .back{text-decoration:none;color:var(--mut);font-weight:600;font-size:14px}
+.bar .logo{font-family:var(--font-display);font-size:16px;color:var(--gold);letter-spacing:1px}
+main{max-width:1000px;margin-inline:auto;padding-bottom:40px}
+#stage{position:relative;width:100%;aspect-ratio:16/9;max-height:82vh;border-radius:18px;overflow:hidden;border:3px solid var(--ln);background:#7fd0ff;touch-action:none;user-select:none;-webkit-user-select:none}
+@media (max-aspect-ratio:1/1){#stage{aspect-ratio:9/14;max-height:80vh}}
+#stage:fullscreen{max-height:none;aspect-ratio:auto;border-radius:0;border:0}
+canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;left:8px;right:8px;top:6px;display:flex;justify-content:space-between;gap:6px;pointer-events:none;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.4);flex-wrap:wrap}
+.hud .p{background:rgba(10,30,80,.55);border-radius:999px;padding:2px 11px;font-size:15px;white-space:nowrap}
+.hud .g{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#score{font-family:var(--font-display);font-size:clamp(18px,3.4vw,28px);background:none;padding:0;color:#fff}
+#meter{position:absolute;left:8px;bottom:8px;width:min(46%,260px);pointer-events:none}
+#meter .b{height:14px;background:rgba(10,30,80,.6);border:2px solid #fff;border-radius:999px;overflow:hidden}
+#meter .b i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd23c,#ff5fa2);transition:width .15s}
+#meter small{display:block;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.45);font-size:13px}
+#meter.rdy .b{box-shadow:0 0 12px 3px #ffd23c;animation:pl .7s infinite alternate}
+@keyframes pl{to{box-shadow:0 0 20px 7px #ff5fa2}}
+#spBtn{position:absolute;right:12px;bottom:12px;width:84px;height:84px;border-radius:50%;border:3px solid #fff;background:rgba(255,95,162,.85);color:#fff;font:700 13px var(--font-body);display:none;z-index:2}
+.touch #spBtn{display:block}
+#flash{position:absolute;left:0;right:0;top:24%;text-align:center;font-family:var(--font-display);font-size:clamp(20px,5vw,44px);color:var(--gold);text-shadow:0 4px 0 rgba(0,0,0,.4);pointer-events:none;opacity:0;transition:opacity .35s;padding:0 10px}
+#flash.on{opacity:1}
+.btn{font:inherit;font-weight:700;color:var(--tx);background:var(--sf);border:2px solid var(--ln);border-radius:12px;padding:8px 16px;cursor:pointer;min-height:44px}
+.btn:hover:not(:disabled){border-color:var(--gold)}
+.btn.primary{background:var(--gold);color:#3a2a00;border-color:var(--gold)}
+.ov{position:absolute;inset:0;background:rgba(10,25,70,.55);display:flex;align-items:center;justify-content:center;padding:10px;overflow:auto;z-index:3}
+.ov.sel{background:linear-gradient(transparent 40%,rgba(10,25,70,.85));align-items:flex-end}
+.box{background:linear-gradient(#3a72d4,#2b5cb0);border:3px solid var(--ln);border-radius:20px;padding:16px;max-width:520px;width:100%;text-align:center}
+.box h1,.box h2{font-family:var(--font-display);font-weight:400;margin:0 0 6px;color:var(--gold)}
+.box p{margin:5px 0;color:var(--mut)}
+.box .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.help{font-size:13px;text-align:left;color:var(--mut);margin-top:8px}
+.help span{display:block;margin:2px 0}
+.selbox{width:100%;max-width:640px;text-align:center;display:flex;gap:8px;align-items:center;justify-content:center}
+.selbox .mid{flex:1;background:rgba(15,40,100,.8);border:3px solid var(--ln);border-radius:16px;padding:8px 12px}
+.selbox h2{font-family:var(--font-display);font-weight:400;margin:0;color:var(--gold);font-size:clamp(18px,3vw,26px)}
+.selbox p{margin:2px 0;font-size:14px;color:var(--mut)}
+.arr{width:48px;height:48px;border-radius:50%;font-size:22px;padding:0}
+.tools{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.info{max-width:760px;margin:28px auto 0;color:var(--mut)}
+.info h2{color:var(--tx);font-size:20px}
+</style>
+<style>
+.hud2{position:absolute;left:8px;right:8px;top:6px;display:flex;justify-content:space-between;gap:6px;pointer-events:none;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.4);flex-wrap:wrap;z-index:2}
+.hud2 .p{background:rgba(10,30,80,.6);border-radius:999px;padding:2px 11px;font-size:15px;white-space:nowrap}
+.hud2 .g{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.panel{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(rgba(10,25,70,.0),rgba(10,25,70,.88) 28%);padding:18px 8px 8px;z-index:2}
+.tabs{display:flex;gap:4px;justify-content:center;margin-bottom:6px;flex-wrap:nowrap}
+.tabs .btn{min-height:34px;padding:2px 7px;font-size:12.5px;white-space:nowrap}
+.tabs .btn.on{background:var(--gold);color:#3a2a00;border-color:var(--gold)}
+.shop{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;-webkit-overflow-scrolling:touch}
+.card{flex:0 0 auto;min-width:122px;background:rgba(20,50,120,.92);border:2px solid var(--ln);border-radius:14px;padding:6px 10px;text-align:center;font-size:13px;color:var(--mut)}
+.card b{display:block;color:#fff;font-size:14px}
+.card .btn{min-height:32px;padding:1px 10px;font-size:13px;margin-top:4px;width:100%}
+.card.sel{border-color:var(--gold);box-shadow:0 0 10px rgba(255,210,60,.6)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.toast{position:absolute;left:50%;top:14%;transform:translateX(-50%);background:rgba(10,30,80,.85);border:2px solid var(--gold);border-radius:14px;padding:6px 14px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .3s;z-index:4;text-align:center}
+.toast.on{opacity:1}
+#joy{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;touch-action:none}
+#joyBase,#joyKnob{position:absolute;border-radius:50%;pointer-events:none;display:none;z-index:2}
+#joyBase{width:110px;height:110px;border:3px solid rgba(255,255,255,.7);background:rgba(255,255,255,.14)}
+#joyKnob{width:48px;height:48px;background:rgba(255,255,255,.75)}
+</style>
+</head>
+<body>
+<script src="/analytics.js"></script>
+<div class="bar"><a class="back" href="/">← Falzinho Games</a><span class="logo">BLOCOS CRISTAL 3D</span><span id="acc"></span></div>
+<main>
+  <div id="stage">
+    <canvas id="gl" aria-label="Tabuleiro de blocos 3D"></canvas>
+    <div class="hud2" id="hud" hidden><div class="g"><span class="p" id="hScore" style="font-family:var(--font-display);font-size:22px">0</span><span class="p">Recorde <span id="hBest">0</span></span></div><div class="g"><span class="p" id="hCombo">Combo x0</span><button class="btn" id="bNew" type="button" style="min-height:32px;padding:0 12px;pointer-events:auto">Novo jogo</button></div></div>
+    <div class="toast" id="toast"></div>
+    <div class="ov" id="ovTitle"><div class="box">
+      <h1>BLOCOS CRISTAL 3D</h1><p>Arraste as peças de cristal para o tabuleiro, complete linhas e colunas para explodir tudo e faça combos. O jogo acaba quando nenhuma peça couber.</p>
+      <div class="btns"><button class="btn primary" id="bPlay" type="button">Jogar</button><button class="btn" id="bRank" type="button">Ranking</button></div>
+      <p id="saveInfo"></p><div id="acc2"></div>
+      <div class="help"><span><b>Mouse ou dedo:</b> toque em uma peça embaixo e arraste até o tabuleiro. Solte para encaixar.</span><span><b>Pontos:</b> cada linha ou coluna cheia explode. Quanto mais seguidas, maior o combo.</span></div>
+    </div></div>
+    <div class="ov" id="ovOver" hidden><div class="box"><h2>Sem espaço!</h2><p id="oS" style="font-family:var(--font-display);font-size:30px;color:#fff"></p><p id="oD"></p><p id="oB"></p><p id="oR"></p><div class="btns"><button class="btn primary" id="bAgain" type="button">Jogar de novo</button><button class="btn" id="bRank2" type="button">Ranking</button></div></div></div>
+  </div>
+  <div class="tools"><button class="btn" id="bSnd" type="button">Som: ligado</button><button class="btn" id="bFull" type="button">Tela cheia</button></div>
+  <section class="info">
+    <h1 style="font-family:var(--font-display);font-weight:400;font-size:26px;margin:0 0 6px;color:var(--tx)">Quebra-cabeça de blocos 3D online e grátis</h1>
+    <p><strong>Blocos Cristal 3D</strong> é um quebra-cabeça de blocos em 3D no navegador. Arraste peças de cristal para um tabuleiro 8x8, preencha linhas e colunas inteiras para explodir os cristais e encadeie combos para a maior pontuação. Funciona com mouse ou com toque no celular, e o jogo atual fica salvo.</p>
+    <h2>Pontos do ranking</h2>
+    <p>Cada partida rende pontos pela pontuação final. Entrando na sua conta, o resultado vai para o ranking geral e o seu recorde e a partida em andamento ficam salvos na nuvem.</p>
+  </section>
+</main>
+<script src="/fg.js"></script>
+<script src="core.js"></script>
+<script type="module">
+import * as THREE from 'three';
+const $ = (i) => document.getElementById(i), stage = $('stage'), cvs = $('gl');
+if (matchMedia('(pointer:coarse)').matches) document.body.classList.add('touch');
+let snd = true, ac = null;
+function beep(f, d, ty, v, f2) { if (!snd) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.type = ty || 'sine'; o.frequency.setValueAtTime(f, ac.currentTime); if (f2) o.frequency.exponentialRampToValueAtTime(f2, ac.currentTime + d); g.gain.value = v || 0.05; g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d); } catch (e) { } }
+const seq = (fs, d, ty, v, gap) => fs.forEach((f, i) => setTimeout(() => beep(f, d, ty, v), i * (gap || 70)));
+$('bSnd').onclick = () => { snd = !snd; $('bSnd').textContent = 'Som: ' + (snd ? 'ligado' : 'desligado'); };
+$('bFull').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else if (stage.requestFullscreen) stage.requestFullscreen().catch(() => { }); };
+const renderer = new THREE.WebGLRenderer({ canvas: cvs, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75)); renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 300);
+let onResize = () => { };
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); onResize(w, h); }
+new ResizeObserver(resize).observe(stage);
+const grad = new THREE.DataTexture(new Uint8Array([120, 195, 255]), 3, 1, THREE.RedFormat); grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
+const toon = (c, e, o) => new THREE.MeshToonMaterial(Object.assign({ color: c, gradientMap: grad, emissive: e || 0 }, o || {}));
+const BOX = new THREE.BoxGeometry(1, 1, 1), CYL = new THREE.CylinderGeometry(1, 1, 1, 12), SPH = new THREE.SphereGeometry(1, 12, 10), CONE = new THREE.ConeGeometry(1, 1, 10);
+const mesh = (g, m, sx, sy, sz, x, y, z, par) => { const o = new THREE.Mesh(g, m); o.scale.set(sx, sy, sz); o.position.set(x || 0, y || 0, z || 0); if (par) par.add(o); return o; };
+function makeSave(key, game, def, onLoad) {
+  const S = Object.assign({ t: 0 }, def);
+  try { const s = JSON.parse(localStorage.getItem(key)); if (s && typeof s === 'object') Object.assign(S, s); } catch (e) { }
+  const save = () => { S.t = Date.now(); try { localStorage.setItem(key, JSON.stringify(S)); } catch (e) { } FG.schedulePush(() => S); };
+  FG.init(game); FG.mountBar($('acc')); if ($('acc2')) FG.mountBar($('acc2'));
+  FG.onLogin = async () => { const c = await FG.cloudLoad(); if (c && typeof c === 'object' && (c.t || 0) > (S.t || 0)) { Object.assign(S, c); try { localStorage.setItem(key, JSON.stringify(S)); } catch (e) { } if (onLoad) onLoad(S); } else FG.cloudSave(S); };
+  return { S, save };
+}
+function report(pts, el, win) {
+  pts = Math.max(0, Math.min(100, Math.floor(pts))); if (!el) return;
+  if (pts <= 0) { el.textContent = ''; return; }
+  if (FG.user) { el.textContent = 'Registrando no ranking...'; FG.report(pts, !!win).then((r) => { el.textContent = r && r.err ? 'Não consegui registrar agora (espere uns segundos entre partidas).' : '+' + pts + ' pontos no ranking geral!'; }); }
+  else { el.innerHTML = 'Entre na sua conta para registrar <b>' + pts + '</b> pontos no ranking. <button class="btn" id="bLg" type="button" style="min-height:34px;padding:2px 12px">Entrar</button>'; const b = el.querySelector('#bLg'); if (b) b.onclick = () => FG.openAuth('Entre na sua conta para salvar e entrar no ranking.'); }
+}
+let toastT = 0; function toast(t, ms) { const e = $('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('on'), ms || 1600); }
+
+const BL = window.Blocos, N = BL.N;
+const COL = [0xff4d6d, 0xffa62b, 0xffe14a, 0x4cd964, 0x2fd0ff, 0x6b7bff, 0xc060ff];
+const sv = makeSave('fg_blocos', 'blocos', { best: 0, games: 0, lines: 0, bestCombo: 0, cur: null }, () => { info(); });
+const S = sv.S;
+function info() { $('saveInfo').textContent = S.games ? 'Recorde: ' + S.best + ' pontos · ' + S.games + ' partida(s)' : 'Nenhuma partida ainda.'; $('bPlay').textContent = S.cur ? 'Continuar' : 'Jogar'; }
+info(); $('bRank').onclick = $('bRank2').onclick = () => FG.showRanking('Ranking do Blocos Cristal 3D');
+
+scene.background = new THREE.Color(0x2a1a66); scene.fog = new THREE.Fog(0x2a1a66, 24, 60);
+scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x5a3a9a, 1.25)); const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-6, 14, 8); scene.add(sun);
+const TARGET = new THREE.Vector3(0, 0, 2.3);
+onResize = (w, h) => { const a = w / h, t = Math.tan(camera.fov * Math.PI / 360); const dist = Math.max(6.5 / t, 6.4 / (a * t)); const dir = new THREE.Vector3(0, 0.86, 0.5).normalize(); camera.position.copy(TARGET).addScaledVector(dir, dist); camera.lookAt(TARGET); };
+// base do tabuleiro
+const base = mesh(BOX, toon(0x3b2a8c), 9, 0.5, 9, 0, -0.35, 0, scene), rim = mesh(BOX, toon(0x6f58e0), 9.5, 0.3, 9.5, 0, -0.62, 0, scene);
+const cellM = [toon(0x4a37a8), toon(0x5642bb)];
+for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) mesh(BOX, cellM[(r + c) & 1], 0.98, 0.06, 0.98, c - 3.5, -0.08, r - 3.5, scene);
+const bar = mesh(BOX, toon(0x2f2370), 11.6, 0.2, 2.9, 0, -0.2, 6.6, scene);
+// gemas
+const gemMats = COL.map((c) => toon(c, c, { emissiveIntensity: 0.28 })), topMats = COL.map((c) => toon(new THREE.Color(c).lerp(new THREE.Color(0xffffff), 0.35), c, { emissiveIntensity: 0.4 }));
+function gem(ci) { const g = new THREE.Group(); mesh(BOX, gemMats[ci], 0.92, 0.55, 0.92, 0, 0.27, 0, g); const t = mesh(CONE, topMats[ci], 0.42, 0.42, 0.42, 0, 0.78, 0, g); t.geometry = t.geometry; t.rotation.y = Math.PI / 4; t.userData.top = 1; g.userData.ci = ci; return g; }
+const boardG = new THREE.Group(); scene.add(boardG); const cells = [];
+for (let r = 0; r < N; r++) { cells.push([]); for (let c = 0; c < N; c++) cells[r].push(null); }
+function setCell(r, c, ci) { if (cells[r][c]) { boardG.remove(cells[r][c]); cells[r][c] = null; } if (ci >= 0) { const g = gem(ci); g.position.set(c - 3.5, 0, r - 3.5); boardG.add(g); cells[r][c] = g; } }
+function syncBoard() { for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) setCell(r, c, G.board[r][c] ? G.board[r][c] - 1 : -1); }
+// bandeja
+const SLOT = [-3.7, 0, 3.7], TZ = 6.6, TS = 0.62; const trayG = [new THREE.Group(), new THREE.Group(), new THREE.Group()]; trayG.forEach((g) => scene.add(g));
+function buildPiece(slot) {
+  const g = trayG[slot]; while (g.children.length) g.remove(g.children[0]); const p = G.tray[slot]; g.visible = !!p; if (!p) return;
+  const s = p.shape; s.cells.forEach((q) => { const m = gem(p.color); m.position.set(q[1] - (s.wd - 1) / 2, 0, q[0] - (s.h - 1) / 2); g.add(m); });
+  g.userData.home = new THREE.Vector3(SLOT[slot], 0.1, TZ); g.position.copy(g.userData.home); g.scale.setScalar(TS); g.userData.s = TS; g.userData.drag = false;
+}
+// fantasma
+const ghost = new THREE.Group(); scene.add(ghost); const ghMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.38, depthWrite: false });
+const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false }); const hl = new THREE.Group(); scene.add(hl);
+function showGhost(slot, r, c, ok) {
+  while (ghost.children.length) ghost.remove(ghost.children[0]); while (hl.children.length) hl.remove(hl.children[0]); if (!ok) return;
+  const p = G.tray[slot]; p.shape.cells.forEach((q) => mesh(BOX, ghMat, 0.9, 0.1, 0.9, c + q[1] - 3.5, 0.06, r + q[0] - 3.5, ghost));
+  const tmp = G.board.map((x) => x.slice()); p.shape.cells.forEach((q) => { tmp[r + q[0]][c + q[1]] = 1; });
+  for (let i = 0; i < N; i++) { let fr = true, fc = true; for (let j = 0; j < N; j++) { if (!tmp[i][j]) fr = false; if (!tmp[j][i]) fc = false; } if (fr) for (let j = 0; j < N; j++) mesh(BOX, lineMat, 0.96, 0.12, 0.96, j - 3.5, 0.08, i - 3.5, hl); if (fc) for (let j = 0; j < N; j++) mesh(BOX, lineMat, 0.96, 0.12, 0.96, i - 3.5, 0.08, j - 3.5, hl); }
+}
+// particulas
+const parts = []; const pg = new THREE.SphereGeometry(0.1, 6, 5);
+function burst(x, z, ci, n) { for (let i = 0; i < n; i++) { const m = new THREE.Mesh(pg, new THREE.MeshBasicMaterial({ color: COL[ci], transparent: true })); m.position.set(x, 0.5, z); const a = Math.random() * 6.28, sp = 2 + Math.random() * 4; parts.push({ m, vx: Math.cos(a) * sp, vy: 3 + Math.random() * 4, vz: Math.sin(a) * sp, t: 0.7 + Math.random() * 0.4 }); scene.add(m); } }
+const dying = [];
+// jogo
+let G = new BL.Game(), playing = false, drag = null, shake = 0;
+function hud() { $('hScore').textContent = G.score; $('hBest').textContent = Math.max(S.best, G.score); $('hCombo').textContent = 'Combo x' + G.combo; }
+function syncAll() { syncBoard(); for (let i = 0; i < 3; i++) buildPiece(i); hud(); }
+function newGame() { G = new BL.Game(); S.cur = null; syncAll(); }
+function startPlay(cont) { if (cont && S.cur && G.load(S.cur) && !G.over) { } else G = new BL.Game(); syncAll(); playing = true; $('ovTitle').hidden = true; $('ovOver').hidden = true; $('hud').hidden = false; }
+$('bPlay').onclick = () => startPlay(true);
+$('bNew').onclick = () => { if (G.moves > 3 && !G.over) { finish(true); } else { S.cur = null; sv.save(); } startPlay(false); };
+$('bAgain').onclick = () => startPlay(false);
+function finish(silent) {
+  playing = false; const sc = G.score; S.games++; S.lines += G.lines; S.bestCombo = Math.max(S.bestCombo, G.bestCombo); const nb = sc > S.best; if (nb) S.best = sc; S.cur = null; sv.save(); info();
+  if (silent) return;
+  $('oS').textContent = sc + ' pontos'; $('oD').textContent = G.lines + ' linhas · melhor combo x' + G.bestCombo + ' · ' + G.moves + ' jogadas'; $('oB').textContent = nb ? 'Novo recorde!' : 'Recorde: ' + S.best; $('oR').textContent = ''; $('ovOver').hidden = false; report(sc / 40, $('oR'), nb); seq([392, 330, 262, 196], .2, 'sawtooth', .05, 140);
+}
+// entrada
+const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), pt = new THREE.Vector3(), nd = new THREE.Vector2();
+function world(e) { const rc = cvs.getBoundingClientRect(); nd.set(((e.clientX - rc.left) / rc.width) * 2 - 1, -((e.clientY - rc.top) / rc.height) * 2 + 1); ray.setFromCamera(nd, camera); return ray.ray.intersectPlane(plane, pt) ? pt : null; }
+const touchOff = () => (document.body.classList.contains('touch') ? 2.1 : 0.9);
+cvs.addEventListener('pointerdown', (e) => {
+  if (!playing || drag) return; const w = world(e); if (!w) return; let best = -1, bd = 3.2;
+  for (let i = 0; i < 3; i++) { if (!G.tray[i]) continue; const d = Math.hypot(w.x - SLOT[i], (w.z - TZ) * 0.8); if (d < bd) { bd = d; best = i; } }
+  if (best < 0 || w.z < 3.9) return; cvs.setPointerCapture(e.pointerId); drag = { slot: best, id: e.pointerId, r: -1, c: -1, ok: false }; trayG[best].userData.drag = true; trayG[best].userData.s = 1; beep(520, .06, 'triangle', .04); move(e);
+});
+function move(e) {
+  if (!drag) return; const w = world(e); if (!w) return; const g = trayG[drag.slot], s = G.tray[drag.slot].shape;
+  const px = w.x, pz = w.z - touchOff(); g.userData.tx = px; g.userData.tz = pz;
+  const r = Math.round(pz + 3.5 - (s.h - 1) / 2), c = Math.round(px + 3.5 - (s.wd - 1) / 2); const ok = G.canPlace(s, r, c);
+  if (r !== drag.r || c !== drag.c || ok !== drag.ok) { drag.r = r; drag.c = c; drag.ok = ok; showGhost(drag.slot, r, c, ok); }
+}
+cvs.addEventListener('pointermove', (e) => { if (drag && e.pointerId === drag.id) move(e); });
+function drop(e) {
+  if (!drag || e.pointerId !== drag.id) return; const d = drag; drag = null; const g = trayG[d.slot]; showGhost(d.slot, 0, 0, false); g.userData.drag = false; g.userData.s = TS;
+  if (d.ok) doPlace(d.slot, d.r, d.c); else { g.userData.tx = undefined; beep(200, .1, 'sine', .04); }
+}
+cvs.addEventListener('pointerup', drop); cvs.addEventListener('pointercancel', drop);
+function doPlace(slot, r, c) {
+  const res = G.place(slot, r, c); if (!res) return;
+  res.placed.forEach((q) => setCell(q[0], q[1], q[2])); trayG[slot].visible = false; beep(440 + res.placed.length * 20, .08, 'triangle', .05);
+  if (res.cleared.length) {
+    res.cleared.forEach((q) => { const g = cells[q[0]][q[1]]; if (g) { cells[q[0]][q[1]] = null; dying.push({ g, t: 0 }); } burst(q[1] - 3.5, q[0] - 3.5, Math.max(0, q[2]), 4); });
+    shake = 0.25 + res.lines * 0.1; const t = res.perfect ? 'TABULEIRO LIMPO! +' + res.gained : (res.lines > 1 ? res.lines + ' linhas! ' : '') + (res.combo > 1 ? 'Combo x' + res.combo + ' ' : '') + '+' + res.gained; toast(t, 1400);
+    seq([523, 659, 784, 1046].slice(0, 2 + Math.min(2, res.combo)), .14, 'triangle', .06, 60 - 0);
+  }
+  hud(); S.cur = G.over ? null : G.save(); sv.save();
+  if (G.tray.every((p) => p)) for (let i = 0; i < 3; i++) buildPiece(i);
+  if (G.over) setTimeout(() => finish(false), 700);
+}
+// loop
+const clock = new THREE.Clock(); let T = 0;
+function frame() {
+  requestAnimationFrame(frame); const dt = Math.min(0.05, clock.getDelta()); T += dt;
+  for (let i = 0; i < 3; i++) { const g = trayG[i]; if (!g.visible) continue; const sc = g.scale.x + (g.userData.s - g.scale.x) * Math.min(1, dt * 14); g.scale.setScalar(sc);
+    if (g.userData.drag && g.userData.tx !== undefined) { g.position.x += (g.userData.tx - g.position.x) * Math.min(1, dt * 22); g.position.z += (g.userData.tz - g.position.z) * Math.min(1, dt * 22); g.position.y += (0.35 - g.position.y) * Math.min(1, dt * 14); }
+    else { const h = g.userData.home; if (h) { g.position.x += (h.x - g.position.x) * Math.min(1, dt * 12); g.position.z += (h.z - g.position.z) * Math.min(1, dt * 12); g.position.y += (h.y - g.position.y) * Math.min(1, dt * 12); } } }
+  for (let i = dying.length - 1; i >= 0; i--) { const d = dying[i]; d.t += dt * 3.2; const s = Math.max(0, 1 - d.t); d.g.scale.setScalar(s * (1 + d.t * 0.4)); d.g.position.y = d.t * 0.8; if (d.t >= 1) { boardG.remove(d.g); dying.splice(i, 1); } }
+  for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.t -= dt; p.vy -= 16 * dt; p.m.position.x += p.vx * dt; p.m.position.y += p.vy * dt; p.m.position.z += p.vz * dt; p.m.material.opacity = Math.max(0, p.t * 1.6); if (p.t <= 0) { scene.remove(p.m); p.m.material.dispose(); parts.splice(i, 1); } }
+  boardG.children.forEach((g) => { const t = g.children[1]; if (t) t.rotation.y = Math.PI / 4 + T * 0.8; });
+  if (shake > 0) { shake -= dt; camera.position.x += (Math.random() - 0.5) * shake * 0.5; }
+  else if (Math.abs(camera.position.x) > 0.001) camera.position.x *= 0.5;
+  renderer.render(scene, camera);
+}
+resize(); syncAll(); frame();
+window.__bl = { get G() { return G; }, get drag() { return drag; }, doPlace, startPlay, finish, scr: (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(camera), rc = cvs.getBoundingClientRect(); return [rc.left + (v.x + 1) / 2 * rc.width, rc.top + (1 - v.y) / 2 * rc.height]; } };
+
+</script>
+</body>
+</html>

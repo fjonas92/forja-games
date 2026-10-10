@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meu Escritório 3D | Falzinho Games</title>
+<meta name="description" content="Jogo de gerenciar escritório em 3D grátis: atenda visitantes, limpe, apague incêndios, contrate funcionários e alugue salas. Teclado, controle ou toque, com save e ranking.">
+<link rel="canonical" href="https://falzinhogames.com.br/escritorio/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
+<style>
+:root{--bg:#10306b;--sf:#1f4fa8;--ln:#5f9bff;--tx:#fffdf6;--mut:#cfe0ff;--gold:#ffd23c;--pink:#ff5fa2;--gt:16px;
+--font-display:'Bungee',Impact,sans-serif;--font-body:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--tx);font-family:var(--font-body);font-size:16px;line-height:1.5;padding-inline:var(--gt);background:radial-gradient(900px 500px at 50% -120px,rgba(255,210,60,.28),transparent 70%),var(--bg)}
+[hidden]{display:none!important}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px}
+.bar{max-width:1000px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.bar .back{text-decoration:none;color:var(--mut);font-weight:600;font-size:14px}
+.bar .logo{font-family:var(--font-display);font-size:16px;color:var(--gold);letter-spacing:1px}
+main{max-width:1000px;margin-inline:auto;padding-bottom:40px}
+#stage{position:relative;width:100%;aspect-ratio:16/9;max-height:82vh;border-radius:18px;overflow:hidden;border:3px solid var(--ln);background:#7fd0ff;touch-action:none;user-select:none;-webkit-user-select:none}
+@media (max-aspect-ratio:1/1){#stage{aspect-ratio:9/14;max-height:80vh}}
+#stage:fullscreen{max-height:none;aspect-ratio:auto;border-radius:0;border:0}
+canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;left:8px;right:8px;top:6px;display:flex;justify-content:space-between;gap:6px;pointer-events:none;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.4);flex-wrap:wrap}
+.hud .p{background:rgba(10,30,80,.55);border-radius:999px;padding:2px 11px;font-size:15px;white-space:nowrap}
+.hud .g{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#score{font-family:var(--font-display);font-size:clamp(18px,3.4vw,28px);background:none;padding:0;color:#fff}
+#meter{position:absolute;left:8px;bottom:8px;width:min(46%,260px);pointer-events:none}
+#meter .b{height:14px;background:rgba(10,30,80,.6);border:2px solid #fff;border-radius:999px;overflow:hidden}
+#meter .b i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd23c,#ff5fa2);transition:width .15s}
+#meter small{display:block;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.45);font-size:13px}
+#meter.rdy .b{box-shadow:0 0 12px 3px #ffd23c;animation:pl .7s infinite alternate}
+@keyframes pl{to{box-shadow:0 0 20px 7px #ff5fa2}}
+#spBtn{position:absolute;right:12px;bottom:12px;width:84px;height:84px;border-radius:50%;border:3px solid #fff;background:rgba(255,95,162,.85);color:#fff;font:700 13px var(--font-body);display:none;z-index:2}
+.touch #spBtn{display:block}
+#flash{position:absolute;left:0;right:0;top:24%;text-align:center;font-family:var(--font-display);font-size:clamp(20px,5vw,44px);color:var(--gold);text-shadow:0 4px 0 rgba(0,0,0,.4);pointer-events:none;opacity:0;transition:opacity .35s;padding:0 10px}
+#flash.on{opacity:1}
+.btn{font:inherit;font-weight:700;color:var(--tx);background:var(--sf);border:2px solid var(--ln);border-radius:12px;padding:8px 16px;cursor:pointer;min-height:44px}
+.btn:hover:not(:disabled){border-color:var(--gold)}
+.btn.primary{background:var(--gold);color:#3a2a00;border-color:var(--gold)}
+.ov{position:absolute;inset:0;background:rgba(10,25,70,.55);display:flex;align-items:center;justify-content:center;padding:10px;overflow:auto;z-index:3}
+.ov.sel{background:linear-gradient(transparent 40%,rgba(10,25,70,.85));align-items:flex-end}
+.box{background:linear-gradient(#3a72d4,#2b5cb0);border:3px solid var(--ln);border-radius:20px;padding:16px;max-width:520px;width:100%;text-align:center}
+.box h1,.box h2{font-family:var(--font-display);font-weight:400;margin:0 0 6px;color:var(--gold)}
+.box p{margin:5px 0;color:var(--mut)}
+.box .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.help{font-size:13px;text-align:left;color:var(--mut);margin-top:8px}
+.help span{display:block;margin:2px 0}
+.selbox{width:100%;max-width:640px;text-align:center;display:flex;gap:8px;align-items:center;justify-content:center}
+.selbox .mid{flex:1;background:rgba(15,40,100,.8);border:3px solid var(--ln);border-radius:16px;padding:8px 12px}
+.selbox h2{font-family:var(--font-display);font-weight:400;margin:0;color:var(--gold);font-size:clamp(18px,3vw,26px)}
+.selbox p{margin:2px 0;font-size:14px;color:var(--mut)}
+.arr{width:48px;height:48px;border-radius:50%;font-size:22px;padding:0}
+.tools{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.info{max-width:760px;margin:28px auto 0;color:var(--mut)}
+.info h2{color:var(--tx);font-size:20px}
+</style>
+<style>
+.hud2{position:absolute;left:8px;right:8px;top:6px;display:flex;justify-content:space-between;gap:6px;pointer-events:none;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.4);flex-wrap:wrap;z-index:2}
+.hud2 .p{background:rgba(10,30,80,.6);border-radius:999px;padding:2px 11px;font-size:15px;white-space:nowrap}
+.hud2 .g{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.panel{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(rgba(10,25,70,.0),rgba(10,25,70,.88) 28%);padding:18px 8px 8px;z-index:2}
+.tabs{display:flex;gap:4px;justify-content:center;margin-bottom:6px;flex-wrap:nowrap}
+.tabs .btn{min-height:34px;padding:2px 7px;font-size:12.5px;white-space:nowrap}
+.tabs .btn.on{background:var(--gold);color:#3a2a00;border-color:var(--gold)}
+.shop{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;-webkit-overflow-scrolling:touch}
+.card{flex:0 0 auto;min-width:122px;background:rgba(20,50,120,.92);border:2px solid var(--ln);border-radius:14px;padding:6px 10px;text-align:center;font-size:13px;color:var(--mut)}
+.card b{display:block;color:#fff;font-size:14px}
+.card .btn{min-height:32px;padding:1px 10px;font-size:13px;margin-top:4px;width:100%}
+.card.sel{border-color:var(--gold);box-shadow:0 0 10px rgba(255,210,60,.6)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.toast{position:absolute;left:50%;top:14%;transform:translateX(-50%);background:rgba(10,30,80,.85);border:2px solid var(--gold);border-radius:14px;padding:6px 14px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .3s;z-index:4;text-align:center}
+.toast.on{opacity:1}
+#joy{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;touch-action:none}
+#joyBase,#joyKnob{position:absolute;border-radius:50%;pointer-events:none;display:none;z-index:2}
+#joyBase{width:110px;height:110px;border:3px solid rgba(255,255,255,.7);background:rgba(255,255,255,.14)}
+#joyKnob{width:48px;height:48px;background:rgba(255,255,255,.75)}
+</style>
+</head>
+<body>
+<script src="/analytics.js"></script>
+<div class="bar"><a class="back" href="/">← Falzinho Games</a><span class="logo">MEU ESCRITÓRIO 3D</span><span id="acc"></span></div>
+<main>
+  <div id="stage">
+    <canvas id="gl" aria-label="Escritório 3D"></canvas>
+    <div id="joy"></div><div id="joyBase"></div><div id="joyKnob"></div>
+    <div class="hud2" id="hud" hidden><div class="g"><span class="p" id="hMoney" style="font-family:var(--font-display);font-size:20px">$0</span><span class="p" id="hStars">⭐ 0</span><span class="p" id="hLv">Nv 1</span></div><div class="g"><span class="p" id="hRent" hidden></span><button class="btn" id="bRank3" type="button" style="min-height:32px;padding:0 12px;pointer-events:auto">Ranking</button></div></div>
+    <div class="toast" id="toast"></div>
+    <div class="ov" id="ovTitle"><div class="box">
+      <h1>MEU ESCRITÓRIO 3D</h1><p>Atenda os visitantes na recepção, limpe a bagunça, apague incêndios, contrate funcionários e expanda o prédio para virar o melhor escritório da cidade.</p>
+      <div class="btns"><button class="btn primary" id="bPlay" type="button">Jogar</button><button class="btn" id="bRank" type="button">Ranking</button></div>
+      <p id="saveInfo"></p><div id="acc2"></div>
+      <div class="help"><span><b>Teclado:</b> W A S D ou setas para andar. <b>Controle:</b> analógico esquerdo. <b>Celular:</b> toque e arraste em qualquer lugar da tela.</span><span><b>Atender:</b> fique no círculo atrás do balcão para atender os visitantes. <b>Lixo:</b> encoste para limpar. <b>Fogo:</b> fique perto até apagar.</span><span><b>Comprar:</b> fique em cima de uma plaquinha no chão e o dinheiro vai sendo pago até completar.</span></div>
+    </div></div>
+  </div>
+  <div class="tools"><button class="btn" id="bSnd" type="button">Som: ligado</button><button class="btn" id="bFull" type="button">Tela cheia</button></div>
+  <section class="info">
+    <h1 style="font-family:var(--font-display);font-weight:400;font-size:26px;margin:0 0 6px;color:var(--tx)">Jogo de gerenciar escritório 3D online e grátis</h1>
+    <p><strong>Meu Escritório 3D</strong> é um jogo de simulação em 3D: você começa com uma recepção pequena, atende visitantes, limpa o que eles deixam para trás, apaga incêndios, contrata recepcionistas e faxineiros, abre novas salas de reunião e aluga salas para inquilinos. Cada visitante atendido rende dinheiro e estrelas. Funciona com teclado, controle e toque no celular, e o progresso fica salvo.</p>
+    <h2>Pontos do ranking</h2>
+    <p>As estrelas que você ganha viram pontos no ranking geral. Entrando na sua conta, o progresso do escritório fica salvo na nuvem.</p>
+  </section>
+</main>
+<script src="/fg.js"></script>
+<script src="core.js"></script>
+<script type="module">
+import * as THREE from 'three';
+const $ = (i) => document.getElementById(i), stage = $('stage'), cvs = $('gl');
+if (matchMedia('(pointer:coarse)').matches) document.body.classList.add('touch');
+let snd = true, ac = null;
+function beep(f, d, ty, v, f2) { if (!snd) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.type = ty || 'sine'; o.frequency.setValueAtTime(f, ac.currentTime); if (f2) o.frequency.exponentialRampToValueAtTime(f2, ac.currentTime + d); g.gain.value = v || 0.05; g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d); } catch (e) { } }
+const seq = (fs, d, ty, v, gap) => fs.forEach((f, i) => setTimeout(() => beep(f, d, ty, v), i * (gap || 70)));
+$('bSnd').onclick = () => { snd = !snd; $('bSnd').textContent = 'Som: ' + (snd ? 'ligado' : 'desligado'); };
+$('bFull').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else if (stage.requestFullscreen) stage.requestFullscreen().catch(() => { }); };
+const renderer = new THREE.WebGLRenderer({ canvas: cvs, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75)); renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 300);
+let onResize = () => { };
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); onResize(w, h); }
+new ResizeObserver(resize).observe(stage);
+const grad = new THREE.DataTexture(new Uint8Array([120, 195, 255]), 3, 1, THREE.RedFormat); grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
+const toon = (c, e, o) => new THREE.MeshToonMaterial(Object.assign({ color: c, gradientMap: grad, emissive: e || 0 }, o || {}));
+const BOX = new THREE.BoxGeometry(1, 1, 1), CYL = new THREE.CylinderGeometry(1, 1, 1, 12), SPH = new THREE.SphereGeometry(1, 12, 10), CONE = new THREE.ConeGeometry(1, 1, 10);
+const mesh = (g, m, sx, sy, sz, x, y, z, par) => { const o = new THREE.Mesh(g, m); o.scale.set(sx, sy, sz); o.position.set(x || 0, y || 0, z || 0); if (par) par.add(o); return o; };
+function makeSave(key, game, def, onLoad) {
+  const S = Object.assign({ t: 0 }, def);
+  try { const s = JSON.parse(localStorage.getItem(key)); if (s && typeof s === 'object') Object.assign(S, s); } catch (e) { }
+  const save = () => { S.t = Date.now(); try { localStorage.setItem(key, JSON.stringify(S)); } catch (e) { } FG.schedulePush(() => S); };
+  FG.init(game); FG.mountBar($('acc')); if ($('acc2')) FG.mountBar($('acc2'));
+  FG.onLogin = async () => { const c = await FG.cloudLoad(); if (c && typeof c === 'object' && (c.t || 0) > (S.t || 0)) { Object.assign(S, c); try { localStorage.setItem(key, JSON.stringify(S)); } catch (e) { } if (onLoad) onLoad(S); } else FG.cloudSave(S); };
+  return { S, save };
+}
+function report(pts, el, win) {
+  pts = Math.max(0, Math.min(100, Math.floor(pts))); if (!el) return;
+  if (pts <= 0) { el.textContent = ''; return; }
+  if (FG.user) { el.textContent = 'Registrando no ranking...'; FG.report(pts, !!win).then((r) => { el.textContent = r && r.err ? 'Não consegui registrar agora (espere uns segundos entre partidas).' : '+' + pts + ' pontos no ranking geral!'; }); }
+  else { el.innerHTML = 'Entre na sua conta para registrar <b>' + pts + '</b> pontos no ranking. <button class="btn" id="bLg" type="button" style="min-height:34px;padding:2px 12px">Entrar</button>'; const b = el.querySelector('#bLg'); if (b) b.onclick = () => FG.openAuth('Entre na sua conta para salvar e entrar no ranking.'); }
+}
+let toastT = 0; function toast(t, ms) { const e = $('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('on'), ms || 1600); }
+
+const O = window.Office, off = new O(); const sv = makeSave('fg_escritorio', 'escritorio', { o: null, bestStars: 0 }, (s) => { loadFrom(s); });
+const S = sv.S;
+function fmt(n) { n = Math.floor(n); if (n < 1e4) return String(n); const u = ['', 'K', 'M', 'B']; let i = 0, x = n; while (x >= 1000 && i < 3) { x /= 1000; i++; } return (x >= 100 ? x.toFixed(0) : x.toFixed(1)) + u[i]; }
+function loadFrom(s) { if (s && s.o) { const o = off.load(s.o); if (o !== false) { const g = off.offline(o); if (g > 0) toast('Os aluguéis renderam $' + fmt(g) + ' enquanto você estava fora', 3500); rebuild(); } } }
+function info() { $('saveInfo').textContent = S.o ? 'Escritório salvo: ' + S.o.s + ' estrelas · $' + fmt(S.o.m) : 'Nenhum escritório salvo ainda.'; $('bPlay').textContent = S.o ? 'Continuar' : 'Jogar'; }
+info(); $('bRank').onclick = $('bRank3').onclick = () => FG.showRanking('Ranking do Meu Escritório 3D');
+
+scene.background = new THREE.Color(0xbfe3ff); scene.fog = new THREE.Fog(0xbfe3ff, 40, 90);
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb9c4d6, 1.25)); const sun = new THREE.DirectionalLight(0xfff4de, 1.5); sun.position.set(-8, 20, 10); scene.add(sun);
+mesh(BOX, toon(0x9bd77c), 160, 1, 90, 0, -0.62, 0, scene); mesh(BOX, toon(0x6a6f7c), 14, 0.06, 7, 0, -0.1, 9, scene); // calcada/entrada
+const WALL = toon(0xf1ece2), WALLD = toon(0xc9c1b2), FLOOR = [toon(0xd6b98f), toon(0xcaad82)], FLOOR2 = [toon(0xb9c7d9), toon(0xaebdd1)];
+function room(r, fl, key) { const g = new THREE.Group(); for (let x = Math.ceil(r[0]); x < r[1]; x += 2) for (let z = Math.ceil(r[2] / 2) * 2; z < r[3]; z += 2) mesh(BOX, fl[((x + z) / 2 & 1)], 2, 0.1, 2, x + 1, -0.05, z + 1, g);
+  mesh(BOX, WALL, r[1] - r[0] + 0.4, 2.6, 0.3, (r[0] + r[1]) / 2, 1.3, r[2] - 0.15, g); mesh(BOX, WALLD, r[1] - r[0] + 0.4, 0.2, 0.4, (r[0] + r[1]) / 2, 2.65, r[2] - 0.15, g);
+  scene.add(g); return g; }
+const lobbyG = room(O.RECTS.lobby, FLOOR); const eastG = room(O.RECTS.east, FLOOR2), westG = room(O.RECTS.west, FLOOR2); eastG.visible = westG.visible = false;
+// paredes laterais e frente com porta
+const frontG = new THREE.Group(); scene.add(frontG); mesh(BOX, WALL, 7, 1.4, 0.3, -4.3, 0.7, 5.55, frontG); mesh(BOX, WALL, 7, 1.4, 0.3, 4.3, 0.7, 5.55, frontG); mesh(BOX, toon(0x5aa0d8, 0x2a5a8a, { transparent: true, opacity: 0.55 }), 1.6, 0.1, 0.3, 0, 1.5, 5.55, frontG); mesh(BOX, toon(0xe0a34a), 1.8, 0.08, 0.9, 0, 0.0, 5.9, frontG);
+const sideW = new THREE.Group(); scene.add(sideW); mesh(BOX, WALL, 0.3, 1.4, 3.9, -7.95, 0.7, -3.4, sideW); mesh(BOX, WALL, 0.3, 1.4, 3.9, -7.95, 0.7, 3.5, sideW); mesh(BOX, WALL, 0.3, 1.4, 3.9, 7.95, 0.7, -3.4, sideW); mesh(BOX, WALL, 0.3, 1.4, 3.9, 7.95, 0.7, 3.5, sideW);
+// moveis
+const desk = new THREE.Group(); mesh(BOX, toon(0x7a4a26), 4, 1, 0.9, 0, 0.5, 0, desk); mesh(BOX, toon(0xe8d8b8), 4.2, 0.1, 1.1, 0, 1.02, 0, desk); mesh(BOX, toon(0x2d3748), 0.8, 0.5, 0.05, 0.8, 1.35, 0.1, desk); desk.position.set(-3, 0, -0.4); scene.add(desk);
+const zoneRing = new THREE.Mesh(new THREE.RingGeometry(1.35, 1.7, 40), new THREE.MeshBasicMaterial({ color: 0xffd23c, transparent: true, opacity: 0.8, side: THREE.DoubleSide })); zoneRing.rotation.x = -Math.PI / 2; zoneRing.position.set(O.STAFF[0], 0.03, O.STAFF[1]); scene.add(zoneRing);
+const servBar = mesh(BOX, toon(0x4cd964, 0x4cd964), 1, 0.12, 0.2, 0, 1.9, 0, scene); servBar.visible = false;
+const chairObjs = O.CHAIRS.map((c) => { const g = new THREE.Group(); mesh(BOX, toon(0x2f6fd0), 0.7, 0.2, 0.7, 0, 0.45, 0, g); mesh(BOX, toon(0x2f6fd0), 0.7, 0.6, 0.15, 0, 0.8, 0.3, g); mesh(CYL, toon(0x444), 0.06, 0.4, 0.06, 0, 0.2, 0, g); g.position.set(c[0], 0, c[1]); g.visible = false; scene.add(g); return g; });
+const seatObjs = O.SEATS.map((c) => { const g = new THREE.Group(); mesh(BOX, toon(0xcfd8e3, 0x203040, { transparent: true, opacity: 0.5 }), 2.6, 1.6, 0.08, 0, 0.8, -0.9, g); mesh(BOX, toon(0x9b7a50), 1.5, 0.8, 0.8, 0, 0.4, -0.1, g); mesh(BOX, toon(0xe8d8b8), 1.6, 0.08, 0.9, 0, 0.82, -0.1, g); g.position.set(c[0], 0, c[1]); g.visible = false; scene.add(g); return g; });
+function plant(x, z) { const g = new THREE.Group(); mesh(CYL, toon(0xb5522c), 0.35, 0.5, 0.35, 0, 0.25, 0, g); mesh(SPH, toon(0x2fa84a), 0.45, 0.5, 0.45, 0, 0.8, 0, g); g.position.set(x, 0, z); scene.add(g); } plant(-7, 4.5); plant(7, 4.5); plant(-7, -4.5);
+// salas alugadas
+const rentObjs = {}; [['alu1', 12.5, 'A'], ['alu2', 20, 'B'], ['alu3', -12.5, 'C'], ['alu4', -20, 'D']].forEach((q) => { const g = new THREE.Group(); const cols = [0x3a6ea5, 0x8a5aa5, 0x4aa56a, 0xd07a3a]; for (let i = 0; i < 3; i++) { mesh(BOX, toon(0x9b7a50), 1.8, 0.8, 0.9, -2 + i * 2, 0.4, -2.8, g); mesh(BOX, toon(0x2d3748), 0.8, 0.5, 0.05, -2 + i * 2, 1.2, -2.9, g); mesh(BOX, toon(0x2f6fd0), 0.6, 0.6, 0.6, -2 + i * 2, 0.4, -1.6, g); } const sign = textSprite('Sala ' + q[2], 2.6, 0.9); sign.position.set(0, 2.2, -3.5); g.add(sign); g.position.set(q[1], 0, 0); g.visible = false; scene.add(g); rentObjs[q[0]] = g; });
+function textSprite(txt, w, h, bg) { const c = document.createElement('canvas'); c.width = 320; c.height = 120; const g = c.getContext('2d'); g.fillStyle = bg || 'rgba(30,40,70,.92)'; g.beginPath(); g.roundRect(4, 4, 312, 112, 26); g.fill(); g.strokeStyle = '#ffd23c'; g.lineWidth = 6; g.stroke(); g.fillStyle = '#fff'; let fs = 44; g.font = '700 ' + fs + 'px Space Grotesk, Arial'; while (g.measureText(txt).width > 290 && fs > 18) { fs -= 2; g.font = '700 ' + fs + 'px Space Grotesk, Arial'; } g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 160, 62); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false })); sp.scale.set(w, h, 1); sp.renderOrder = 10; return sp; }
+// personagens
+const SKIN = [0xf6d2b5, 0xe8b88f, 0xc68e63, 0x8d5a3b], SUIT = [0x2f6fd0, 0xd9473b, 0x2fa36b, 0x8a5aa5, 0xe39a2e, 0x444b5a], HAIR = [0x1a1a22, 0x5a3a22, 0xd9a64a, 0x7a2a22];
+function person(k, suit, hairless) { const g = new THREE.Group(); const sk = toon(SKIN[k % 4]); mesh(CYL, toon(suit), 0.3, 0.7, 0.2, 0, 0.55, 0, g); mesh(SPH, sk, 0.22, 0.22, 0.22, 0, 1.14, 0, g); mesh(SPH, toon(HAIR[(k * 3) % 4]), 0.24, 0.16, 0.24, 0, 1.24, -0.03, g); [[-0.1, 1], [0.1, 1]].forEach((q) => mesh(SPH, new THREE.MeshBasicMaterial({ color: 0x222222 }), 0.03, 0.03, 0.03, q[0], 1.16, 0.19, g)); const l1 = mesh(CYL, toon(0x2d3748), 0.09, 0.3, 0.09, -0.1, 0.15, 0, g), l2 = mesh(CYL, toon(0x2d3748), 0.09, 0.3, 0.09, 0.1, 0.15, 0, g); g.userData.legs = [l1, l2]; return g; }
+const pl = person(0, 0xffffff); pl.children[0].material = toon(0xffd23c); scene.add(pl); const ring = new THREE.Mesh(new THREE.RingGeometry(0.4, 0.5, 24), new THREE.MeshBasicMaterial({ color: 0xffd23c, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.04; pl.add(ring);
+const visM = new Map(), cleanM = [], messM = new Map(); let fireM = null, beacon = null;
+function trashMesh(k) { const g = new THREE.Group(); if (k === 0) mesh(BOX, toon(0xf4f4f4), 0.3, 0.05, 0.3, 0, 0.03, 0, g).rotation.y = 0.6; else if (k === 1) mesh(CYL, toon(0xd9473b), 0.12, 0.3, 0.12, 0, 0.15, 0, g); else mesh(SPH, toon(0x7a5a2a), 0.22, 0.1, 0.22, 0, 0.06, 0, g); return g; }
+// pads
+const padObjs = []; for (let i = 0; i < 4; i++) { const g = new THREE.Group(); const base = mesh(BOX, toon(0x4cd964, 0x1c7a30, { emissiveIntensity: 0.5 }), 2, 0.08, 1.8, 0, 0.04, 0, g); const bar = mesh(BOX, toon(0xffd23c, 0xffb400), 1.8, 0.1, 0.18, 0, 0.12, 0.7, g); const lab = textSprite('x', 2.4, 0.9); lab.position.set(0, 1.5, 0); g.add(lab); g.userData = { base, bar, lab, txt: '' }; g.visible = false; scene.add(g); padObjs.push(g); }
+function rebuild() {
+  chairObjs.forEach((c, i) => { c.visible = i < off.nChairs(); }); seatObjs.forEach((c, i) => { c.visible = i < off.nSeats(); });
+  eastG.visible = off.has('ala_e'); westG.visible = off.has('ala_o'); for (const k in rentObjs) rentObjs[k].visible = off.has(k);
+  recepObjs.forEach((r, i) => { r.visible = i < off.nRecep(); });
+  const rn = off.rent(); $('hRent').hidden = !rn; $('hRent').textContent = '🏢 +$' + fmt(rn) + '/s';
+  const sc = off.has('ala_e') || off.has('ala_o'); sideW.visible = !sc;
+}
+const recepObjs = [0, 1].map((i) => { const g = person(i + 1, 0xd9473b); g.position.set(-4.2 + i * 2.4, 0, -1.9); g.rotation.y = Math.PI; scene.add(g); g.visible = false; return g; });
+// camera
+let camT = new THREE.Vector3(0, 0, 0); const camOff = new THREE.Vector3(0, 13.5, 9.5);
+onResize = (w, h) => { const por = w / h < 0.8; camera.fov = por ? 50 : 42; camOff.set(0, por ? 18 : 13.5, por ? 12.5 : 9.5); camera.updateProjectionMatrix(); };
+// entrada
+const keys = {}; addEventListener('keydown', (e) => { const k = e.key.toLowerCase(); if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k) && playing) e.preventDefault(); keys[k] = true; }); addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; }); addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+let joy = { on: false, id: -1, x0: 0, y0: 0, x: 0, z: 0 };
+const jz = $('joy'), jb = $('joyBase'), jk = $('joyKnob');
+cvs.addEventListener('pointerdown', (e) => { if (!playing || e.pointerType === 'mouse' || joy.on) return; const r = stage.getBoundingClientRect(); joy = { on: true, id: e.pointerId, x0: e.clientX, y0: e.clientY, x: 0, z: 0 }; jb.style.display = jk.style.display = 'block'; jb.style.left = (e.clientX - r.left - 55) + 'px'; jb.style.top = (e.clientY - r.top - 55) + 'px'; jk.style.left = (e.clientX - r.left - 24) + 'px'; jk.style.top = (e.clientY - r.top - 24) + 'px'; cvs.setPointerCapture(e.pointerId); });
+cvs.addEventListener('pointermove', (e) => { if (!joy.on || e.pointerId !== joy.id) return; let dx = e.clientX - joy.x0, dy = e.clientY - joy.y0; const l = Math.hypot(dx, dy), m = 48; if (l > m) { dx = dx / l * m; dy = dy / l * m; } joy.x = dx / m; joy.z = dy / m; const r = stage.getBoundingClientRect(); jk.style.left = (joy.x0 - r.left + dx - 24) + 'px'; jk.style.top = (joy.y0 - r.top + dy - 24) + 'px'; });
+const joyEnd = (e) => { if (!joy.on || e.pointerId !== joy.id) return; joy = { on: false, id: -1, x0: 0, y0: 0, x: 0, z: 0 }; jb.style.display = jk.style.display = 'none'; }; cvs.addEventListener('pointerup', joyEnd); cvs.addEventListener('pointercancel', joyEnd);
+function gp() { try { const p = (navigator.getGamepads ? navigator.getGamepads() : [])[0]; if (!p) return [0, 0]; let x = p.axes[0] || 0, z = p.axes[1] || 0; if (p.buttons[14] && p.buttons[14].pressed) x = -1; if (p.buttons[15] && p.buttons[15].pressed) x = 1; if (p.buttons[12] && p.buttons[12].pressed) z = -1; if (p.buttons[13] && p.buttons[13].pressed) z = 1; return Math.hypot(x, z) < 0.2 ? [0, 0] : [x, z]; } catch (e) { return [0, 0]; } }
+// jogo
+let playing = false; function persist() { S.o = off.save(); S.bestStars = Math.max(S.bestStars, off.stars); sv.save(); }
+$('bPlay').onclick = () => { playing = true; $('ovTitle').hidden = true; $('hud').hidden = false; beep(520, .1, 'triangle', .05); };
+setInterval(() => { if (playing) persist(); }, 8000); document.addEventListener('visibilitychange', () => { if (document.hidden) persist(); }); addEventListener('pagehide', persist);
+setInterval(() => { if (off.pend >= 1 && FG.user) { const pts = Math.min(100, Math.floor(off.pend)); FG.report(pts, true).then((r) => { if (r && !r.err) { off.pend -= pts; toast('+' + pts + ' pontos no ranking!', 1800); persist(); } }); } }, 25000);
+if (S.o) loadFrom(S); rebuild();
+const floats = []; const pv = new THREE.Vector3(); function pop(x, z, txt, col) { const d = document.createElement('div'); d.textContent = txt; d.style.cssText = 'position:absolute;pointer-events:none;font:700 18px Space Grotesk,sans-serif;color:' + col + ';text-shadow:0 2px 0 rgba(0,0,0,.55);z-index:4'; stage.appendChild(d); floats.push({ d, x, z, t: 0 }); }
+const clock = new THREE.Clock(); let T = 0;
+function frame() {
+  requestAnimationFrame(frame); const dt = Math.min(0.06, clock.getDelta()); T += dt;
+  if (playing) {
+    let ix = (keys['d'] || keys['arrowright'] ? 1 : 0) - (keys['a'] || keys['arrowleft'] ? 1 : 0), iz = (keys['s'] || keys['arrowdown'] ? 1 : 0) - (keys['w'] || keys['arrowup'] ? 1 : 0); const g = gp(); if (!ix && !iz) { ix = g[0]; iz = g[1]; } if (!ix && !iz) { ix = joy.x; iz = joy.z; }
+    off.input(ix, iz); off.step(dt);
+    for (const e of off.ev) { if (e.t === 'pay') { pop(e.x, e.z, '+$' + fmt(e.v), '#ffe066'); beep(988, .07, 'triangle', .05); } else if (e.t === 'clean') { beep(600, .05, 'sine', .04); } else if (e.t === 'buy') { rebuild(); seq([523, 659, 784, 1046], .12, 'triangle', .06, 70); toast('Comprado!', 1200); persist(); } else if (e.t === 'level') { toast('Nível ' + e.lv + '! Mais visitantes e mais dinheiro', 2500); seq([523, 659, 784, 1046, 1318], .18, 'triangle', .07, 100); } else if (e.t === 'fire') { toast('🔥 Incêndio! Corra e apague', 2500); beep(200, .4, 'sawtooth', .06, 400); } else if (e.t === 'fireout') { toast('Fogo apagado! +3 estrelas +$' + e.v, 2000); seq([660, 880, 1100], .1, 'triangle', .06, 60); } else if (e.t === 'firelost') { toast('O fogo causou prejuízo de $' + fmt(e.v), 2500); beep(120, .5, 'sawtooth', .07, 50); } else if (e.t === 'angry') { pop(off.p.x, off.p.z - 1, '😡', '#fff'); beep(180, .2, 'square', .04); } else if (e.t === 'star' && e.n === 1) beep(1200, .05, 'sine', .03); }
+    off.ev.length = 0;
+  }
+  // jogador
+  pl.position.set(off.p.x, 0, off.p.z); const mvv = Math.hypot(off.mv.x, off.mv.z); if (mvv > 0.1) { pl.rotation.y = Math.atan2(off.mv.x, off.mv.z); pl.userData.legs[0].rotation.x = Math.sin(T * 12) * 0.7; pl.userData.legs[1].rotation.x = -Math.sin(T * 12) * 0.7; } else { pl.userData.legs[0].rotation.x = pl.userData.legs[1].rotation.x = 0; }
+  // visitantes
+  const alive = new Set(); off.vis.forEach((v) => { alive.add(v.id); let m = visM.get(v.id); if (!m) { m = person(v.look, SUIT[v.look % 6]); scene.add(m); visM.set(v.id, m); } const dx = v.tx - v.x, dz = v.tz - v.z; m.position.set(v.x, v.st === 'meet' || (v.st === 'wait' && v.arr && v.chair >= 0) ? 0.08 : 0, v.z); if (Math.hypot(dx, dz) > 0.05) { m.rotation.y = Math.atan2(dx, dz); m.userData.legs[0].rotation.x = Math.sin(T * 10) * 0.6; m.userData.legs[1].rotation.x = -Math.sin(T * 10) * 0.6; } else { m.rotation.y = v.st === 'wait' ? Math.PI : m.rotation.y; m.userData.legs[0].rotation.x = m.userData.legs[1].rotation.x = 0; } m.children[1].material.color.setHex(v.st === 'angry' ? 0xff6b6b : SKIN[v.look % 4]); });
+  visM.forEach((m, id) => { if (!alive.has(id)) { scene.remove(m); visM.delete(id); } });
+  // faxineiros
+  while (cleanM.length < off.cleaners.length) { const c = person(2, 0x2fa36b); scene.add(c); cleanM.push(c); } off.cleaners.forEach((c, i) => { cleanM[i].position.set(c.x, 0, c.z); if (c.tgt) cleanM[i].rotation.y = Math.atan2(c.tgt.x - c.x, c.tgt.z - c.z); cleanM[i].userData.legs[0].rotation.x = c.tgt ? Math.sin(T * 12) * 0.6 : 0; });
+  // sujeira
+  const ml = new Set(); off.mess.forEach((m) => { ml.add(m.id); if (!messM.has(m.id)) { const t = trashMesh(m.k); t.position.set(m.x, 0, m.z); scene.add(t); messM.set(m.id, t); } }); messM.forEach((t, id) => { if (!ml.has(id)) { scene.remove(t); messM.delete(id); } });
+  // fogo
+  if (off.fire) { if (!fireM) { fireM = new THREE.Group(); for (let i = 0; i < 3; i++) mesh(CONE, new THREE.MeshBasicMaterial({ color: [0xff4a1a, 0xff9a1a, 0xffd23c][i] }), 0.5 - i * 0.12, 1.1 - i * 0.2, 0.5 - i * 0.12, 0, 0.55, 0, fireM); beacon = mesh(CYL, new THREE.MeshBasicMaterial({ color: 0xff4a1a, transparent: true, opacity: 0.25 }), 0.9, 8, 0.9, 0, 4, 0, fireM); scene.add(fireM); } fireM.position.set(off.fire.x, 0, off.fire.z); fireM.children.forEach((c, i) => { c.scale.y = (1.1 - i * 0.2) * (1 + Math.sin(T * 14 + i) * 0.18) * (1 - off.fire.prog * 0.6); }); }
+  else if (fireM) { scene.remove(fireM); fireM = null; }
+  // balcao
+  const sv2 = off.serving; servBar.visible = !!sv2; if (sv2) { servBar.position.set(DESK_X(), 1.9, O.DESK[1]); servBar.scale.x = Math.max(0.01, off.serveP * 1.5); }
+  function DESK_X() { return O.DESK[0] - 0.75 + off.serveP * 0.75; }
+  zoneRing.material.opacity = 0.5 + Math.sin(T * 4) * 0.3;
+  // pads
+  const vp = off.visiblePads(), lv = off.level(); padObjs.forEach((g, i) => { const pd = vp[i]; g.visible = !!pd; if (!pd) return; const pp = O.padPos(i); g.position.set(pp[0], 0, pp[1]); const paid = off.paid[pd.id] || 0, ok = lv >= pd.lv; const txt = ok ? pd.n + ' $' + fmt(pd.cost - paid) : pd.n + ' (Nv ' + pd.lv + ')'; if (g.userData.txt !== txt) { g.userData.txt = txt; const ns = textSprite(txt, 3.4, 1.0, ok ? undefined : 'rgba(90,40,40,.92)'); ns.position.set(0, 1.5, 0); g.remove(g.userData.lab); g.userData.lab = ns; g.add(ns); } g.userData.base.material.color.setHex(ok ? 0x4cd964 : 0xb04a4a); g.userData.bar.scale.x = Math.max(0.01, 1.8 * (paid / pd.cost)); g.userData.bar.position.x = -0.9 + g.userData.bar.scale.x / 2; });
+  // camera
+  camT.lerp(new THREE.Vector3(off.p.x, 0, off.p.z), Math.min(1, dt * 4)); camera.position.copy(camT).add(camOff); camera.lookAt(camT.x, 0, camT.z - 0.5);
+  // hud
+  const l0 = off.level(); $('hMoney').textContent = '$' + fmt(off.money); $('hStars').textContent = '⭐ ' + off.stars; $('hLv').textContent = 'Nv ' + l0 + (l0 < O.LV.length ? ' · próx ' + O.LV[l0] : '');
+  // floats
+  for (let i = floats.length - 1; i >= 0; i--) { const f = floats[i]; f.t += dt; pv.set(f.x, 1.8 + f.t * 0.8, f.z).project(camera); const rc = cvs.getBoundingClientRect(), sr = stage.getBoundingClientRect(); f.d.style.left = (rc.left - sr.left + (pv.x + 1) / 2 * rc.width - 20) + 'px'; f.d.style.top = (rc.top - sr.top + (1 - pv.y) / 2 * rc.height) + 'px'; f.d.style.opacity = String(Math.max(0, 1 - f.t / 1.2)); if (f.t > 1.2) { f.d.remove(); floats.splice(i, 1); } }
+  renderer.render(scene, camera);
+}
+resize(); frame();
+window.__of = { off, get playing() { return playing; }, rebuild };
+
+</script>
+</body>
+</html>
