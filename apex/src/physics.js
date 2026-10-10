@@ -17,6 +17,12 @@ export function makeSpec(team, upg = {}, wing = 0) {
   };
 }
 
+// aderencia do composto conforme a umidade da pista (0 seco .. 1 encharcado). S = liso, W = chuva
+export function tyreGm(tyre, wet) {
+  if (tyre === 'W') return 0.90 + 0.08 * Math.min(1, wet / 0.5);
+  return 1 - 0.34 * wet;
+}
+
 export class Racer {
   constructor(def, spec) {
     Object.assign(this, def);
@@ -27,6 +33,7 @@ export class Racer {
     this.wear = 1; this.surf = 0; this.wallCd = 0; this.hits = 0; this.slipS = 0; this.yawRate = 0;
     this.pitch = 0; this.roll = 0; this.brakeOn = false; this.out = 0; this.stuckT = 0; this.latAcc = 0; this.bump = 0;
     this.loc = { i: 0, lat: 0, along: 0, s: 0, y: 0 };
+    this.dmg = 0; this.tyre = 'S'; this.gm = 1; this.ghost = false; this.pit = null; this.pitReq = null; this.pull = 0; this.pitCount = 0;
     this.thr = 0; this.brk = 0; this.str = 0; this.accNow = 0;
   }
   place(track, s, lat) {
@@ -40,10 +47,10 @@ export class Racer {
 }
 
 export function topSpeed(spec) { return Math.sqrt(ACC * spec.power / (DRAG0 * spec.drag)); }
-export function gripForce(spec, v, wear = 1) { return G_BASE * spec.grip * (0.78 + 0.22 * wear) + K_AERO * spec.aero * v * v; }
-export function yawCap(spec, v, wear = 1) {
+export function gripForce(spec, v, wear = 1, gm = 1, af = 1) { return G_BASE * spec.grip * (0.78 + 0.22 * wear) * gm + K_AERO * spec.aero * af * v * v; }
+export function yawCap(spec, v, wear = 1, gm = 1) {
   const sv = Math.max(v, 3);
-  return Math.min(sv * TAN / L, 1.15 * gripForce(spec, sv, wear) / sv);
+  return Math.min(sv * TAN / L, 1.15 * gripForce(spec, sv, wear, gm) / sv);
 }
 export function brakeDecel(spec) { return (38 + 8 * spec.aero) * spec.brake; }
 
@@ -60,11 +67,12 @@ export function stepCar(r, inp, dt, track, slip = 0) {
   r.surf = kind;
   // aceleracao
   const drag = DRAG0 * sp.drag * (1 - 0.28 * slip);
-  let acc = thr * ACC * sp.power * (kind === 2 ? 0.6 : 1) - drag * v * Math.abs(v);
+  const gm = r.gm == null ? 1 : r.gm, dm = r.isPlayer ? (r.dmg || 0) : 0, af = 1 - 0.32 * dm;
+  let acc = thr * ACC * sp.power * (1 - 0.10 * dm) * (0.55 + 0.45 * gm) * (kind === 2 ? 0.6 : 1) - drag * v * Math.abs(v);
   if (thr < 0.05 && brk < 0.05) acc -= 2.4 * Math.sign(v);
   let brakeLoad = 0;
   if (brk > 0.02) {
-    if (v > 0.5) { acc -= brk * brakeDecel(sp) * (kind === 2 ? 0.7 : 1); brakeLoad = brk * Math.min(1, v / 40); }
+    if (v > 0.5) { acc -= brk * brakeDecel(sp) * (0.4 + 0.6 * gm) * (kind === 2 ? 0.7 : 1); brakeLoad = brk * Math.min(1, v / 40); }
     else if (thr < 0.05) acc = -brk * 7; // re
   }
   v += acc * dt;
@@ -74,7 +82,7 @@ export function stepCar(r, inp, dt, track, slip = 0) {
   // direcao
   const av = Math.abs(v);
   const geo = Math.max(av, 3) * TAN / L;
-  const gf = gripForce(sp, av, r.wear);
+  const gf = gripForce(sp, av, r.wear, gm, af);
   const gn = 1.15 * gf / Math.max(av, 3);
   const demand = inp.steer * Math.min(geo, gn);
   const avail = gf * sg * (1 - 0.38 * brakeLoad) / Math.max(av, 3);
@@ -83,11 +91,14 @@ export function stepCar(r, inp, dt, track, slip = 0) {
   if (exc > 0 && av > 8) { v -= Math.sign(v) * Math.min(exc * av * 0.30 * dt, av * 0.3 * dt * 3); r.slipS = Math.min(1, r.slipS + dt * 3); }
   else r.slipS = Math.max(0, r.slipS - dt * 2.5);
   if (v < 0) yr = -yr;
+  // carro batido puxa para um lado
+  if (dm > 0.35) { if (!r.pull) r.pull = Math.random() < 0.5 ? 1 : -1; yr += r.pull * (dm - 0.35) * 0.12 * Math.min(1, av / 50); }
   r.yawRate = yr;
   r.yaw -= yr * dt;
   r.latAcc = yr * v;
   // desgaste dos pneus
-  r.wear = Math.max(0.5, r.wear - (Math.abs(r.latAcc) * 1.6e-5 + brakeLoad * 3.5e-4 + (kind === 2 ? 3e-4 : 0)) * sp.wearK * dt);
+  const wetWear = r.tyre === 'W' ? 1 + 1.2 * Math.max(0, 1 - (r.wetNow || 0) / 0.5) : 1;
+  r.wear = Math.max(0.5, r.wear - (Math.abs(r.latAcc) * 1.6e-5 + brakeLoad * 3.5e-4 + (kind === 2 ? 3e-4 : 0)) * sp.wearK * wetWear * dt);
   // posicao
   const fx = Math.sin(r.yaw), fz = Math.cos(r.yaw);
   r.x += fx * v * dt; r.z += fz * v * dt;
@@ -105,7 +116,7 @@ export function stepCar(r, inp, dt, track, slip = 0) {
     // alinha com a pista
     let da = track.hdg[i] - r.yaw; da = Math.atan2(Math.sin(da), Math.cos(da));
     const rel = Math.abs(da);
-    if (r.wallCd <= 0) { hit = Math.min(1, rel * 1.2 + av / 90); r.v *= 0.62; r.wallCd = 0.45; r.hits++; }
+    if (r.wallCd <= 0) { hit = Math.min(1, rel * 1.2 + av / 90); r.v *= 0.62; r.wallCd = 0.45; r.hits++; r.dmg = Math.min(1, (r.dmg || 0) + hit * 0.16); }
     r.yaw += da * Math.min(1, dt * 6);
     r.v *= 1 - Math.min(0.9, dt * 2.2);
     r.loc.lat = sgn * lim; r.lat = r.loc.lat;
@@ -130,6 +141,7 @@ export function carCollisions(cars, dt) {
     const A = cars[a];
     for (let b = a + 1; b < cars.length; b++) {
       const B = cars[b];
+      if (A.ghost || B.ghost) continue;
       if (Math.abs(A.x - B.x) > 6 || Math.abs(A.z - B.z) > 6) continue;
       for (const oa of [-1.3, 1.3]) for (const ob of [-1.3, 1.3]) {
         const ax = A.x + Math.sin(A.yaw) * oa, az = A.z + Math.cos(A.yaw) * oa;
@@ -140,7 +152,7 @@ export function carCollisions(cars, dt) {
           A.x -= dx * pen; A.z -= dz * pen; B.x += dx * pen; B.z += dz * pen;
           const rear = A.prog < B.prog ? A : B, front = rear === A ? B : A;
           const rel = rear.v - front.v;
-          if (rel > 0) { rear.v -= rel * 0.45; front.v += rel * 0.15; if (rel > big) big = rel; }
+          if (rel > 0) { rear.v -= rel * 0.45; front.v += rel * 0.15; if (rel > big) big = rel; if (rel > 2) { rear.dmg = Math.min(1, (rear.dmg || 0) + rel * 0.006); front.dmg = Math.min(1, (front.dmg || 0) + rel * 0.002); } }
           // pequeno giro
           const side = (dx * Math.cos(A.yaw) - dz * Math.sin(A.yaw));
           A.yaw += side * 0.01; B.yaw -= side * 0.01;

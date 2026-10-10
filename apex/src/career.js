@@ -1,4 +1,4 @@
-import { TEAMS, POINTS, PRIZE, CIRCUITS, UPGRADE_COST, MAX_UPG, SPONSORS } from './data.js';
+import { TEAMS, POINTS, PRIZE, CIRCUITS, UPGRADE_COST, MAX_UPG, SPONSORS, PAINTS, AI_PAINT } from './data.js';
 import { makeSpec } from './physics.js';
 
 const KEY = 'apex_save_v1', SKEY = 'apex_settings_v1';
@@ -6,15 +6,23 @@ const NUMS = [1, 44, 16, 55, 4, 81, 14, 63, 3, 11, 18, 23, 27, 31, 10, 77];
 
 export const COLORS = ['#d91e2b', '#ff8a1f', '#f6c500', '#1f9d55', '#12b5b0', '#1c4ed8', '#7a3fd0', '#ff5da2', '#f4f4f4', '#b9c2cc', '#1a1a1f', '#8b5a2b'];
 
-export const defaultSettings = () => ({ quality: 'auto', diff: 'normal', laps: 3, sound: true, auto: false, tilt: false, cam: 0, touch: 'auto', speedUnit: 'kmh' });
+export const defaultSettings = () => ({ quality: 'auto', diff: 'normal', laps: 3, sound: true, auto: false, tilt: false, cam: 0, touch: 'auto', speedUnit: 'kmh', wx: 'auto' });
 
 export function loadSettings() {
   try { return Object.assign(defaultSettings(), JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return defaultSettings(); }
 }
 export function saveSettings(s) { try { localStorage.setItem(SKEY, JSON.stringify(s)); } catch (e) { } }
 
+// saves antigos nao tem as pinturas: completa os campos novos
+export function normalizeCareer(c) {
+  if (!c) return c;
+  if (!Array.isArray(c.paints) || !c.paints.length) c.paints = ['solid'];
+  if (c.car && !c.car.paint) c.car.paint = 'solid';
+  if (c.car && !c.paints.includes(c.car.paint)) c.paints.push(c.car.paint);
+  return c;
+}
 export function loadCareer() {
-  try { const c = JSON.parse(localStorage.getItem(KEY) || 'null'); return c && c.v === 1 ? c : null; } catch (e) { return null; }
+  try { const c = JSON.parse(localStorage.getItem(KEY) || 'null'); return c && c.v === 1 ? normalizeCareer(c) : null; } catch (e) { return null; }
 }
 let saveHook = null;
 export function setSaveHook(f) { saveHook = f; }
@@ -26,7 +34,7 @@ export function newCareer(pilot, teamId, customName) {
   const base = teamId === 'custom' ? TEAMS[TEAMS.length - 1] : TEAMS.find(t => t.id === teamId);
   return {
     v: 1, pilot, team: teamId, customName: customName || 'Minha Equipe',
-    car: { c1: base.c1, c2: base.c2, sp: [0, 1], wing: 0 },
+    car: { c1: base.c1, c2: base.c2, sp: [0, 1], wing: 0, paint: 'solid' }, paints: ['solid'],
     upg: { motor: 0, aero: 0, brake: 0, tyre: 0 },
     credits: 600, season: 1, round: 0, pts: {}, tpts: {}, wins: 0, podiums: 0, races: 0, titles: 0, history: [],
   };
@@ -52,9 +60,9 @@ export function buildEntries(pilot, teamId, car, upg, customName, customTeam) {
       const num = NUMS[n++];
       if (isP) {
         const spec = makeSpec(t, upg, car.wing || 0);
-        entries.push({ id: 'player', name: pilot.name || 'Jogador', nat: pilot.nat, teamId: t.id, number: pilot.number || 7, c1: car.c1, c2: car.c2, isPlayer: true, spec, helmet: { c1: pilot.h1, c2: pilot.h2, style: pilot.hs }, sponsors: [SPONSORS[car.sp[0]], SPONSORS[car.sp[1]]], tag: t.name });
+        entries.push({ id: 'player', name: pilot.name || 'Jogador', nat: pilot.nat, teamId: t.id, number: pilot.number || 7, c1: car.c1, c2: car.c2, isPlayer: true, paint: car.paint || 'solid', spec, helmet: { c1: pilot.h1, c2: pilot.h2, style: pilot.hs }, sponsors: [SPONSORS[car.sp[0]], SPONSORS[car.sp[1]]], tag: t.name });
       } else {
-        entries.push({ id: t.id + '-' + k, name: t.drivers[k], teamId: t.id, number: num, c1: t.c1, c2: t.c2, isPlayer: false, spec: makeSpec(t, {}, 0), helmet: { c1: '#ffffff', c2: t.c1, style: (n + k) % 3 }, sponsors: [SPONSORS[(n * 3) % 10], SPONSORS[(n * 3 + 4) % 10]], tag: t.name });
+        entries.push({ id: t.id + '-' + k, name: t.drivers[k], teamId: t.id, number: num, c1: t.c1, c2: t.c2, isPlayer: false, paint: AI_PAINT[TEAMS.findIndex(x => x.id === t.id) % AI_PAINT.length], spec: makeSpec(t, {}, 0), helmet: { c1: '#ffffff', c2: t.c1, style: (n + k) % 3 }, sponsors: [SPONSORS[(n * 3) % 10], SPONSORS[(n * 3 + 4) % 10]], tag: t.name });
       }
     }
   }
@@ -112,4 +120,11 @@ export function fmtTime(t) {
   if (!isFinite(t) || t <= 0) return '--:--.---';
   const m = Math.floor(t / 60), s = t - m * 60;
   return m + ':' + (s < 10 ? '0' : '') + s.toFixed(3);
+}
+
+export function buyPaint(career, id) {
+  const p = PAINTS.find(x => x.id === id); if (!p) return false;
+  if (career.paints.includes(id)) return false;
+  if (career.credits < p.price) return false;
+  career.credits -= p.price; career.paints.push(id); career.car.paint = id; return true;
 }

@@ -25,7 +25,7 @@ export class Input {
       if (e.repeat) { if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code) && this.captureKeys) e.preventDefault(); return; }
       this.keys.add(e.code); this._setDev('kb');
       if (this.captureKeys && ['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
-      const a = { KeyC: 'camera', KeyP: 'pause', Escape: 'pause', KeyR: 'reset', KeyV: 'camera', KeyM: 'mute' }[e.code];
+      const a = { KeyC: 'camera', KeyP: 'pause', Escape: 'pause', KeyR: 'reset', KeyV: 'camera', KeyM: 'mute', KeyB: 'pit', KeyE: 'pit' }[e.code];
       if (a) this._edge[a] = true;
     });
     addEventListener('keyup', e => this.keys.delete(e.code));
@@ -93,7 +93,7 @@ export class Input {
       const padSteer = ax || (dr ? 1 : dl ? -1 : 0);
       const padThr = Math.max(rt, this.btn(p, 0) ? 1 : 0, this.btn(p, 5) ? 1 : 0);
       const padBrk = Math.max(lt, this.btn(p, 2) ? 1 : 0, this.btn(p, 1) ? 1 : 0, this.btn(p, 4) ? 1 : 0);
-      const names = { 3: 'camera', 9: 'pause', 8: 'reset', 0: 'confirm', 1: 'back', 2: 'alt' };
+      const names = { 3: 'camera', 9: 'pause', 8: 'reset', 12: 'pit', 0: 'confirm', 1: 'back', 2: 'alt' };
       for (const [i, n] of Object.entries(names)) {
         const d = this.btn(p, +i), was = this._prevBtn[i]; this._prevBtn[i] = d;
         if (d && !was) pe[n] = true;
@@ -106,7 +106,7 @@ export class Input {
       if (this.btn(p, 12) || ny < -0.6) dir = 'up'; else if (this.btn(p, 13) || ny > 0.6) dir = 'down'; else if (dl || nx < -0.6) dir = 'left'; else if (dr || nx > 0.6) dir = 'right';
       this._padDir = dir;
     }
-    for (const n of ['camera', 'pause', 'reset', 'confirm', 'back', 'alt']) if (pe[n]) this._edge[n] = true;
+    for (const n of ['camera', 'pause', 'reset', 'confirm', 'back', 'alt', 'pit']) if (pe[n]) this._edge[n] = true;
     if (!usedPad) {
       steer = (any('right') ? 1 : 0) - (any('left') ? 1 : 0);
       thr = any('up') ? 1 : 0; brk = any('down') ? 1 : 0;

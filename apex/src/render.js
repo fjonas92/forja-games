@@ -3,6 +3,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { buildTrackWorld } from './trackmesh.js';
 import { makeCar } from './carmodel.js';
@@ -28,11 +29,22 @@ const PART_V = `attribute float aSize; attribute float aAlpha; attribute vec3 aC
 void main(){ vA = aAlpha; vC = aCol; vec4 mv = modelViewMatrix * vec4(position,1.0); gl_PointSize = aSize * uScale / -mv.z; gl_Position = projectionMatrix * mv; }`;
 const PART_F = `varying float vA; varying vec3 vC; void main(){ vec2 c = gl_PointCoord - 0.5; float d = length(c); if (d > 0.5) discard; float a = smoothstep(0.5, 0.05, d) * vA; gl_FragColor = vec4(vC, a); }`;
 
+// acabamento: vinheta, contraste e saturacao (so no modo alto)
+const GRADE = {
+  uniforms: { tDiffuse: { value: null }, uVig: { value: 0.3 }, uSat: { value: 1.1 }, uCon: { value: 1.05 }, uTint: { value: new THREE.Vector3(1, 1, 1) } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+  fragmentShader: `varying vec2 vUv; uniform sampler2D tDiffuse; uniform float uVig; uniform float uSat; uniform float uCon; uniform vec3 uTint;
+  void main(){ vec4 c = texture2D(tDiffuse, vUv); float l = dot(c.rgb, vec3(0.2126,0.7152,0.0722)); vec3 col = mix(vec3(l), c.rgb, uSat);
+    col = (col - 0.18) * uCon + 0.18; col *= uTint; vec2 d = vUv - 0.5; col *= 1.0 - uVig * smoothstep(0.25, 0.85, length(d) * 1.35); gl_FragColor = vec4(max(col, 0.0), c.a); }`,
+};
+
 export const QUALITY = {
   low:    { pr: 1,   shadow: 0,    bloom: false, aa: false, scenery: 'low',    msaa: 0 },
   medium: { pr: 1.5, shadow: 1024, bloom: false, aa: true,  scenery: 'medium', msaa: 0 },
   high:   { pr: 2,   shadow: 2048, bloom: true,  aa: true,  scenery: 'high',   msaa: 4 },
 };
+
+const TYRE_COL = { S: '#ffd23f', W: '#3aa0ff' };
 
 export class View {
   constructor(canvas, qualityName) {
@@ -64,7 +76,8 @@ export class View {
     this.world = null; this.cars = new Map(); this.carRoot = new THREE.Group(); this.scene.add(this.carRoot);
     this.mode = 'none';
     this.camYaw = 0; this.camPos = new THREE.Vector3(); this.camInit = false; this.shake = 0; this.camMode = 0;
-    this._initParticles();
+    this._initParticles(); this._initRain();
+    this.rain = 0; this.wetV = 0;
     this._garage = null;
     this.composer = null; this.bloom = null;
     this.resize(canvas.clientWidth || 960, canvas.clientHeight || 540);
@@ -88,6 +101,7 @@ export class View {
     const c = new EffectComposer(r, rt); c.setPixelRatio(pr); c.setSize(w, h);
     c.addPass(new RenderPass(this.scene, this.camera));
     this.bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0.28, 0.7, 0.92); c.addPass(this.bloom);
+    this.grade = new ShaderPass(GRADE); c.addPass(this.grade);
     c.addPass(new OutputPass());
     this.composer = c;
   }
@@ -134,6 +148,44 @@ export class View {
     this.parts.material.uniforms.uScale.value = this.h * 0.28 * (this.renderer.getPixelRatio());
   }
 
+  // ---------- chuva ----------
+  _initRain() {
+    const N = 1100; this.rN = N;
+    this.rPos = new Float32Array(N * 6); this.rOff = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) { this.rOff[i * 3] = (Math.random() - 0.5) * 60; this.rOff[i * 3 + 1] = Math.random() * 30; this.rOff[i * 3 + 2] = (Math.random() - 0.5) * 60; }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(this.rPos, 3));
+    this.rainMat = new THREE.LineBasicMaterial({ color: 0xc9d8e8, transparent: true, opacity: 0.4, depthWrite: false, fog: false });
+    this.rainMesh = new THREE.LineSegments(g, this.rainMat); this.rainMesh.frustumCulled = false; this.rainMesh.renderOrder = 6; this.rainMesh.visible = false; this.scene.add(this.rainMesh);
+    this._gc = new THREE.Color();
+  }
+  // chuva (0..1) e umidade da pista (0..1): ajusta ceu, neblina, luz, asfalto e gotas
+  setWeather(rain, wet, dt) {
+    const th = this.th; this.rain = rain; this.wetV = wet;
+    if (!th || this.mode !== 'race') { this.rainMesh.visible = false; return; }
+    const lum = c => 0.3 * c.r + 0.59 * c.g + 0.11 * c.b, k = Math.min(1, rain * 0.7), gc = this._gc;
+    const grey = (hex, out, f) => { out.set(hex); const l = lum(out) * f; out.lerp(gc.setRGB(l * 0.92, l * 0.97, l * 1.05), k); };
+    grey(th.fog, this.scene.fog.color, 0.85); this.scene.fog.density = th.fogD * (1 + 1.8 * rain);
+    grey(th.sky[0], this.skyMat.uniforms.uTop.value, 0.7); grey(th.sky[1], this.skyMat.uniforms.uHor.value, 0.85);
+    this.skyMat.uniforms.uSunCol.value.set(th.sunCol).multiplyScalar((th.night ? 0.25 : 1) * (1 - 0.9 * rain));
+    this.sun.intensity = th.sun * (1 - 0.55 * rain); this.hemi.intensity = (th.night ? 1.0 : 0.9) * (1 + 0.1 * rain);
+    const am = this.world && this.world.userData.asMat;
+    if (am) { am.roughness = 0.92 - 0.55 * wet; am.metalness = 0.1 * wet; am.color.setScalar(1 - 0.42 * wet); am.envMap = wet > 0.02 ? this.env : null; am.envMapIntensity = 0.28 * wet; }
+    if (this.grade) { this.grade.uniforms.uSat.value = 1.1 - 0.3 * rain; this.grade.uniforms.uTint.value.set(1 - 0.05 * rain, 1 - 0.02 * rain, 1 + 0.04 * rain); }
+    // gotas em volta da camera
+    const cam = this.camera.position, n = Math.floor(this.rN * Math.min(1, rain * 1.2)), snow = !!th.snowy;
+    this.rainMesh.visible = n > 0; this.rainMesh.geometry.setDrawRange(0, n * 2);
+    this.rainMat.opacity = (snow ? 0.8 : 0.42) * Math.min(1, rain * 1.4); this.rainMat.color.set(snow ? 0xffffff : th.night ? 0x8fa6c8 : 0xc9d8e8);
+    const sp = snow ? 6 : 42, len = snow ? 0.08 : 0.045, o = this.rOff, P = this.rPos;
+    for (let i = 0; i < n; i++) {
+      let x = o[i * 3], y = o[i * 3 + 1] - sp * dt, z = o[i * 3 + 2];
+      if (y < 0) { y += 30; x = (Math.random() - 0.5) * 60; z = (Math.random() - 0.5) * 60; }
+      o[i * 3] = x; o[i * 3 + 1] = y; o[i * 3 + 2] = z;
+      const wx = cam.x + x, wy = cam.y - 8 + y, wz = cam.z + z, j = i * 6;
+      P[j] = wx; P[j + 1] = wy; P[j + 2] = wz; P[j + 3] = wx + (snow ? 0.02 : 0.3) * len * sp; P[j + 4] = wy + len * sp; P[j + 5] = wz;
+    }
+    this.rainMesh.geometry.attributes.position.needsUpdate = true;
+  }
+
   // ---------- corrida ----------
   loadTrack(track) {
     this.clearRace();
@@ -156,6 +208,8 @@ export class View {
     this.headlight.intensity = th.night ? 130 : 0;
     if (this.bloom) { this.bloom.strength = th.night ? 0.45 : 0.22; this.bloom.threshold = th.night ? 0.9 : 0.95; }
     this.camInit = false;
+    this.rain = 0; this.wetV = 0; this.rainMesh.visible = false;
+    if (this.grade) { this.grade.uniforms.uSat.value = 1.1; this.grade.uniforms.uTint.value.set(1, 1, 1); }
   }
   clearRace() {
     if (this.world) {
@@ -164,7 +218,7 @@ export class View {
       this.world = null;
     }
     for (const c of this.cars.values()) this.carRoot.remove(c.group);
-    this.cars.clear(); this.pLife.fill(0);
+    this.cars.clear(); this.pLife.fill(0); if (this.rainMesh) this.rainMesh.visible = false;
     if (this._podium) { this.scene.remove(this._podium.group); this._podium.group.traverse(o => { if (o.geometry) o.geometry.dispose(); }); this._podium = null; }
   }
   _prepCar(api) {
@@ -173,7 +227,7 @@ export class View {
   spawnCars(racers, entries) {
     for (const r of racers) {
       const e = entries.find(x => x.id === r.id);
-      const api = makeCar({ c1: r.c1, c2: r.c2, number: r.number, helmet: r.helmet, sponsors: e ? e.sponsors : null });
+      const api = makeCar({ c1: r.c1, c2: r.c2, number: r.number, helmet: r.helmet, sponsors: e ? e.sponsors : null, paint: e ? e.paint : null, tyreBand: r.tyre === 'W' ? TYRE_COL.W : TYRE_COL.S });
       this._prepCar(api);
       this.carRoot.add(api.group); this.cars.set(r.id, api);
       api.group.position.set(r.x, r.y, r.z);
@@ -190,6 +244,8 @@ export class View {
       api.body.rotation.x = r.pitch - slope;
       api.body.rotation.z = -r.roll;
       api.body.position.y = r.surf === 1 ? Math.sin(performance.now() * 0.09 + r.number) * 0.012 * Math.min(1, r.v / 40) : 0;
+      if (api._tyre !== r.tyre) { api._tyre = r.tyre; api.setTyre(TYRE_COL[r.tyre] || TYRE_COL.S); }
+      api.setDamage(Math.round((r.dmg || 0) * 20) / 20);
       api.spin(r.v * dt);
       api.steer(-r.str * 0.42);
       api.setBrake(r.brakeOn);
@@ -197,6 +253,12 @@ export class View {
       if (r.v > 8 && this._camDist(r) < 90) {
         const smoke = (r.slipS > 0.35 || (r.brakeOn && r.v > 55 && Math.abs(r.str) > 0.5));
         const grass = r.surf === 2 && r.v > 12;
+        const spray = this.wetV > 0.25 && r.v > 25 && !smoke && !grass;
+        if (spray) {
+          const fx = Math.sin(r.yaw), fz = Math.cos(r.yaw);
+          for (const sx of [-0.97, 0.97]) if (Math.random() < 0.5 * this.wetV) this.emit(r.x - fx * 1.7 + (-fz) * sx, r.y + 0.25, r.z - fz * 1.7 + fx * sx, -fx * r.v * 0.12 + (Math.random() - .5), 1.2 + Math.random(), -fz * r.v * 0.12 + (Math.random() - .5), 0.7, 1.7, 0.8, 0.84, 0.9);
+        }
+        if (r.dmg > 0.5 && Math.random() < r.dmg * 0.3) { const fx = Math.sin(r.yaw), fz = Math.cos(r.yaw); this.emit(r.x - fx * 0.6, r.y + 0.9, r.z - fz * 0.6, (Math.random() - .5) * 0.8, 1.6, (Math.random() - .5) * 0.8, 1.1, 1.2, 0.18, 0.18, 0.2); }
         if (smoke || grass) {
           const fx = Math.sin(r.yaw), fz = Math.cos(r.yaw);
           for (const sx of [-0.97, 0.97]) {

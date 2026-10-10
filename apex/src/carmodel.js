@@ -35,9 +35,10 @@ function wheel(front, mats) {
   tg.rotateZ(Math.PI / 2);
   const tyre = new THREE.Mesh(tg, rubber); tyre.castShadow = true; tyre.receiveShadow = true; spin.add(tyre);
   // faixa colorida lateral (composto)
-  const band = new THREE.Mesh(new THREE.RingGeometry(R * 0.66, R * 0.74, 28), new THREE.MeshBasicMaterial({ color: mats.band, side: THREE.DoubleSide }));
+  const bm = new THREE.MeshBasicMaterial({ color: mats.band, side: THREE.DoubleSide }); mats.list && mats.list.push(bm);
+  const band = new THREE.Mesh(new THREE.RingGeometry(R * 0.66, R * 0.74, 28), bm);
   band.rotation.y = Math.PI / 2; band.position.x = hw + 0.002; spin.add(band);
-  const band2 = band.clone(); band2.position.x = -hw - 0.002; spin.add(band2);
+  const band2 = band.clone(); band2.material = bm; band2.position.x = -hw - 0.002; spin.add(band2);
   const rimG = new THREE.CylinderGeometry(R * 0.6, R * 0.6, W * 0.9, 22); rimG.rotateZ(Math.PI / 2);
   const rim = new THREE.Mesh(rimG, rimMat); spin.add(rim);
   for (let i = 0; i < 5; i++) { // raios
@@ -50,15 +51,21 @@ export function makeCar(o) {
   const c1 = new THREE.Color(o.c1), c2 = new THREE.Color(o.c2);
   const paint = new THREE.MeshPhysicalMaterial({ color: c1, roughness: 0.32, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.08 });
   const paint2 = new THREE.MeshPhysicalMaterial({ color: c2, roughness: 0.38, metalness: 0.2, clearcoat: 0.8, clearcoatRoughness: 0.15 });
+  // estilo de pintura: textura desenhada no monocoque, cobertura do motor e sidepods
+  const pid = o.paint && o.paint !== 'solid' ? o.paint : null;
+  let paintP = paint;
+  if (pid) {
+    paintP = new THREE.MeshPhysicalMaterial({ color: 0xffffff, map: TX.liveryTex(pid, o.c1, o.c2), roughness: pid === 'carbon' ? 0.28 : 0.32, metalness: pid === 'gold' ? 0.85 : pid === 'carbon' ? 0.5 : 0.35, clearcoat: 1, clearcoatRoughness: 0.08 });
+  }
   const g = new THREE.Group();
   const body = new THREE.Group(); g.add(body);
 
   // monocoque (revolucao) - nariz pontudo ate a traseira
-  const fus = new THREE.Mesh(lathe([[0.0, 2.55], [0.06, 2.45], [0.13, 2.1], [0.2, 1.55], [0.27, 0.9], [0.34, 0.2], [0.36, -0.4], [0.32, -1.1], [0.24, -1.8], [0.15, -2.15], [0.0, -2.2]], 28), paint);
+  const fus = new THREE.Mesh(lathe([[0.0, 2.55], [0.06, 2.45], [0.13, 2.1], [0.2, 1.55], [0.27, 0.9], [0.34, 0.2], [0.36, -0.4], [0.32, -1.1], [0.24, -1.8], [0.15, -2.15], [0.0, -2.2]], 28), paintP);
   fus.scale.set(1, 0.78, 1); fus.position.y = 0.4; fus.castShadow = true; body.add(fus);
   // pontas laterais (sidepods)
   for (const s of [-1, 1]) {
-    const sp = new THREE.Mesh(new THREE.CapsuleGeometry(0.27, 1.35, 6, 14), paint); sp.rotation.x = Math.PI / 2; sp.scale.set(1.0, 1.0, 0.82);
+    const sp = new THREE.Mesh(new THREE.CapsuleGeometry(0.27, 1.35, 6, 14), paintP); sp.rotation.x = Math.PI / 2; sp.scale.set(1.0, 1.0, 0.82);
     sp.position.set(s * 0.58, 0.3, -0.35); sp.castShadow = true; body.add(sp);
     // entrada de ar
     const inlet = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.035, 8, 18), paint2); inlet.position.set(s * 0.58, 0.32, 0.38); inlet.scale.set(1, 0.9, 1); body.add(inlet);
@@ -73,7 +80,7 @@ export function makeCar(o) {
   body.add(box(1.5, 0.05, 3.9, carbon, 0, 0.1, -0.2));
   body.add(box(1.2, 0.05, 0.9, carbon, 0, 0.14, -2.0, -0.14, 0, 0)); // difusor
   // cobertura do motor / airbox
-  const eng = new THREE.Mesh(lathe([[0.0, -1.9], [0.12, -1.7], [0.2, -1.0], [0.24, -0.45], [0.2, -0.2], [0.0, -0.1]], 20), paint); eng.scale.set(0.8, 1.15, 1); eng.position.set(0, 0.58, 0); eng.castShadow = true; body.add(eng);
+  const eng = new THREE.Mesh(lathe([[0.0, -1.9], [0.12, -1.7], [0.2, -1.0], [0.24, -0.45], [0.2, -0.2], [0.0, -0.1]], 20), paintP); eng.scale.set(0.8, 1.15, 1); eng.position.set(0, 0.58, 0); eng.castShadow = true; body.add(eng);
   const air = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.34, 14, 1, true), paint2); air.position.set(0, 0.78, -0.18); air.scale.set(1, 1, 1.5); body.add(air);
   // nadadeira
   const fin = box(0.03, 0.34, 1.4, paint2, 0, 0.82, -1.3); body.add(fin);
@@ -122,15 +129,22 @@ export function makeCar(o) {
   });
   // rodas
   const tyreBand = o.tyreBand || '#ffd23f';
+  const bandMats = [];
   const W = [
     { f: true, x: 0.93, z: 1.6 }, { f: true, x: -0.93, z: 1.6 }, { f: false, x: 0.97, z: -1.55 }, { f: false, x: -0.97, z: -1.55 },
-  ].map(d => { const w = wheel(d.f, { band: tyreBand }); w.pivot.position.set(d.x, w.R, d.z); body.add(w.pivot); w.front = d.f; return w; });
+  ].map(d => { const w = wheel(d.f, { band: tyreBand, list: bandMats }); w.pivot.position.set(d.x, w.R, d.z); body.add(w.pivot); w.front = d.f; return w; });
   g.traverse(m => { if (m.isMesh) { m.castShadow = true; } });
-  const api = {
+  var api = {
     group: g, body, wheels: W,
     setBrake(on) { brakeMat.emissiveIntensity = on ? 3.5 : 0.5; },
     spin(dist) { for (const w of W) w.spin.rotation.x += dist / w.R; },
     steer(a) { W[0].pivot.rotation.y = a; W[1].pivot.rotation.y = a; },
+    setTyre(hex) { for (const m of bandMats) m.color.set(hex); },
+    setDamage(d) {
+      if (api._dm === d) return; api._dm = d;
+      fw.rotation.z = d * 0.14; fw.scale.x = 1 - d * 0.4; fw.position.y = 0.13 - d * 0.05; fw.rotation.x = d * 0.08;
+      rw.rotation.z = -d * 0.1; rw.position.x = d * 0.04;
+    },
   };
   return api;
 }

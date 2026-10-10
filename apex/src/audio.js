@@ -29,6 +29,7 @@ export class Sfx {
     this.wind = mkNoise('lowpass', 600, 0.5);
     this.tyre = mkNoise('bandpass', 1500, 4);
     this.grass = mkNoise('lowpass', 300, 1);
+    this.rainS = mkNoise('highpass', 2500, 0.4);
     this.running = true;
   }
   setOn(v) { this.on = v; if (this.master) this.master.gain.value = v ? this.vol : 0; this._musicApply(); }
@@ -55,10 +56,11 @@ export class Sfx {
     // garantia: ao pedir silencio, a musica para mesmo que o volume nao responda
     if (!want) this._mt = setTimeout(() => { clearInterval(this._mf); this.mlevel = 0; if (this.mg) this.mg.gain.value = 0; try { a.pause(); } catch (e) { } }, 1400);
   }
+  rain(level) { if (this.running) this.rainS.g.gain.setTargetAtTime(Math.min(0.2, level * 0.2), this.ctx.currentTime, 0.3); }
   update(r, thr, paused) {
     if (!this.running) return;
     const c = this.ctx, t = c.currentTime;
-    if (paused || !r) { this.eg.gain.setTargetAtTime(0.0, t, 0.05); this.wind.g.gain.setTargetAtTime(0, t, 0.05); this.tyre.g.gain.setTargetAtTime(0, t, 0.05); this.grass.g.gain.setTargetAtTime(0, t, 0.05); return; }
+    if (paused || !r) { this.rainS.g.gain.setTargetAtTime(0, t, 0.1); this.eg.gain.setTargetAtTime(0.0, t, 0.05); this.wind.g.gain.setTargetAtTime(0, t, 0.05); this.tyre.g.gain.setTargetAtTime(0, t, 0.05); this.grass.g.gain.setTargetAtTime(0, t, 0.05); return; }
     const v = Math.abs(r.v);
     const gear = Math.min(8, 1 + Math.floor(v / 11.5)), frac = Math.min(1, (v - (gear - 1) * 11.5) / 11.5);
     r.gear = gear; r.rpm = 0.32 + 0.68 * Math.max(0, frac) * (0.55 + 0.45 * Math.min(1, thr + 0.3));

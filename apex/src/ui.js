@@ -1,5 +1,6 @@
 // Menus em DOM (teclado, joystick e toque navegam do mesmo jeito).
-import { CIRCUITS, TEAMS, NATIONS, HELMETS, SPONSORS, THEMES, UPGRADES, MAX_UPG, POINTS } from './data.js';
+import { CIRCUITS, TEAMS, NATIONS, HELMETS, SPONSORS, THEMES, UPGRADES, MAX_UPG, POINTS, PAINTS } from './data.js';
+import { liveryCanvas } from './textures.js';
 import { COLORS, standings, upgradeCost, fmtTime, teamList, buildEntries } from './career.js';
 
 export const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -20,6 +21,7 @@ export class UI {
     if (focus && document.activeElement !== el) { try { el.focus({ preventScroll: true }); } catch (_) { } }
     try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (_) { }
     if (el.dataset.pv) this.app.previewTeam(el.dataset.pv);
+    if (el.dataset.pp !== undefined && this.app.pvPaint !== el.dataset.pp) this.app.previewPaint(el.dataset.pp);
   }
 
   navEls() { return [...this.root.querySelectorAll('.nav')].filter(e => e.offsetParent !== null && !e.disabled); }
@@ -133,9 +135,10 @@ export class UI {
         <tr><td>Câmera</td><td>C</td><td>Y</td></tr>
         <tr><td>Pausa</td><td>P / Esc</td><td>Start</td></tr>
         <tr><td>Reposicionar</td><td>R</td><td>Select</td></tr>
+        <tr><td>Box (pit stop)</td><td>B ou E</td><td>Direcional ↑</td></tr>
       </table>
       <p class="hint">No celular: ◀ ▶ viram o carro, ACELERA e FREIO ficam à direita. Nas opções dá para ligar o acelerador automático e virar o carro inclinando o aparelho.</p>
-      <p class="hint">Dica: atrás de outro carro você pega a aspiração e ganha velocidade. Pneus gastam em curvas fortes, freadas e na grama.</p>
+      <p class="hint">Dica: atrás de outro carro você pega a aspiração e ganha velocidade. Pneus gastam em curvas fortes, freadas e na grama. Na chuva, troque para pneus de chuva no box (B): aperte uma vez para pedir, de novo para trocar o composto, e mais uma vez para cancelar. O box também conserta o carro batido.</p>
       ${this.btn('back', 'Voltar', '', 'data-def')}</div>`;
   }
 
@@ -223,9 +226,18 @@ export class UI {
   // ----- garagem
   s_garage() {
     const a = this.app, c = a.career, tab = a.garageTab;
-    const tabs = [['paint', 'Pintura'], ['spons', 'Patrocínio'], ['setup', 'Asas'], ['upg', 'Evolução']];
+    const tabs = [['paint', 'Cores'], ['livery', 'Estilos'], ['spons', 'Patroc.'], ['setup', 'Asas'], ['upg', 'Evolução']];
     let body = '';
     if (tab === 'paint') body = `<div class="lbl">Cor principal</div>${this.swatches('c1', c.car.c1)}<div class="lbl">Cor secundária</div>${this.swatches('c2', c.car.c2)}`;
+    else if (tab === 'livery') {
+      const cur = c.car.paint || 'solid';
+      body = `<div class="sub">Créditos: <b class="gold">${c.credits}</b> · passe o cursor (ou foque) para ver no carro</div><div class="grid" style="grid-template-columns:repeat(2,1fr)">` + PAINTS.map(p => {
+        const own = c.paints.includes(p.id), eq = cur === p.id;
+        const act = eq ? '' : own ? `data-act="equip"` : (c.credits >= p.price ? `data-act="buyp"` : '');
+        const tag = eq ? '<span class="pill">EQUIPADA</span>' : own ? '<span class="pill">EQUIPAR</span>' : `<span class="pill" style="color:${c.credits >= p.price ? 'var(--gold)' : '#ff8077'}">${p.price} créditos</span>`;
+        return `<button class="card nav ${eq ? 'sel' : ''}" type="button" ${act} data-v="${p.id}" data-pp="${p.id}" data-id="pn${p.id}"><b>${p.name}</b><small>${tag}</small><canvas width="112" height="80" data-lv="${p.id}"></canvas></button>`;
+      }).join('') + '</div>';
+    }
     else if (tab === 'spons') body = `<div class="lbl">Patrocinador 1</div>${this.cyc('sp0')}<div class="lbl">Patrocinador 2</div>${this.cyc('sp1')}`;
     else if (tab === 'setup') body = `<div class="lbl">Ajuste das asas</div>${this.cyc('wing')}<p class="hint">Mais asa gruda o carro nas curvas rápidas, mas perde velocidade final. Menos asa é bom em pistas com retas longas.</p>`;
     else body = `<div class="sub">Créditos: <b class="gold">${c.credits}</b></div>` + UPGRADES.map(u => {
@@ -292,6 +304,8 @@ export class UI {
     const a = this.app, ci = CIRCUITS[a.pre.ci];
     return `<div class="panel center" style="width:46%"><h2 class="t">Antes da corrida</h2>
       <div class="card" style="cursor:default;margin-bottom:8px"><b style="font-size:calc(var(--u)*22px)">${esc(ci.name)}</b><small><span class="dot" style="background:${THEMES[ci.theme].sky[0]}"></span>${ci.country} · ${(ci.len / 1000).toFixed(1)} km · ${a.settings.laps} voltas</small></div>
+      <div class="row" style="margin-bottom:6px"><div><div class="lbl">Clima</div>${this.cyc('wx')}</div><div><div class="lbl">Pneus de largada</div>${this.cyc('ptyre')}</div></div>
+      <div class="sub">Previsão: <b class="gold">${esc(a.wxText(a.pre.wx))}</b>${a.pre.wx.r0 > 0.3 && a.pre.tyre === 'S' ? ' · <span style="color:#ff8077">pista molhada pede pneus de chuva</span>' : ''}</div>
       <div class="sub">Quer fazer uma volta de classificação? Você corre sozinho na pista e o tempo define a sua posição de largada.</div>
       ${this.btn('qualify', 'Volta de classificação', 'primary', 'data-def')}${this.btn('direct', 'Largar direto (grid pelo carro)')}${this.btn('back', 'Voltar')}</div>`;
   }
@@ -309,6 +323,10 @@ export class UI {
 
   // desenhos dos tracados
   after() {
+    for (const cv of this.root.querySelectorAll('canvas[data-lv]')) {
+      const c = this.app.career, src = liveryCanvas(cv.dataset.lv, c.car.c1, c.car.c2, 224, 160), g = cv.getContext('2d');
+      g.clearRect(0, 0, cv.width, cv.height); g.drawImage(src, 0, 0, cv.width, cv.height);
+    }
     for (const cv of this.root.querySelectorAll('canvas[data-ol]')) {
       const t = this.app.getTrack(+cv.dataset.ol); if (!t) continue;
       const g = cv.getContext('2d'), W = cv.width, H = cv.height;

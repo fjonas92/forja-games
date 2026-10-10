@@ -1,5 +1,5 @@
 // Nucleo da corrida (sem graficos): grid, largada, voltas, posicoes, IA.
-import { Racer, stepCar, carCollisions } from './physics.js';
+import { Racer, stepCar, carCollisions, tyreGm, yawCap } from './physics.js';
 import { buildProfile, AIDriver } from './ai.js';
 
 function mulberry(seed) { let a = seed >>> 0; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -29,6 +29,66 @@ export class RaceCore {
     this.events = []; this.skill = skill; this.finishWait = 4; this.noBand = false;
     this.order = this.cars.slice();
     this.ranking = null;
+    this.setWeather({ r0: 0, r1: 0, t0: 0, ramp: 30 }, 'S');
+  }
+
+  // clima: wx = {r0, r1, t0, ramp}; tyre = composto do jogador ('S' liso, 'W' chuva)
+  setWeather(wx, playerTyre) {
+    this.wx = wx; this.rain = this.rainAt(0); this.wet = this.rain * 0.9;
+    for (const c of this.cars) {
+      c.tyre = c.isPlayer ? (playerTyre || 'S') : (this.wet > 0.25 ? 'W' : 'S');
+      c.wetNow = this.wet; c.gm = tyreGm(c.tyre, this.wet);
+    }
+  }
+  rainAt(t) {
+    const w = this.wx, k = Math.max(0, Math.min(1, (t - w.t0) / Math.max(1, w.ramp))), e = k * k * (3 - 2 * k);
+    return w.r0 + (w.r1 - w.r0) * e;
+  }
+
+  // segue a pista numa faixa lateral (lat) com velocidade alvo: usado na entrada do box
+  _follow(c, lat, vt) {
+    const t = this.t, n = t.n, v = Math.max(c.v, 0);
+    const j = (c.idx + Math.max(2, Math.round((6 + 0.35 * v) / t.ds))) % n;
+    const dx = t.x[j] + t.rx[j] * lat - c.x, dz = t.z[j] + t.rz[j] * lat - c.z;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
+    const alpha = Math.atan2(dx * -fz + dz * fx, dx * fx + dz * fz), dist = Math.hypot(dx, dz);
+    const want = 2 * Math.sin(alpha) / Math.max(dist, 4) * Math.max(v, 3);
+    const steer = Math.max(-1, Math.min(1, want / Math.max(0.05, yawCap(c.spec, v, c.wear, c.gm))));
+    let throttle = 0, brake = 0;
+    if (v > vt * 1.02 + 0.4) brake = Math.min(1, (v - vt) / 6); else throttle = Math.max(0, Math.min(0.8, (vt - v) / 4 + 0.15));
+    return { steer, throttle, brake };
+  }
+
+  // maquina do box: pedido -> entrada (autopiloto, sem colisao) -> parado -> saida
+  _pit(c, dt, ev) {
+    const t = this.t, L = t.length;
+    if (!c.pit) {
+      if (c.pitReq && this.laps > c.lap + 1) {
+        const s = ((c.prog % L) + L) % L;
+        if (s > L - 140 && s < L - 95) { c.pit = { ph: 'in', t: 0, tyre: c.pitReq, lat: c.lat, stopAt: (c.lap + 1) * L - 4, left: 0 }; c.ghost = true; ev.push({ type: 'pit', car: c, ph: 'in' }); }
+      }
+      return null;
+    }
+    const P = c.pit; P.t += dt;
+    if (P.ph === 'in') {
+      const dist = P.stopAt - c.prog, target = t.w + 0.9;
+      P.lat += Math.max(-5 * dt, Math.min(5 * dt, target - P.lat));
+      const vt = dist < 1 ? 0 : Math.min(26, Math.sqrt(2 * 9 * Math.max(0, dist - 2)));
+      if ((dist < 7 && c.v < 1.2) || dist < 0.5) {
+        P.ph = 'stop'; c.v = 0; P.left = P.total = 2.2 + (c.isPlayer ? 3.5 * (c.dmg || 0) : this.rnd() * 0.5);
+        ev.push({ type: 'pit', car: c, ph: 'stop', time: P.total });
+      } else if (P.t > 30) { c.pit = null; c.ghost = false; c.pitReq = null; }
+      else return this._follow(c, P.lat, vt);
+    }
+    if (P.ph === 'stop') {
+      P.left -= dt; c.v = 0; c.thr = 0; c.brk = 1;
+      if (P.left <= 0) {
+        c.dmg = 0; c.pull = 0; c.wear = 1; c.tyre = P.tyre; c.pitReq = null; c.pitCount++;
+        P.ph = 'out'; P.t = 0; ev.push({ type: 'pit', car: c, ph: 'done', tyre: c.tyre });
+      } else return { steer: 0, throttle: 0, brake: 1, hold: true };
+    }
+    if (P.ph === 'out' && P.t > 2.5) { c.pit = null; c.ghost = false; }
+    return null;
   }
 
   step(dt, pin) {
@@ -42,6 +102,16 @@ export class RaceCore {
     }
     const racing = this.phase === 'race';
     if (racing) this.raceTime += dt;
+    // clima e umidade da pista
+    this.rain = this.rainAt(racing ? this.raceTime : 0);
+    this.wet += (this.rain - this.wet) * Math.min(1, dt / (this.rain > this.wet ? 18 : 40));
+    for (const c of cars) {
+      c.wetNow = this.wet; c.gm = tyreGm(c.tyre, this.wet);
+      if (racing && !c.isPlayer && !c.pit && !c.pitReq && !c.finished) {
+        const want = (c.tyre === 'S' && this.wet > 0.32) ? 'W' : (c.tyre === 'W' && this.wet < 0.07 && this.rain < 0.05) ? 'S' : null;
+        if (want) { if (c.aiWait == null) c.aiWait = this.raceTime + this.rnd() * 35; if (this.raceTime >= c.aiWait) c.pitReq = want; } else c.aiWait = null;
+      }
+    }
     // ordem
     const ord = this.order; ord.sort((a, b) => (b.finished ? 1e9 - b.finishTime : b.prog) - (a.finished ? 1e9 - a.finishTime : a.prog));
     ord.forEach((c, i) => { c.pos = i + 1; });
@@ -70,11 +140,16 @@ export class RaceCore {
           const boost = this.noBand ? 1 : 1 + Math.max(-0.02, Math.min(0.035, gapP / 2500)) * (this.skill > 0.99 ? 0.5 : 1);
           const fin = c.finished;
           const o = d.drive(dt, cars, pp, fin ? 0.62 : boost);
-          if (o.stuck) { c.place(t, ((c.lastS % t.length) + t.length) % t.length, 0); c.loc.lat = 0; d.stuck = 0; }
+          if (o.stuck && !c.pit) { c.place(t, ((c.lastS % t.length) + t.length) % t.length, 0); c.loc.lat = 0; d.stuck = 0; }
           inp = o;
         }
       }
+      if (racing && !c.finished && (c.pit || c.pitReq)) {
+        const po = this._pit(c, dt, ev);
+        if (po) inp = po;
+      }
       c.thr = inp.throttle; c.brk = inp.brake; c.str = inp.steer;
+      if (inp.hold) { c.hit = 0; c.brakeOn = false; continue; }
       // na contagem os carros ficam parados no grid (freio em v=0 engataria a re)
       if (!racing && !c.finished) { c.thr = 0; c.brk = 1; c.str = 0; c.v = 0; c.brakeOn = false; c.hit = 0; continue; }
       const hit = stepCar(c, inp, dt, t, racing ? c.slipstream : 0);

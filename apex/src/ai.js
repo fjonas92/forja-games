@@ -41,7 +41,7 @@ export class AIDriver {
     // pista livre ou carro a frente
     let target = this.pref, blockDist = 99;
     for (const o of cars) {
-      if (o === r) continue;
+      if (o === r || o.ghost) continue;
       const gap = o.prog - r.prog;
       if (gap > 0 && gap < 32) {
         const dl = o.lat - r.lat;
@@ -63,11 +63,11 @@ export class AIDriver {
     const alpha = Math.atan2(dx * rx + dz * rz, dx * fx + dz * fz);
     const dist = Math.hypot(dx, dz);
     const desiredYaw = 2 * Math.sin(alpha) / Math.max(dist, 4) * Math.max(v, 3);
-    let steer = desiredYaw / Math.max(0.05, yawCap(r.spec, v, r.wear));
+    let steer = desiredYaw / Math.max(0.05, yawCap(r.spec, v, r.wear, r.gm));
     steer = Math.max(-1, Math.min(1, steer));
     // velocidade alvo
     const look = (r.idx + Math.round(v * 0.25 / ds)) % n;
-    let vt = this.prof[look] * this.skillJ * boost * (0.82 + 0.18 * r.wear);
+    let vt = this.prof[look] * this.skillJ * boost * (0.82 + 0.18 * r.wear) * Math.pow(r.gm == null ? 1 : r.gm, 0.55);
     if (Math.abs(r.lat) > t.w + t.kerb) vt = Math.min(vt, 28);
     if (blockDist < 12) vt = Math.min(vt, v * 0.985 + 1);
     let throttle = 0, brake = 0;

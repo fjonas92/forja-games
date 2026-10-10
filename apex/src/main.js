@@ -1,4 +1,4 @@
-import { CIRCUITS, TEAMS, NATIONS, HELMETS, SPONSORS, DIFFS } from './data.js';
+import { CIRCUITS, TEAMS, NATIONS, HELMETS, SPONSORS, DIFFS, PAINTS, WEATHERS, WX_NAME } from './data.js';
 import { buildTrack } from './trackgen.js';
 import { RaceCore } from './racecore.js';
 import { buildProfile, AIDriver } from './ai.js';
@@ -44,7 +44,9 @@ if (S.settings.tilt) S.input.enableTilt(true);
 const app = {
   get cloud() { return cloud; },
   get settings() { return S.settings; }, get career() { return S.career; }, get input() { return S.input; }, get sfx() { return S.sfx; }, get quick() { return S.quick; }, get draft() { return S.draft; },
-  get garageTab() { return S.garageTab; }, get stTab() { return S.stTab; }, get result() { return S.result; }, get race() { return S.race; }, get pre() { return S.pre; }, get qres() { return S.qres; },
+  get garageTab() { return S.garageTab; }, get stTab() { return S.stTab; }, get result() { return S.result; }, get race() { return S.race; }, get pre() { return S.pre; }, get qres() { return S.qres; }, get pvPaint() { return S.pvPaint; },
+  previewPaint(id) { S.pvPaint = id; refreshPreview(); },
+  wxText(wx) { return wxText(wx); },
   getTrack(i) { return S.tracks[i] || (S.tracks[i] = buildTrack(CIRCUITS[i])); },
   playerTeamObj() { return C.playerTeam(S.career); },
   careerEntries() { const c = S.career; return C.buildEntries(c.pilot, c.team, c.car, c.upg, c.customName, c.team === 'custom'); },
@@ -75,8 +77,27 @@ const OPT = {
   hs: { list: () => HELMETS.map((_, i) => i), get: () => S.draft.pilot.hs, set: v => { S.draft.pilot.hs = v; }, fmt: v => HELMETS[v] },
   sp0: { list: () => SPONSORS.map((_, i) => i), get: () => S.career.car.sp[0], set: v => { S.career.car.sp[0] = v; C.saveCareer(S.career); }, fmt: v => SPONSORS[v] },
   sp1: { list: () => SPONSORS.map((_, i) => i), get: () => S.career.car.sp[1], set: v => { S.career.car.sp[1] = v; C.saveCareer(S.career); }, fmt: v => SPONSORS[v] },
+  wx: { list: () => WEATHERS, get: () => S.settings.wx || 'auto', set: v => { S.settings.wx = v; C.saveSettings(S.settings); if (S.pre) { S.pre.wx = rollWeather(v); S.pre.tyre = S.pre.wx.r0 > 0.3 ? 'W' : 'S'; } }, fmt: v => WX_NAME[v] },
+  ptyre: { list: () => ['S', 'W'], get: () => (S.pre && S.pre.tyre) || 'S', set: v => { if (S.pre) S.pre.tyre = v; }, fmt: v => v === 'W' ? 'Chuva (azul)' : 'Lisos (amarelo)' },
   wing: { list: () => [-2, -1, 0, 1, 2], get: () => S.career.car.wing, set: v => { S.career.car.wing = v; C.saveCareer(S.career); }, fmt: v => ['Muito baixa', 'Baixa', 'Equilibrada', 'Alta', 'Muito alta'][v + 2] },
 };
+
+// ---------- clima ----------
+function rollWeather(mode) {
+  const u = Math.random();
+  if (!mode || mode === 'auto') mode = u < 0.5 ? 'dry' : u < 0.68 ? 'light' : u < 0.8 ? 'heavy' : 'var';
+  const w = { key: mode, r0: 0, r1: 0, tf: 0.3 + Math.random() * 0.2, ramp: 25 };
+  if (mode === 'light') w.r0 = w.r1 = 0.45;
+  else if (mode === 'heavy') w.r0 = w.r1 = 0.95;
+  else if (mode === 'var') { if (Math.random() < 0.65) w.r1 = 0.85; else w.r0 = 0.8; }
+  return w;
+}
+function wxText(wx) {
+  if (!wx) return 'Seco';
+  if (wx.key === 'var') return wx.r0 < wx.r1 ? 'Começa seco, vai chover' : 'Começa chovendo, vai secar';
+  return WX_NAME[wx.key];
+}
+function newPre(kind, ci) { const wx = rollWeather(S.settings.wx); return { kind, ci, wx, tyre: wx.r0 > 0.3 ? 'W' : 'S' }; }
 
 // ---------- previa 3D ----------
 const MENU = ['title', 'quick', 'pilot', 'teams', 'hub', 'garage', 'standings', 'settings', 'help', 'account', 'prerace', 'qualyres'];
@@ -97,7 +118,8 @@ function carOpts() {
   } else {
     const t = TEAMS.find(t => t.id === S.quick.team) || TEAMS[0]; team = t; pilot = S.career ? S.career.pilot : d.pilot;
   }
-  return { c1: car ? car.c1 : team.c1, c2: car ? car.c2 : team.c2, number: pilot.number, helmet: { c1: pilot.h1, c2: pilot.h2, style: pilot.hs }, sponsors: sp };
+  const pt = (sc === 'garage' && S.pvPaint) ? S.pvPaint : (car ? car.paint : null);
+  return { paint: pt || 'solid', c1: car ? car.c1 : team.c1, c2: car ? car.c2 : team.c2, number: pilot.number, helmet: { c1: pilot.h1, c2: pilot.h2, style: pilot.hs }, sponsors: sp };
 }
 function refreshPreview() {
   if (S.mode !== 'menu' || S.view.mode !== 'garage') return;
@@ -116,7 +138,7 @@ function back() {
 // ---------- conta / nuvem ----------
 const cloud = new Cloud();
 cloud.getLocal = () => S.career;
-cloud.adopt = c => { S.career = c; C.saveCareer(c, true); if (ui.screen === 'title' || ui.screen === 'account') ui.render(); refreshPreview(); };
+cloud.adopt = c => { S.career = C.normalizeCareer(c); C.saveCareer(c, true); if (ui.screen === 'title' || ui.screen === 'account') ui.render(); refreshPreview(); };
 C.setSaveHook(() => cloud.schedulePush());
 let lastLogged = false;
 cloud.onChange = () => {
@@ -149,9 +171,9 @@ function act(a, d, el) {
     case 'logout': cloud.signOut().then(ok => { if (ok) { C.deleteCareer(); S.career = null; } S.stack = []; ui.go('title'); }); break;
     case 'standings': go('standings'); break;
     case 'garage': go('garage'); break;
-    case 'back': back(); break;
+    case 'back': S.pvPaint = null; back(); refreshPreview(); break;
     case 'pickcircuit': S.quick.circuit = +d.v; ui.render(); break;
-    case 'qstart': S.pre = { kind: 'quick', ci: S.quick.circuit }; go('prerace'); break;
+    case 'qstart': S.pre = newPre('quick', S.quick.circuit); go('prerace'); break;
     case 'qualify': startRace(S.pre, { qualify: true }); break;
     case 'direct': startRace(S.pre, {}); break;
     case 'gridgo': startRace(S.pre, { grid: S.grid }); break;
@@ -163,20 +185,22 @@ function act(a, d, el) {
       S.career = C.newCareer(Object.assign({}, S.draft.pilot), S.draft.teamId, nm); C.saveCareer(S.career);
       S.stack = ['title']; ui.go('hub'); break;
     }
-    case 'race': S.pre = { kind: 'career', ci: S.career.round }; go('prerace'); break;
+    case 'race': S.pre = newPre('career', S.career.round); go('prerace'); break;
     case 'col': {
       if (d.k === 'h1' || d.k === 'h2') S.draft.pilot[d.k] = d.v;
       else { S.career.car[d.k] = d.v; C.saveCareer(S.career); }
       ui.render(); refreshPreview(); break;
     }
-    case 'gtab': S.garageTab = d.v; ui.render(); break;
+    case 'gtab': S.garageTab = d.v; S.pvPaint = null; ui.render(); refreshPreview(); break;
+    case 'equip': if (S.career.paints.includes(d.v)) { S.career.car.paint = d.v; C.saveCareer(S.career); } ui.render(); refreshPreview(); break;
+    case 'buyp': if (C.buyPaint(S.career, d.v)) { C.saveCareer(S.career); sfx.fanfare && sfx.fanfare(); } ui.render(); refreshPreview(); break;
     case 'sttab': S.stTab = d.v; ui.render(); break;
     case 'buy': if (C.buyUpgrade(S.career, d.v)) { C.saveCareer(S.career); sfx.fanfare && sfx.beep(880, .12, .2); } ui.render(); break;
     case 'menu': C.saveCareer(S.career); S.stack = []; ui.go('title'); break;
     case 'resume': resume(); break;
     case 'restart': startRace(S.cfg, S.opts); break;
     case 'quit': quitRace(); break;
-    case 'again': S.pre = S.cfg; S.stack = ['title']; ui.go('prerace'); break;
+    case 'again': S.pre = newPre(S.cfg.kind, S.cfg.ci); S.stack = ['title']; ui.go('prerace'); break;
     case 'resultok': finishResultScreen(); break;
     case 'toresults': ui.go('results'); break;
   }
@@ -185,7 +209,7 @@ function act(a, d, el) {
 // ---------- corrida ----------
 const H = {
   pos: $('hPos'), lap: $('hLap'), tower: $('tower'), times: $('hTimes'), speed: $('hSpeed'), n: $('hSpeed').querySelector('.n'), rpm: $('rpm'), gear: $('hGear'),
-  tyre: $('hTyre').querySelector('i'), mini: $('hMini'), lights: [...$('lights').children], lightsBox: $('lights'), msg: $('hMsg'), slip: $('hSlip'), pad: $('hPad'),
+  tyre: $('hTyre').querySelector('i'), cmp: $('hCmp'), dmg: $('hDmg'), wx: $('hWx'), pit: $('hPit'), fx: $('hFx'), mini: $('hMini'), lights: [...$('lights').children], lightsBox: $('lights'), msg: $('hMsg'), slip: $('hSlip'), pad: $('hPad'),
 };
 for (let i = 0; i < 16; i++) H.rpm.appendChild(document.createElement('i'));
 const rpmEls = [...H.rpm.children];
@@ -204,7 +228,7 @@ async function startRace(cfg, opts = {}) {
   if (cfg.kind === 'career') { const c = S.career; entries = C.buildEntries(c.pilot, c.team, c.car, c.upg, c.customName, c.team === 'custom'); }
   else {
     const p = S.career ? S.career.pilot : S.draft.pilot;
-    entries = C.buildEntries({ name: sanitizeName(p.name), nat: p.nat, number: p.number, h1: p.h1, h2: p.h2, hs: p.hs }, S.quick.team, { c1: TEAMS.find(t => t.id === S.quick.team).c1, c2: TEAMS.find(t => t.id === S.quick.team).c2, sp: [0, 1], wing: 0 }, {}, 'Minha Equipe', false);
+    entries = C.buildEntries({ name: sanitizeName(p.name), nat: p.nat, number: p.number, h1: p.h1, h2: p.h2, hs: p.hs }, S.quick.team, { c1: TEAMS.find(t => t.id === S.quick.team).c1, c2: TEAMS.find(t => t.id === S.quick.team).c2, sp: [0, 1], wing: 0, paint: S.career ? S.career.car.paint : 'solid' }, {}, 'Minha Equipe', false);
   }
   if (opts.grid) for (const e of entries) if (opts.grid[e.id] != null) e.qual = opts.grid[e.id];
   S.entries = entries;
@@ -215,6 +239,9 @@ async function startRace(cfg, opts = {}) {
     S.race = new RaceCore(track, entries.filter(e => e.isPlayer), 1, diff.skill, (Date.now() & 0xffff));
     S.race.goAt = 2.6; S.race.finishWait = 2.2;
   } else S.race = new RaceCore(track, entries, settings.laps, diff.skill, (Date.now() & 0xffff));
+  const wx0 = cfg.wx || rollWeather('dry'), dur = (opts.qualify ? 1 : settings.laps) * CIRCUITS[cfg.ci].len / 52;
+  const wx = Object.assign({}, wx0, { t0: wx0.tf * dur, ramp: wx0.ramp }); if (opts.qualify) wx.r1 = wx.r0;
+  S.race.setWeather(wx, cfg.tyre || 'S'); S.wx = wx; S.pitSel = 0;
   S.view.spawnCars(S.race.cars, entries);
   S.view.camInit = false;
   miniCache = null; lastHud = {}; finishT = 0; resetCd = 0;
@@ -225,7 +252,7 @@ async function startRace(cfg, opts = {}) {
   ld.hidden = true;
   S.sfx.start();
 }
-function flushEdges() { for (const k of ['camera', 'pause', 'reset', 'confirm', 'back', 'alt', 'mute']) S.input.edge(k); }
+function flushEdges() { for (const k of ['camera', 'pause', 'reset', 'confirm', 'back', 'alt', 'mute', 'pit']) S.input.edge(k); }
 function updateTouchVis() {
   const s = S.settings.touch, dev = S.input.lastDevice;
   const show = S.mode === 'race' && !S.paused && (s === 'on' || (s === 'auto' && coarse && dev !== 'pad'));
@@ -235,7 +262,7 @@ function pauseGame() { if (S.mode !== 'race' || S.paused || !S.race || S.race.do
 function resume() { S.paused = false; ui.clear(); flushEdges(); updateTouchVis(); }
 function quitRace() {
   S.mode = 'menu'; S.paused = false; S.race = null; hud.hidden = true; $('touch').hidden = true; S.input.captureKeys = false;
-  S.view.clearRace(); S.stack = []; S.view.mode = 'none'; ui.go(S.cfg && S.cfg.kind === 'career' ? 'hub' : 'title'); S.sfx.update(null, 0, true);
+  S.view.clearRace(); S.sfx.rain(0); S.stack = []; S.view.mode = 'none'; ui.go(S.cfg && S.cfg.kind === 'career' ? 'hub' : 'title'); S.sfx.update(null, 0, true);
 }
 function finishResultScreen() {
   const wasCareer = S.cfg.kind === 'career';
@@ -253,6 +280,12 @@ function onRaceEvent(e, race) {
     case 'wall': if (e.car === p) { sfx.thud(e.force); S.input.rumble(0.9, 0.5, 120 + 200 * e.force); S.view.shake = Math.max(S.view.shake, 0.25 * e.force); } break;
     case 'crash': sfx.thud(e.force * 0.6); S.input.rumble(0.5, 0.8, 120); break;
     case 'finish': if (e.car === p && S.opts && S.opts.qualify) { sfx.fanfare(); msg('VOLTA COMPLETA', 2000, '#ffc83d'); } else if (e.car === p) { sfx.fanfare(); msg(e.car.finishPos === 1 ? 'VITÓRIA!' : 'BANDEIRADA  P' + e.car.finishPos, 3000, '#ffc83d'); } break;
+    case 'pit':
+      if (e.car !== p) break;
+      if (e.ph === 'in') msg('BOX!', 1200, '#4ab3ff');
+      else if (e.ph === 'stop') { sfx.beep(700, .12, .2, 'square'); H.msg.classList.remove('show'); }
+      else if (e.ph === 'done') { S.pitSel = 0; sfx.fanfare(); msg('PNEUS ' + (e.tyre === 'W' ? 'DE CHUVA' : 'LISOS') + ' · VAI!', 1600, '#7be37b'); }
+      break;
     case 'done': onRaceDone(race); break;
   }
 }
@@ -270,6 +303,7 @@ async function finishQualy(race) {
   for (const e of S.entries) {
     if (e.isPlayer) { times[e.id] = myT; continue; }
     const rc = new RaceCore(track, [e], 1, diff.skill, 1000 + k++);
+    rc.setWeather(Object.assign({}, S.wx, { t0: 0, r1: S.wx.r0 }), 'S');
     rc.noBand = true; rc.phase = 'race'; rc.raceTime = 0;
     for (let n = 0; n < 40000 && !rc.done; n++) rc.step(1 / 60, null);
     const c = rc.cars[0];
@@ -339,6 +373,20 @@ function updateHud(race, dt) {
   if (lastHud.rpm !== on) { lastHud.rpm = on; rpmEls.forEach((e, i) => { e.className = i < on ? 'on' + (i > 12 ? ' r' : i > 9 ? ' y' : '') : ''; }); }
   const w = Math.round(p.wear * 100);
   if (lastHud.wear !== w) { lastHud.wear = w; H.tyre.style.width = Math.max(0, (p.wear - 0.5) * 200) + '%'; H.tyre.style.background = p.wear > 0.85 ? '#7be37b' : p.wear > 0.7 ? '#ffd23f' : '#ff5a4d'; }
+  const cmpT = p.tyre === 'W' ? 'CHUVA' : 'LISO';
+  if (lastHud.cmp !== cmpT) { lastHud.cmp = cmpT; H.cmp.textContent = cmpT; H.cmp.className = p.tyre === 'W' ? 'w' : 's'; }
+  const dp = Math.round((p.dmg || 0) * 100);
+  if (lastHud.dmg !== dp) { lastHud.dmg = dp; H.dmg.style.width = dp + '%'; H.dmg.style.background = dp < 30 ? '#7be37b' : dp < 60 ? '#ffd23f' : '#ff5a4d'; }
+  const wxs = race.rain > 0.04 ? (race.wet > 0.55 ? 'PISTA ENCHARCADA' : race.wet > 0.2 ? 'PISTA MOLHADA' : 'GAROANDO') : (race.wet > 0.12 ? 'PISTA SECANDO' : '');
+  setTxt(H.wx, 'wx', wxs); H.wx.style.display = wxs ? 'block' : 'none';
+  let pt = '', pc = '';
+  if (p.pit && p.pit.ph === 'stop') { pt = 'BOX ' + Math.max(0, p.pit.left).toFixed(1) + 's'; pc = 'stop'; }
+  else if (p.pit && p.pit.ph === 'in') { pt = 'ENTRANDO NO BOX'; pc = 'in'; }
+  else if (p.pitReq) { pt = 'BOX NA PRÓXIMA VOLTA · ' + (p.pitReq === 'W' ? 'CHUVA' : 'LISOS'); pc = 'req'; }
+  else if (race.phase === 'race' && (p.dmg > 0.35 || (race.wet > 0.3 && p.tyre === 'S') || (race.wet < 0.08 && race.rain < 0.05 && p.tyre === 'W')) && race.laps - p.lap > 1) { pt = p.dmg > 0.35 ? 'CARRO DANIFICADO · BOX? (B)' : 'TROCAR PNEUS? BOX (B)'; pc = 'tip'; }
+  if (lastHud.pit !== pt) { lastHud.pit = pt; H.pit.textContent = pt; H.pit.className = 'h ' + pc; H.pit.style.display = pt ? 'block' : 'none'; }
+  const fxv = Math.max(0, Math.min(1, (Math.abs(p.v) - 55) / 40)).toFixed(2);
+  if (lastHud.fx !== fxv) { lastHud.fx = fxv; H.fx.style.opacity = fxv; }
   const cur = Math.max(0, race.raceTime - p.lapStart);
   const html = '<b>' + (race.phase === 'race' ? C.fmtTime(p.finished ? p.lapTimes[p.lapTimes.length - 1] || 0 : cur) : '0:00.000') + '</b><small>MELHOR ' + (p.best ? C.fmtTime(p.best) : '--') + '</small>';
   if (lastHud.times !== html) { lastHud.times = html; H.times.innerHTML = html; }
@@ -373,6 +421,18 @@ function raceFrame(dt) {
     if (inp.edge('reset') && race.phase === 'race' && resetCd <= 0) {
       const p = race.player; if (p && !p.finished) { p.place(race.t, ((p.lastS % race.t.length) + race.t.length) % race.t.length, 0); p.v = Math.min(p.v, 25); resetCd = 3; msg('REPOSICIONADO', 900); }
     }
+    if (inp.edge('pit') && race.phase === 'race') {
+      const p = race.player;
+      if (p && !p.finished && !p.pit) {
+        if (race.laps - p.lap <= 1) msg('ÚLTIMA VOLTA: SEM BOX', 1200, '#ff9a4a');
+        else {
+          S.pitSel = ((S.pitSel || 0) + 1) % 3;
+          const best = race.wet > 0.2 ? 'W' : 'S', pick = S.pitSel === 1 ? best : S.pitSel === 2 ? (best === 'W' ? 'S' : 'W') : null;
+          p.pitReq = pick;
+          msg(pick ? 'BOX PEDIDO' : 'BOX CANCELADO', 1000, pick ? '#4ab3ff' : '#fff');
+        }
+      }
+    }
     inp.edge('confirm'); inp.edge('back'); inp.edge('alt');
   }
   resetCd = Math.max(0, resetCd - dt);
@@ -397,6 +457,7 @@ function raceFrame(dt) {
   }
   const p = race.player || race.cars[0];
   view.syncCars(race.cars, S.paused ? 0 : dt);
+  view.setWeather(race.rain, race.wet, S.paused ? 0 : dt); S.sfx.rain(S.paused ? 0 : race.rain);
   const orbit = race.phase === 'countdown' ? Math.max(0, 1 - race.cd / 3.6) * 2.4 : (p.finished ? Math.min(3.0, finishT * 0.45) : 0);
   view.shake *= Math.pow(0.02, dt);
   view.updateCamera(p, S.camMode, dt, { orbit, shake: view.shake });
@@ -440,6 +501,7 @@ let tvT = 0; function updateTouchVisThrottled() { tvT++; if (tvT % 20 === 0) upd
 S.input.bindTouch({ left: $('tL'), right: $('tR'), gas: $('tG'), brake: $('tB') });
 $('tP').addEventListener('click', () => pauseGame());
 $('tC').addEventListener('click', () => { S.camMode = (S.camMode + 1) % 3; });
+$('tX').addEventListener('click', () => { S.input._edge.pit = true; });
 const unlock = () => { S.sfx.start(); if (S.mode === 'menu') S.sfx.music(true); };
 addEventListener('pointerdown', unlock); addEventListener('keydown', unlock);
 addEventListener('keydown', e => {

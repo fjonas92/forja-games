@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#0a0d14">
 <title>APEX: Campeonato de Corrida 3D | Falzinho Games</title>
-<meta name="description" content="APEX, jogo de corrida 3D no navegador com carreira, 8 equipes, 16 carros e 12 circuitos. Crie seu piloto, evolua o carro e dispute o campeonato. Joga com teclado, controle (joystick) ou toque no celular.">
+<meta name="description" content="APEX, jogo de corrida 3D no navegador com carreira, 8 equipes, 16 carros, 14 circuitos, chuva, box com troca de pneus e pinturas. Crie seu piloto, evolua o carro e dispute o campeonato. Joga com teclado, controle (joystick) ou toque no celular.">
 <link rel="canonical" href="https://falzinhogames.com.br/apex/">
 <link rel="icon" href="/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,15 +37,15 @@ main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
 #padstatus{max-width:820px;margin:10px auto 0;text-align:center;color:var(--muted);font-size:14px}
 #padstatus b{color:var(--gold)}
 /* ---------- menus ---------- */
-.panel{position:absolute;left:2.5%;top:4%;bottom:4%;width:47%;overflow:auto;background:linear-gradient(90deg,rgba(7,9,15,.94),rgba(7,9,15,.62));border-left:calc(var(--u)*4px) solid var(--red);border-radius:calc(var(--u)*12px);padding:calc(var(--u)*20px) calc(var(--u)*22px);scrollbar-width:thin}
+.panel{position:absolute;left:2.5%;top:4%;bottom:4%;width:47%;overflow:auto;backdrop-filter:blur(7px);box-shadow:0 10px 40px rgba(0,0,0,.55);background:linear-gradient(90deg,rgba(7,9,15,.92),rgba(12,16,30,.6));border-left:calc(var(--u)*4px) solid var(--red);border-radius:calc(var(--u)*12px);padding:calc(var(--u)*20px) calc(var(--u)*22px);scrollbar-width:thin}
 .panel.wide{width:95%}
-.panel.center{left:50%;transform:translateX(-50%);width:44%;text-align:center;top:6%;bottom:6%;background:rgba(7,9,15,.82);border-left:0;border-top:calc(var(--u)*4px) solid var(--red);display:flex;flex-direction:column;justify-content:center}
-.panel.left{width:38%;text-align:center;display:flex;flex-direction:column;justify-content:center;top:6%;bottom:6%}
+.panel.center{left:50%;transform:translateX(-50%);width:44%;text-align:center;top:6%;bottom:6%;background:rgba(7,9,15,.82);border-left:0;border-top:calc(var(--u)*4px) solid var(--red);display:flex;flex-direction:column;justify-content:safe center}
+.panel.left{width:38%;text-align:center;display:flex;flex-direction:column;justify-content:safe center;top:6%;bottom:6%}
 .panel.right{left:auto;right:2.5%}
 h2.t{margin:0 0 calc(var(--u)*10px);font-size:calc(var(--u)*30px);letter-spacing:2px;text-transform:uppercase;font-weight:700}
 .sub{color:var(--muted);font-size:calc(var(--u)*17px);margin-bottom:calc(var(--u)*10px)}
-.big-logo{font-size:calc(var(--u)*96px);font-weight:700;letter-spacing:calc(var(--u)*14px);line-height:1;text-shadow:0 0 30px rgba(255,59,48,.55);margin-bottom:calc(var(--u)*2px)}
-.btn{display:block;width:100%;min-height:max(34px,calc(var(--u)*46px));margin:calc(var(--u)*7px) 0;padding:0 calc(var(--u)*16px);background:rgba(30,36,60,.9);color:#fff;border:2px solid #2f3860;border-radius:calc(var(--u)*8px);font:700 calc(var(--u)*20px)/1 var(--font-hud);letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;text-align:center}
+.big-logo{background:linear-gradient(180deg,#fff 30%,#ff8a80);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:calc(var(--u)*96px);font-weight:700;letter-spacing:calc(var(--u)*14px);line-height:1;text-shadow:0 0 30px rgba(255,59,48,.55);margin-bottom:calc(var(--u)*2px)}
+.btn{transition:transform .12s,border-color .12s,box-shadow .12s;display:block;width:100%;min-height:max(34px,calc(var(--u)*46px));margin:calc(var(--u)*7px) 0;padding:0 calc(var(--u)*16px);background:linear-gradient(180deg,rgba(44,52,86,.92),rgba(24,30,52,.92));color:#fff;border:2px solid #36406d;border-radius:calc(var(--u)*8px);font:700 calc(var(--u)*20px)/1 var(--font-hud);letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;text-align:center}
 .btn.primary{background:linear-gradient(180deg,#ff4a3f,#c9211a);border-color:#ff8077}
 .btn.small{display:inline-block;width:auto;min-height:max(30px,calc(var(--u)*38px));font-size:calc(var(--u)*16px);margin-right:calc(var(--u)*6px)}
 .btn:hover,.btn.focus,.btn:focus-visible,.nav:focus-visible,.nav.focus{outline:0;border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,200,61,.45),0 0 18px rgba(255,200,61,.3);transform:translateY(-1px)}
@@ -115,7 +115,16 @@ table.tb td.r,table.tb th.r{text-align:right}
 #hGear{font-size:calc(var(--u)*28px);font-weight:700;color:var(--gold)}
 #hTyre{right:2%;bottom:calc(var(--u)*22px);width:calc(var(--u)*130px);font-size:calc(var(--u)*14px);text-align:right;letter-spacing:1px}
 #hTyre .tb{height:calc(var(--u)*8px);background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;margin-top:3px}
-#hTyre .tb i{display:block;height:100%;background:#7be37b}
+#hTyre .tb i{display:block;height:100%;background:#7be37b;transition:width .2s}
+#hTyre b{padding:0 6px;border-radius:4px;font-size:.95em}
+#hTyre b.s{background:#ffd23f;color:#111}#hTyre b.w{background:#3aa0ff;color:#06121f}
+#hTyre{background:linear-gradient(180deg,rgba(10,14,24,.62),rgba(10,14,24,.35));padding:calc(var(--u)*8px) calc(var(--u)*10px);border-radius:10px;border-right:3px solid var(--red);backdrop-filter:blur(3px)}
+#hFx{inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 52%,rgba(160,210,255,.16) 78%,rgba(190,230,255,.34) 100%);transition:opacity .25s}
+#hWx{left:50%;top:calc(var(--u)*92px);transform:translateX(-50%);font-size:calc(var(--u)*16px);letter-spacing:3px;color:#8fd0ff;background:rgba(10,24,44,.55);padding:2px 12px;border-radius:20px;border:1px solid rgba(143,208,255,.4)}
+#hPit{left:50%;top:32%;transform:translateX(-50%);font-size:calc(var(--u)*26px);font-weight:700;letter-spacing:3px;padding:calc(var(--u)*6px) calc(var(--u)*18px);border-radius:10px;background:rgba(10,14,24,.7);border:2px solid #4ab3ff;text-align:center;white-space:nowrap}
+#hPit.stop{font-size:calc(var(--u)*54px);border-color:#ffd23f;color:#ffd23f}
+#hPit.tip{font-size:calc(var(--u)*17px);border-color:#ff9a4a;color:#ffc58a;top:calc(var(--u)*130px)}
+#hPit.req,#hPit.in{color:#8fd0ff}
 #hMini{left:2%;bottom:calc(var(--u)*22px);width:calc(var(--u)*150px);height:calc(var(--u)*110px);background:rgba(0,0,0,.35);border-radius:8px}
 #lights{left:50%;top:5%;transform:translateX(-50%);display:flex;gap:calc(var(--u)*12px);background:rgba(0,0,0,.6);padding:calc(var(--u)*10px) calc(var(--u)*16px);border-radius:12px}
 #lights i{width:calc(var(--u)*34px);height:calc(var(--u)*34px);border-radius:50%;background:#2a0b0b;border:2px solid #111}
@@ -132,6 +141,7 @@ table.tb td.r,table.tb th.r{text-align:right}
 #tR{left:calc(2.5% + var(--u)*144px);bottom:5%;width:calc(var(--u)*130px);height:calc(var(--u)*130px)}
 #tG{right:2.5%;bottom:5%;width:calc(var(--u)*150px);height:calc(var(--u)*150px);background:rgba(60,200,90,.35);font-size:calc(var(--u)*22px);letter-spacing:1px}
 #tB{right:calc(2.5% + var(--u)*166px);bottom:5%;width:calc(var(--u)*110px);height:calc(var(--u)*110px);background:rgba(255,59,48,.35);font-size:calc(var(--u)*18px)}
+#tX{right:calc(2.5% + var(--u)*112px);top:calc(var(--u)*90px);width:calc(var(--u)*56px);height:calc(var(--u)*40px);font-size:calc(var(--u)*15px);border-radius:10px}
 #tP{right:2.5%;top:calc(var(--u)*90px);width:calc(var(--u)*46px);height:calc(var(--u)*40px);font-size:calc(var(--u)*20px);border-radius:10px}
 #tC{right:calc(2.5% + var(--u)*56px);top:calc(var(--u)*90px);width:calc(var(--u)*46px);height:calc(var(--u)*40px);font-size:calc(var(--u)*17px);border-radius:10px}
 body.tv #hMini{bottom:auto;top:calc(var(--u)*124px);width:calc(var(--u)*120px);height:calc(var(--u)*88px)}
@@ -165,7 +175,10 @@ body.tv #tower{display:none}
       <div class="h" id="hPad"></div>
       <canvas class="h" id="hMini" width="300" height="220"></canvas>
       <div class="h" id="hSpeed"><div id="rpm"></div><div class="n">0</div><div class="u">KM/H <span id="hGear">N</span></div></div>
-      <div class="h" id="hTyre">PNEUS<div class="tb"><i></i></div></div>
+      <div class="h" id="hFx"></div>
+      <div class="h" id="hTyre">PNEUS <b id="hCmp" class="s">LISO</b><div class="tb"><i></i></div><div style="margin-top:6px">DANO</div><div class="tb dm"><i id="hDmg"></i></div></div>
+      <div class="h" id="hWx" style="display:none"></div>
+      <div class="h" id="hPit" style="display:none"></div>
       <div class="h" id="lights"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="h" id="hMsg"></div>
       <div class="h" id="hSlip">ASPIRACAO</div>
@@ -176,6 +189,7 @@ body.tv #tower{display:none}
       <button class="tbtn" id="tB" type="button">FREIO</button>
       <button class="tbtn" id="tG" type="button">ACELERA</button>
       <button class="tbtn" id="tC" type="button" aria-label="Camera">&#128247;</button>
+      <button class="tbtn" id="tX" type="button" aria-label="Box">BOX</button>
       <button class="tbtn" id="tP" type="button" aria-label="Pausar">&#10074;&#10074;</button>
     </div>
     <div id="ui"></div>
@@ -186,7 +200,7 @@ body.tv #tower{display:none}
   <p id="padstatus" role="status">Nenhum controle detectado. Conecte um joystick e aperte qualquer botão, ou use teclado e toque.</p>
   <section class="info">
     <h1>APEX: Campeonato de Corrida 3D</h1>
-    <p>Crie seu <strong>piloto</strong>, escolha uma das <strong>8 equipes</strong> (ou monte a sua) e dispute uma temporada com <strong>12 circuitos</strong> inéditos contra mais 15 carros. Ganhe créditos nas corridas, evolua motor, aerodinâmica, freios e pneus e personalize pintura, patrocinadores e asas. As equipes, pilotos e pistas são todos fictícios.</p>
+    <p>Crie seu <strong>piloto</strong>, escolha uma das <strong>8 equipes</strong> (ou monte a sua) e dispute uma temporada com <strong>14 circuitos</strong> inéditos contra mais 15 carros. Ganhe créditos nas corridas, evolua motor, aerodinâmica, freios e pneus e personalize pintura, patrocinadores e asas. As equipes, pilotos e pistas são todos fictícios.</p>
     <p>O jogo é em 3D e roda direto no navegador, no computador ou no celular. Use <strong>teclado</strong>, <strong>joystick (controle de videogame)</strong> ou os <strong>botões na tela</strong>. Dica: use a aspiração (ficar atrás de um carro) para ultrapassar nas retas e não esqueça de frear antes das curvas.</p>
     <h2>Controles</h2>
     <table>
@@ -200,7 +214,7 @@ body.tv #tower{display:none}
       <tr><td>Menus</td><td>Setas e Enter</td><td>Direcional, A confirma, B volta</td><td>Tocar</td></tr>
     </table>
     <h2>Circuitos</h2>
-    <p>Costa Azul, Cidade do Vento, Dunas, Serra Alta, Lago Gelado, Neon Night, Bosque Verde, Sakura Park, Grande Velocidade, Penhasco do Sol, Ocaso e Ilha Tropical. Cada um tem clima, cenário e traçado próprios.</p>
+    <p>Costa Azul, Cidade do Vento, Dunas, Serra Alta, Lago Gelado, Neon Night, Bosque Verde, Sakura Park, Grande Velocidade, Penhasco do Sol, Ocaso, Ilha Tropical, Canion Vermelho e Vulcao Negro. Cada um tem clima, cenário e traçado próprios.</p>
     <p style="font-size:13px">Música da abertura: Alex Morgan (Pixabay). Demo versão 0.1. O progresso da carreira fica salvo no seu navegador.</p>
   </section>
 </main>

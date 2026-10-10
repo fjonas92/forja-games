@@ -31,13 +31,15 @@ export const THEMES = {
   city:    { sky:['#5aa0e8','#dbe9f5'], fog:'#d3e0ec', fogD:0.0009, grass:['#74a04a','#668e40'], ground:'#6f7a6a', sun:1.8, sunCol:'#fff6e6', scenery:['building','building','building','tree','lamp'], mount:0 },
   desert:  { sky:['#4b8fd8','#f2dcae'], fog:'#ecd7a8', fogD:0.0009, grass:['#d2b074','#c29f62'], ground:'#cfa965', sun:2.1, sunCol:'#fff0cf', scenery:['cactus','rock','rock','bush'], mount:1, mountCol:'#b8845a' },
   alps:    { sky:['#4f8fe0','#d6e8f6'], fog:'#d4e4f2', fogD:0.0009, grass:['#5e9a47','#528a3c'], ground:'#5e8f45', sun:1.8, sunCol:'#fff4e3', scenery:['pine','pine','pine','bush'], mount:1, mountCol:'#7d8794', snowcap:true },
-  snow:    { sky:['#8fb5d8','#eaf1f7'], fog:'#e3ecf4', fogD:0.0014, grass:['#e8eef3','#d9e2ea'], ground:'#e8eef3', sun:1.5, sunCol:'#e8f1ff', scenery:['snowpine','snowpine','rock'], mount:1, mountCol:'#9fb0c2', snowcap:true },
+  snow:    { snowy:true, sky:['#8fb5d8','#eaf1f7'], fog:'#e3ecf4', fogD:0.0014, grass:['#e8eef3','#d9e2ea'], ground:'#e8eef3', sun:1.5, sunCol:'#e8f1ff', scenery:['snowpine','snowpine','rock'], mount:1, mountCol:'#9fb0c2', snowcap:true },
   night:   { sky:['#050a1c','#1d2a52'], fog:'#0e1633', fogD:0.0011, grass:['#1d3a2a','#183223'], ground:'#16251d', sun:0.7, sunCol:'#9fb4ff', scenery:['building','building','lamp','lamp','tree'], night:true, mount:0 },
   forest:  { sky:['#5aa0d8','#d9ead6'], fog:'#cfe3cd', fogD:0.0012, grass:['#4f8a3c','#447a33'], ground:'#3f6f30', sun:1.7, sunCol:'#fff3d6', scenery:['pine','pine','tree','tree','bush'], mount:0 },
   sakura:  { sky:['#6fa8e6','#f6e1ea'], fog:'#efdbe4', fogD:0.0010, grass:['#78a84c','#6a9a42'], ground:'#72a048', sun:1.8, sunCol:'#fff0e6', scenery:['sakura','sakura','sakura','building','lamp'], mount:1, mountCol:'#6d7f9a', snowcap:true },
   speed:   { sky:['#3f86dc','#d4e6f6'], fog:'#cfe2f2', fogD:0.0007, grass:['#7aa84a','#6a9640'], ground:'#71a044', sun:2.0, sunCol:'#fff4e0', scenery:['tree','bush'], mount:0 },
   cliffs:  { sky:['#5b97d8','#e9d8c4'], fog:'#e0d3c4', fogD:0.0010, grass:['#8aa05a','#7a9250'], ground:'#a8946e', sun:1.9, sunCol:'#ffe8c8', scenery:['rock','rock','bush','pine'], water:true, mount:1, mountCol:'#9a7c62' },
   dusk:    { sky:['#2b3a78','#ff9a5a'], fog:'#d98a68', fogD:0.0010, grass:['#587a3a','#4d6e33'], ground:'#4a6a32', sun:1.1, sunCol:'#ff9a5a', scenery:['palm','building','lamp','tree'], mount:1, mountCol:'#5a4468' },
+  canyon:  { sky:['#3a7fd0','#f4d2a4'], fog:'#ecc9a0', fogD:0.0010, grass:['#c07a4a','#b06c40'], ground:'#b8683c', sun:2.1, sunCol:'#ffe2bc', scenery:['rock','rock','cactus','bush'], mount:1, mountCol:'#a8512c' },
+  volcano: { sky:['#2a2f45','#c8754a'], fog:'#8a6a5c', fogD:0.0014, grass:['#3a3a3e','#313136'], ground:'#2a2a2e', sun:1.3, sunCol:'#ffb27a', scenery:['rock','rock','rock','pine','lamp'], mount:1, mountCol:'#3b2a2a' },
   tropic:  { sky:['#2f9be0','#bfe8f2'], fog:'#bfe3ee', fogD:0.0009, grass:['#4da04a','#409240'], ground:'#e1cf92', sun:2.0, sunCol:'#fffbe8', scenery:['palm','palm','palm','bush','rock'], water:true, mount:0 },
 };
 
@@ -56,6 +58,8 @@ export const CIRCUITS = [
   { id:'penhasco',name:'Penhasco do Sol',          country:'PT', theme:'cliffs', len:3400, sx:1.35, w:7.4, h:7,  harm:[[2,.16,1.3],[3,.11,.4],[5,.06,2.5]],         hp:[[2.6,.28,.18]], diff:3 },
   { id:'ocaso',   name:'Autodromo do Ocaso',       country:'ES', theme:'dusk',   len:3200, sx:1.30, w:7.4, h:4,  harm:[[2,.15,.1],[3,.12,1.4],[4,.08,2.9],[6,.04,.2]], hp:[[1.0,.25,.16],[4.6,.24,.16]], diff:4 },
   { id:'ilha',    name:'Ilha Tropical GP',         country:'AU', theme:'tropic', len:3500, sx:1.45, w:7.6, h:3,  harm:[[2,.18,1.9],[3,.10,.9],[5,.05,1.3]],         hp:[[3.4,.27,.2]], diff:2 },
+  { id:'canion',  name:'Canion Vermelho GP',       country:'US', theme:'canyon', len:3700, sx:1.50, w:7.8, h:8,  harm:[[2,.18,.8],[3,.11,2.3],[4,.07,.6]],          hp:[[3.1,.30,.20]], diff:3 },
+  { id:'vulcao',  name:'Vulcao Negro Circuit',     country:'IS', theme:'volcano',len:3000, sx:1.20, w:7.4, h:7,  harm:[[2,.14,1.8],[3,.13,.2],[5,.07,1.1],[6,.04,2.4]], hp:[[0.6,.27,.17],[3.7,.23,.15]], diff:4 },
 ];
 
 export const LAPS_OPTIONS = [2,3,5,8];
@@ -73,3 +77,24 @@ export const UPGRADES = [
 ];
 export const UPGRADE_COST = lvl => 400 + lvl * 350;
 export const MAX_UPG = 5;
+
+// Estilos de pintura (padrao desenhado sobre a cor principal/secundaria). Desbloqueio com creditos da carreira.
+export const PAINTS = [
+  { id:'solid',   name:'Lisa',            price:0 },
+  { id:'stripe',  name:'Faixa central',   price:300 },
+  { id:'twin',    name:'Faixas duplas',   price:350 },
+  { id:'split',   name:'Meio a meio',     price:400 },
+  { id:'dots',    name:'Pontos',          price:450 },
+  { id:'chevron', name:'Setas',           price:500 },
+  { id:'checker', name:'Xadrez',          price:550 },
+  { id:'fade',    name:'Degrade',         price:650 },
+  { id:'flame',   name:'Chamas',          price:800 },
+  { id:'camo',    name:'Camuflagem',      price:900 },
+  { id:'carbon',  name:'Carbono',         price:1200 },
+  { id:'gold',    name:'Edicao Ouro',     price:2500 },
+];
+export const AI_PAINT = ['stripe','twin','chevron','split','fade','dots','checker','flame'];
+
+// Clima: r0 = chuva no inicio, r1 = chuva no fim (0..1), t0/ramp = quando muda
+export const WEATHERS = ['auto','dry','light','heavy','var'];
+export const WX_NAME = { auto:'Sorteado', dry:'Seco', light:'Chuva fraca', heavy:'Chuva forte', var:'Variavel' };

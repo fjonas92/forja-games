@@ -365,6 +365,6 @@ export function buildTrackWorld(t, opts = {}) {
       s.position.set(Math.cos(a) * r, 380 + rand() * 260, Math.sin(a) * r); s.scale.set(700 + rand() * 600, 260 + rand() * 120, 1); root.add(s);
     }
   }
-  root.userData.theme = th;
+  root.userData.theme = th; root.userData.asMat = asMat;
   return root;
 }
