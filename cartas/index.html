@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cartas: Truco, Blackjack e Poker | Falzinho Games</title>
+<meta name="description" content="Jogos de cartas online grátis: Truco contra a IA, Blackjack (21) e Poker Texas Hold'em com fichas virtuais. Ranking geral de pontos, direto no navegador.">
+<link rel="canonical" href="https://falzinhogames.com.br/cartas/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<style>
+:root{--bg:#0e3b2a;--felt:#14724a;--felt2:#0f5c3b;--ln:#2a9d6a;--tx:#f4fff8;--mut:#a9dcc3;--gold:#ffc83d;--red:#e5384a;--gt:16px;
+--font-display:'Bungee',Impact,sans-serif;--font-body:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--tx);font-family:var(--font-body);font-size:16px;line-height:1.5;padding-inline:var(--gt);background:radial-gradient(900px 500px at 50% -120px,rgba(255,200,61,.2),transparent 70%),var(--bg)}
+[hidden]{display:none!important}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px}
+.bar{max-width:980px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.bar .back{text-decoration:none;color:var(--mut);font-weight:600;font-size:14px}
+.bar .logo{font-family:var(--font-display);font-size:16px;color:var(--gold);letter-spacing:1px}
+main{max-width:980px;margin-inline:auto;padding-bottom:40px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.btn{font:inherit;font-weight:700;color:var(--tx);background:var(--felt2);border:2px solid var(--ln);border-radius:12px;padding:8px 14px;cursor:pointer;min-height:44px}
+.btn:hover:not(:disabled){border-color:var(--gold)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.on,.btn.primary{background:var(--gold);color:#3a2a00;border-color:var(--gold)}
+.btn.red{background:var(--red);border-color:var(--red)}
+.table{background:radial-gradient(ellipse at center,var(--felt),var(--felt2));border:4px solid #0a2a1d;border-radius:22px;padding:14px;min-height:430px;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 0 40px rgba(0,0,0,.35)}
+.hdr{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:700}
+.hdr .chip{background:rgba(0,0,0,.28);border-radius:999px;padding:3px 12px}
+.chip b{color:var(--gold)}
+.row{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;min-height:100px}
+.lab{text-align:center;font-size:13px;color:var(--mut);font-weight:600}
+.card{width:62px;height:90px;border-radius:9px;background:#fff;color:#1a1a2a;border:2px solid #cfd6de;position:relative;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.35);flex:none;user-select:none}
+.card.r{color:var(--red)}
+.card .a{position:absolute;left:5px;top:3px;font-size:17px;line-height:1.05;text-align:center}
+.card .m{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px}
+.card.back{background:repeating-linear-gradient(45deg,#2b4acb 0 6px,#1e369c 6px 12px);border-color:#fff}
+.card.back *{display:none}
+.card.slot{background:rgba(0,0,0,.18);border:2px dashed rgba(255,255,255,.3);box-shadow:none}
+.card.mine{cursor:pointer;transition:transform .12s}.card.mine:hover{transform:translateY(-8px)}
+.card.vira{outline:3px solid var(--gold)}
+.card.man::after{content:'M';position:absolute;right:4px;bottom:3px;font-size:11px;background:var(--gold);color:#3a2a00;border-radius:4px;padding:0 4px}
+.msg{text-align:center;font-weight:700;min-height:26px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.raiseBox{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.raiseBox input[type=range]{width:min(260px,60vw)}
+.chips button{min-width:56px}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots i{width:14px;height:14px;border-radius:50%;background:rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.5)}
+.dots i.w{background:#4aa8ff}.dots i.l{background:var(--red)}.dots i.t{background:#999}
+.info{max-width:760px;margin:28px auto 0;color:var(--mut)}
+.info h2{color:var(--tx);font-size:20px}
+.small{font-size:13px;color:var(--mut);text-align:center}
+</style>
+</head>
+<body>
+<script src="/analytics.js"></script>
+<div class="bar"><a class="back" href="/">← Falzinho Games</a><span class="logo">CARTAS</span><span id="acc"></span></div>
+<main>
+  <div class="tabs"><button class="btn on" data-g="truco" type="button">Truco</button><button class="btn" data-g="bj" type="button">Blackjack</button><button class="btn" data-g="poker" type="button">Poker</button><button class="btn" id="bRank" type="button">Ranking</button><span class="chip" style="align-self:center;background:rgba(0,0,0,.28);border-radius:999px;padding:4px 12px;font-weight:700">Pontos: <b id="pts">0</b></span></div>
+  <div class="table" id="tb"></div>
+  <p class="small">Fichas e pontos são virtuais, sem dinheiro de verdade. Os pontos de vitórias alimentam o ranking geral.</p>
+  <section class="info">
+    <h1 style="font-family:var(--font-display);font-weight:400;font-size:26px;margin:0 0 6px;color:var(--tx)">Jogos de cartas online e grátis</h1>
+    <p>Três clássicos em um só lugar: <strong>Truco</strong> (uma contra uma, até 12 pontos, com manilhas e pedidos de truco, seis, nove e doze), <strong>Blackjack</strong> (chegue o mais perto de 21 sem estourar) e <strong>Poker Texas Hold'em</strong> contra a IA.</p>
+    <h2>Pontos do ranking</h2>
+    <p>Vitória no Truco vale <strong>15</strong> pontos, no Poker <strong>20</strong>, e cada mão ganha no Blackjack vale <strong>2</strong> (<strong>4</strong> em blackjack natural). Entre na sua conta para os pontos irem para o ranking geral.</p>
+    <h2>Regras do Truco</h2>
+    <p>Baralho de 40 cartas. A carta virada define a manilha (a seguinte na ordem). Ordem das manilhas: ouros, espadas, copas e paus. Vence a mão quem ganhar duas das três rodadas. Em empate de rodada, vale quem venceu a primeira.</p>
+  </section>
+</main>
+<script src="/fg.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  var $ = function (i) { return document.getElementById(i); };
+  var Cd = window.Cards, tb = $('tb'), cur = 'truco', timers = [];
+  var KEY = 'fg_cartas', stats = { pontos: 0, chips: 500, truco: 0, poker: 0, bj: 0 };
+  try { var s0 = JSON.parse(localStorage.getItem(KEY)); if (s0 && typeof s0.pontos === 'number') for (var k in s0) stats[k] = s0[k]; } catch (e) { }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(stats)); } catch (e) { } FG.schedulePush(function () { return stats; }); $('pts').textContent = stats.pontos; }
+  $('pts').textContent = stats.pontos;
+  FG.init('cartas'); FG.mountBar($('acc'));
+  FG.onLogin = async function () { var c = await FG.cloudLoad(); if (c && c.pontos > stats.pontos) { for (var k in c) stats[k] = c[k]; save(); if (cur === 'bj') show(); } else FG.cloudSave(stats); flush(); };
+  $('bRank').onclick = function () { FG.showRanking('Ranking de Cartas'); };
+
+  // pontos para o ranking (fila com limite de frequencia)
+  var pend = 0, pendWins = 0, lastRep = 0, repT = null;
+  function ganhar(n, venceu) { stats.pontos += n; pend += n; if (venceu) pendWins++; save(); flush(); }
+  function flush() {
+    clearTimeout(repT); if (pend <= 0 || !FG.user) return;
+    var wait = 22000 - (Date.now() - lastRep); if (wait > 0) { repT = setTimeout(flush, wait); return; }
+    var n = Math.min(100, pend); pend -= n; var w = pendWins > 0; pendWins = 0; lastRep = Date.now();
+    FG.report(n, w).then(function (r) { if (r.err) pend += n; if (pend > 0) repT = setTimeout(flush, 23000); });
+  }
+
+  function later(f, ms) { var t = setTimeout(f, ms); timers.push(t); }
+  function clearT() { timers.forEach(clearTimeout); timers = []; }
+  function esc(x) { return x; }
+  function cardEl(c, o) {
+    o = o || {}; var d = document.createElement(o.btn ? 'button' : 'div');
+    if (!c) { d.className = 'card ' + (o.slot ? 'slot' : 'back'); if (o.btn) d.disabled = true; return d; }
+    var red = c.s === 0 || c.s === 2; d.className = 'card' + (red ? ' r' : '') + (o.cls ? ' ' + o.cls : '');
+    d.innerHTML = '<span class="a">' + Cd.rname(c.r) + '<br>' + Cd.SUITS[c.s] + '</span><span class="m">' + Cd.SUITS[c.s] + '</span>'; d.setAttribute('aria-label', Cd.rname(c.r) + ' de ' + ['ouros', 'espadas', 'copas', 'paus'][c.s]);
+    return d;
+  }
+  function put(el, cards, fn) { el.innerHTML = ''; cards.forEach(function (c, i) { el.appendChild(fn ? fn(c, i) : cardEl(c)); }); }
+
+  /* ================= TRUCO ================= */
+  var TR = null, trBusy = false, trMsg = '';
+  function truco() {
+    tb.innerHTML = '<div class="hdr"><span class="chip">Você <b id="tS0">0</b> x <b id="tS1">0</b> Adversário</span><span class="chip">Mão vale <b id="tV">1</b></span><span class="chip" id="tM"></span></div>' +
+      '<div class="lab">Adversário</div><div class="row" id="tOpp"></div><div class="row" id="tTab"></div><div class="dots" id="tDots"></div><div class="msg" id="tMsg"></div>' +
+      '<div class="lab">Suas cartas</div><div class="row" id="tMine"></div><div class="acts" id="tActs"></div>';
+    if (!TR || TR.over) { TR = new Cd.Truco(); TR.newHand(); trMsg = 'Nova partida! Primeiro a 12 pontos.'; }
+    trDraw(); trNext();
+  }
+  function trDraw() {
+    $('tS0').textContent = TR.score[0]; $('tS1').textContent = TR.score[1]; $('tV').textContent = TR.value;
+    var vira = cardEl(TR.vira, { cls: 'vira' }); $('tM').innerHTML = ''; $('tM').appendChild(document.createTextNode('Vira: ')); var vs = document.createElement('span'); vs.textContent = Cd.rname(TR.vira.r) + Cd.SUITS[TR.vira.s]; vs.style.color = TR.vira.s === 0 || TR.vira.s === 2 ? '#ff7a88' : '#fff'; $('tM').appendChild(vs);
+    put($('tOpp'), TR.cards[1].map(function () { return null; }));
+    var tab = $('tTab'); tab.innerHTML = '';
+    var tc = TR.table, last = TR.roundCards;
+    var oc = tc[1] || null, mc = tc[0] || null;
+    var oEl = cardEl(oc, { slot: !oc }); if (oc && TR.power(oc) >= 100) oEl.classList.add('man'); var mEl = cardEl(mc, { slot: !mc }); if (mc && TR.power(mc) >= 100) mEl.classList.add('man');
+    if (!oc) oEl.className = 'card slot'; if (!mc) mEl.className = 'card slot';
+    tab.appendChild(oEl); tab.appendChild(cardEl(TR.vira, { cls: 'vira' })); tab.appendChild(mEl);
+    var dots = $('tDots'); dots.innerHTML = ''; for (var i = 0; i < 3; i++) { var d = document.createElement('i'); var r = TR.rounds[i]; if (r === 0) d.className = 'w'; else if (r === 1) d.className = 'l'; else if (r === -1) d.className = 't'; dots.appendChild(d); }
+    var mine = $('tMine'); put(mine, TR.cards[0], function (c, i) { var e = cardEl(c, { btn: true, cls: 'mine' }); if (TR.power(c) >= 100) e.classList.add('man'); e.onclick = function () { trPlay(i); }; return e; });
+    $('tMsg').textContent = trMsg;
+  }
+  var NEXTN = { 1: 'Truco!', 3: 'Seis!', 6: 'Nove!', 9: 'Doze!' };
+  function trActs() {
+    var a = $('tActs'); a.innerHTML = ''; if (!a) return;
+    function btn(t, cls, f) { var b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + (cls || ''); b.textContent = t; b.onclick = f; a.appendChild(b); return b; }
+    if (TR.over) { btn('Jogar de novo', 'primary', function () { TR = null; truco(); }); return; }
+    if (TR.handOver) { btn('Próxima mão', 'primary', function () { TR.newHand(); trMsg = ''; trDraw(); trNext(); }); return; }
+    if (TR.pending && TR.pending.from === 1) {
+      btn('Aceitar (' + TR.pending.to + ')', 'primary', function () { TR.respond(0, 'accept'); trMsg = 'Você aceitou. Mão vale ' + TR.value + '.'; trDraw(); trNext(); });
+      btn('Correr', 'red', function () { TR.respond(0, 'run'); trAfterHand('Você correu.'); });
+      if (TR.pending.to < 12) btn('Aumentar (' + ({ 3: 6, 6: 9, 9: 12 })[TR.pending.to] + ')', '', function () { TR.respond(0, 'raise'); trMsg = 'Você aumentou!'; trDraw(); trNext(); });
+      return;
+    }
+    if (TR.canCall(0)) btn(NEXTN[TR.value], '', function () { TR.call(0); trMsg = 'Você pediu ' + NEXTN[TR.value].replace('!', '') + '...'; trDraw(); trNext(); });
+  }
+  function trAfterHand(pre) {
+    var r = TR.handRes, w = r.w === 0;
+    trMsg = (pre ? pre + ' ' : '') + (w ? 'Você ganhou ' : 'Adversário ganhou ') + r.pts + (r.pts === 1 ? ' ponto.' : ' pontos.');
+    if (TR.over) { trMsg = TR.winner === 0 ? 'Você venceu a partida de Truco! +15 pontos' : 'O adversário venceu a partida.'; if (TR.winner === 0) { stats.truco++; ganhar(15, true); } else save(); }
+    trDraw(); trActs();
+  }
+  function trPlay(i) {
+    if (trBusy || TR.handOver || TR.pending || TR.turn !== 0) return;
+    if (!TR.play(0, i)) return; trMsg = ''; trDraw(); trNext();
+  }
+  function trNext() {
+    clearT(); trActs();
+    if (TR.handOver) { trAfterHand(''); return; }
+    if (TR.pending) { // IA decide
+      if (TR.pending.from === 0) { trBusy = true; later(function () { trBusy = false; var r = TR.aiRespond(1); TR.respond(1, r); if (TR.handOver) { trAfterHand('O adversário correu.'); return; } trMsg = r === 'raise' ? 'Adversário: ' + NEXTN[TR.value] + ' (aumentou)' : 'Adversário aceitou. Mão vale ' + TR.value + '.'; trDraw(); trNext(); }, 1100); }
+      return;
+    }
+    // fim de rodada: mostrar cartas por um instante
+    if (TR.turn === 1) {
+      trBusy = true;
+      later(function () {
+        trBusy = false; var m = TR.aiMove(1);
+        if (m.t === 'call') { TR.call(1); trMsg = 'Adversário pede ' + NEXTN[TR.value].replace('!', '') + '!'; trDraw(); trNext(); return; }
+        TR.play(1, m.i); trMsg = ''; trDraw(); trNext();
+      }, 900);
+    } else if (TR.table[0] === null && TR.table[1] === null && TR.rounds.length > 0) {
+      var rr = TR.rounds[TR.rounds.length - 1]; trMsg = rr === 0 ? 'Você ganhou a rodada. Jogue.' : rr === 1 ? 'Adversário ganhou a rodada.' : 'Rodada empatada.'; $('tMsg').textContent = trMsg;
+    } else if (!trMsg) { trMsg = 'Sua vez.'; $('tMsg').textContent = trMsg; }
+  }
+
+  /* ================= BLACKJACK ================= */
+  var BJ = null, bjBet = 25, bjMsg = '';
+  function bj() {
+    if (!BJ) { BJ = new Cd.Blackjack(); BJ.chips = stats.chips > 0 ? stats.chips : 500; }
+    tb.innerHTML = '<div class="hdr"><span class="chip">Fichas <b id="bC">0</b></span><span class="chip" id="bBet"></span></div><div class="lab" id="bDL">Mesa</div><div class="row" id="bD"></div><div class="msg" id="bMsg"></div><div class="lab" id="bPL">Você</div><div class="row" id="bP"></div><div class="acts" id="bActs"></div>';
+    bjDraw();
+  }
+  function bjDraw() {
+    $('bC').textContent = BJ.chips; var play = BJ.phase === 'play';
+    $('bBet').textContent = BJ.player ? 'Aposta: ' + BJ.bet : '';
+    if (BJ.player) { put($('bD'), BJ.dealer, function (c, i) { return i === 1 && play ? cardEl(null) : cardEl(c); }); put($('bP'), BJ.player); $('bDL').textContent = 'Mesa' + (play ? '' : ' (' + Cd.bjVal(BJ.dealer) + ')'); $('bPL').textContent = 'Você (' + Cd.bjVal(BJ.player) + ')'; }
+    else { $('bD').innerHTML = ''; $('bP').innerHTML = ''; }
+    $('bMsg').textContent = bjMsg;
+    var a = $('bActs'); a.innerHTML = '';
+    function btn(t, cls, f, dis) { var b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + (cls || ''); b.textContent = t; b.onclick = f; b.disabled = !!dis; a.appendChild(b); }
+    if (play) { btn('Pedir carta', 'primary', function () { BJ.hit(); bjAfter(); }); btn('Parar', '', function () { BJ.stand(); bjAfter(); }); btn('Dobrar', '', function () { BJ.dbl(); bjAfter(); }, !BJ.canDouble()); }
+    else {
+      if (BJ.chips < 5) { btn('Recomeçar com 500 fichas', 'primary', function () { BJ.chips = 500; stats.chips = 500; save(); bjMsg = ''; bjDraw(); }); return; }
+      [5, 25, 50, 100].forEach(function (v) { btn(String(v), bjBet === v ? 'on' : '', function () { bjBet = v; bjDraw(); }, BJ.chips < v); });
+      btn('Tudo', bjBet === -1 ? 'on' : '', function () { bjBet = -1; bjDraw(); });
+      btn('Distribuir', 'primary', function () { var b = bjBet === -1 ? BJ.chips : Math.min(bjBet, BJ.chips); BJ.start(b); bjMsg = ''; bjAfter(); });
+    }
+  }
+  function bjAfter() {
+    if (BJ.phase === 'bet') {
+      var r = BJ.res, t = { win: 'Você ganhou!', lose: 'A mesa ganhou.', push: 'Empate, aposta devolvida.', blackjack: 'BLACKJACK! Paga 3 para 2.' }[r];
+      if (BJ.player.length > 2 || r !== 'lose') { } if (r === 'lose' && Cd.bjVal(BJ.player) > 21) t = 'Estourou! A mesa ganhou.';
+      bjMsg = t; stats.chips = BJ.chips; if (r === 'win') ganhar(2, false); else if (r === 'blackjack') ganhar(4, false); else save();
+    }
+    bjDraw();
+  }
+
+  /* ================= POKER ================= */
+  var PK = null, pkMsg = '', pkBusy = false, pkRaise = 0;
+  function poker() {
+    tb.innerHTML = '<div class="hdr"><span class="chip">Adversário <b id="pS1">0</b></span><span class="chip">Pote <b id="pPot">0</b></span><span class="chip">Você <b id="pS0">0</b></span></div>' +
+      '<div class="lab">Adversário <span id="pD1"></span></div><div class="row" id="pOpp"></div><div class="row" id="pBoard"></div><div class="msg" id="pMsg"></div><div class="lab">Você <span id="pD0"></span> <span id="pCat"></span></div><div class="row" id="pMine"></div><div class="raiseBox" id="pRaise"></div><div class="acts" id="pActs"></div>';
+    if (!PK || PK.matchOver) { PK = new Cd.Poker({ stack: 1000 }); pkMsg = 'Partida nova: 1000 fichas cada, blinds 10/20.'; PK.deal(); pkRaise = 0; }
+    pkDraw(); pkNext();
+  }
+  function pkDraw() {
+    $('pS0').textContent = PK.stack[0]; $('pS1').textContent = PK.stack[1]; $('pPot').textContent = PK.total();
+    $('pD0').textContent = PK.dealer === 0 ? '(dealer)' : ''; $('pD1').textContent = PK.dealer === 1 ? '(dealer)' : '';
+    var show = PK.over && PK.res && PK.res.how === 'showdown';
+    put($('pOpp'), PK.hole[1], function (c) { return show ? cardEl(c) : cardEl(null); });
+    var bd = []; for (var i = 0; i < 5; i++) bd.push(PK.board[i] || null); put($('pBoard'), bd, function (c) { return c ? cardEl(c) : cardEl(null, { slot: true }); });
+    put($('pMine'), PK.hole[0]);
+    var cat = ''; if (PK.board.length >= 3) cat = '· ' + Cd.CATN[Cd.catOf(Cd.best7(PK.hole[0].concat(PK.board)))]; $('pCat').textContent = cat;
+    $('pMsg').textContent = pkMsg;
+  }
+  function pkActs() {
+    var a = $('pActs'), rb = $('pRaise'); a.innerHTML = ''; rb.innerHTML = '';
+    function btn(t, cls, f, dis) { var b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + (cls || ''); b.textContent = t; b.onclick = f; b.disabled = !!dis; a.appendChild(b); }
+    if (PK.over) {
+      if (PK.matchOver) { var w = PK.stack[0] > 0; btn('Nova partida', 'primary', function () { PK = null; poker(); }); return; }
+      btn('Próxima mão', 'primary', function () { PK.deal(); pkMsg = ''; pkDraw(); pkNext(); }); return;
+    }
+    if (PK.turn !== 0 || pkBusy) return;
+    var tc = PK.toCall(0);
+    btn('Desistir', 'red', function () { PK.act(0, 'fold'); pkNext(); });
+    btn(tc ? 'Pagar ' + tc : 'Passar', 'primary', function () { PK.act(0, 'call'); pkMsg = ''; pkNext(); });
+    if (PK.canRaise(0)) {
+      var mn = PK.minRaiseTo(0), mx = PK.maxRaiseTo(0); if (pkRaise < mn || pkRaise > mx) pkRaise = mn;
+      var inp = document.createElement('input'); inp.type = 'range'; inp.min = mn; inp.max = mx; inp.step = 10; inp.value = pkRaise; inp.setAttribute('aria-label', 'Valor do aumento');
+      var lab = document.createElement('b'); lab.textContent = pkRaise; inp.oninput = function () { pkRaise = +inp.value; lab.textContent = pkRaise; };
+      var rb2 = document.createElement('button'); rb2.type = 'button'; rb2.className = 'btn'; rb2.textContent = mx === pkRaise ? 'All-in' : 'Aumentar para'; inp.addEventListener('input', function () { rb2.textContent = +inp.value >= mx ? 'All-in' : 'Aumentar para'; });
+      rb2.onclick = function () { PK.act(0, 'raise', +inp.value); pkMsg = ''; pkNext(); };
+      rb.appendChild(rb2); rb.appendChild(lab); rb.appendChild(inp);
+    }
+  }
+  function pkNext() {
+    clearT(); pkDraw();
+    if (PK.over) { pkEnd(); return; }
+    if (PK.turn === 1) {
+      pkBusy = true; pkActs();
+      later(function () {
+        pkBusy = false; var d = PK.ai(1, 1), before = PK.bet[0] + PK.bet[1];
+        PK.act(1, d.a, d.to); var la = PK.lastAct;
+        if (la && la.p === 1) pkMsg = { fold: 'Adversário desistiu.', call: 'Adversário pagou.', check: 'Adversário passou.', raise: 'Adversário aumentou para ' + (la.n || ''), allin: 'Adversário foi all-in!' }[la.a] || '';
+        pkNext();
+      }, 1000);
+    } else pkActs();
+  }
+  function pkEnd() {
+    var r = PK.res, t;
+    if (r.w === -1) t = 'Empate! Pote dividido.';
+    else if (r.how === 'fold') t = r.w === 0 ? 'O adversário desistiu. Você ganhou ' + r.total + '.' : 'Você desistiu.';
+    else { var cn = Cd.CATN[Cd.catOf(PK.v[r.w])]; t = (r.w === 0 ? 'Você ganhou ' : 'Adversário ganhou ') + r.total + ' com ' + cn.toLowerCase() + '.'; }
+    if (PK.matchOver) { if (PK.stack[0] > 0) { t = 'Você quebrou o adversário e venceu a partida! +20 pontos'; stats.poker++; ganhar(20, true); } else t = 'Você ficou sem fichas. Fim da partida.'; }
+    pkMsg = t; pkDraw(); pkActs();
+  }
+
+  function show() { clearT(); trBusy = pkBusy = false; if (cur === 'truco') truco(); else if (cur === 'bj') bj(); else poker(); }
+  document.querySelectorAll('.tabs [data-g]').forEach(function (b) { b.onclick = function () { cur = b.dataset.g; document.querySelectorAll('.tabs [data-g]').forEach(function (x) { x.classList.toggle('on', x === b); }); show(); }; });
+  show();
+})();
+</script>
+<script src="/cookies.js"></script>
+</body>
+</html>

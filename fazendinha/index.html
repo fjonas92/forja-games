@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minha Fazendinha | Falzinho Games</title>
+<meta name="description" content="Minha Fazendinha: jogo de fazenda no navegador. Are a terra, plante, regue, colha, venda na loja e cuide das galinhas. Entre na sua conta para salvar o progresso na nuvem.">
+<link rel="canonical" href="https://falzinhogames.com.br/fazendinha/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<style>
+:root{--bg:#1f4d2b;--sf:#2b6a3b;--ln:#3f8a52;--tx:#f6fff0;--mut:#bfe3c4;--gold:#ffc83d;--red:#ff5a4a;--blue:#4aa8ff;--gt:16px;
+--font-display:'Bungee',Impact,sans-serif;--font-body:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--tx);font-family:var(--font-body);font-size:16px;line-height:1.5;padding-inline:var(--gt);-webkit-tap-highlight-color:transparent;
+background:radial-gradient(900px 500px at 50% -120px,rgba(255,224,102,.28),transparent 70%),var(--bg)}
+[hidden]{display:none!important}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
+.bar{max-width:1100px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.bar .back{text-decoration:none;color:var(--mut);font-weight:600;font-size:14px}
+.bar .logo{font-family:var(--font-display);font-size:16px;color:var(--gold);letter-spacing:1px}
+main{max-width:1100px;margin-inline:auto;padding-bottom:40px}
+.hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.chip{background:var(--sf);border:2px solid var(--ln);border-radius:12px;padding:4px 12px;font-weight:700;font-size:15px;white-space:nowrap}
+.chip b{color:var(--gold)}
+.btn{font:inherit;font-weight:700;color:var(--tx);background:var(--sf);border:2px solid var(--ln);border-radius:12px;padding:8px 14px;cursor:pointer;min-height:44px}
+.btn:hover{border-color:var(--gold)}
+.btn.primary{background:var(--gold);color:#3a2a00;border-color:var(--gold)}
+#wrap{position:relative;border-radius:16px;overflow:hidden;border:3px solid var(--ln);background:#7ac26a;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{display:block;width:100%;height:auto;aspect-ratio:16/10}
+#hot{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+#hot button{font:inherit;font-weight:700;color:var(--tx);background:var(--sf);border:3px solid var(--ln);border-radius:12px;padding:4px 8px;min-width:64px;min-height:54px;cursor:pointer;line-height:1.2;font-size:13px}
+#hot button.on{border-color:var(--gold);background:#3b8a4e}
+#hot button small{display:block;color:var(--mut);font-weight:600}
+#toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(0,0,0,.65);padding:6px 14px;border-radius:999px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+#toast.on{opacity:1}
+#pad{position:absolute;left:0;right:0;bottom:0;height:100%;pointer-events:none}
+#joy{position:absolute;left:14px;bottom:14px;width:124px;height:124px;border-radius:50%;background:rgba(255,255,255,.18);border:3px solid rgba(255,255,255,.4);pointer-events:auto;display:none}
+#joy i{position:absolute;left:36px;top:36px;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.55)}
+#act{position:absolute;right:16px;bottom:22px;width:92px;height:92px;border-radius:50%;background:rgba(255,200,61,.8);border:3px solid #fff;font:700 18px var(--font-body);color:#3a2a00;pointer-events:auto;display:none}
+.touch #joy,.touch #act{display:block}
+.ov{position:absolute;inset:0;background:rgba(10,30,15,.82);display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}
+.box{background:#245c34;border:3px solid var(--ln);border-radius:18px;padding:18px;max-width:520px;width:100%;text-align:center}
+.box h1,.box h2{font-family:var(--font-display);font-weight:400;margin:0 0 8px;color:var(--gold)}
+.box p{margin:6px 0;color:var(--mut)}
+.box .row{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#1f4d2b;border-radius:12px;padding:6px 10px;margin:6px 0;text-align:left}
+.box .row span{flex:1}
+.box .row .btn{min-height:38px;padding:4px 10px}
+.help{font-size:14px;color:var(--mut);text-align:left;margin-top:10px}
+.help span{display:block;margin:3px 0}
+.info{max-width:760px;margin:28px auto 0;color:var(--mut)}
+.info h2{color:var(--tx);font-size:20px}
+</style>
+</head>
+<body>
+<script src="/analytics.js"></script>
+<div class="bar"><a class="back" href="/">← Falzinho Games</a><span class="logo">MINHA FAZENDINHA</span><span id="acc"></span></div>
+<main>
+  <div class="hud">
+    <span class="chip">Dia <b id="hDia">1</b></span><span class="chip"><b id="hHora">06:00</b> <span id="hClima"></span></span>
+    <span class="chip">🪙 <b id="hOuro">0</b></span><span class="chip">💧 <b id="hAgua">0</b></span><span class="chip" id="hOvos">🥚 0</span>
+    <button class="btn" id="bSnd" type="button">Som: ligado</button><button class="btn" id="bMenu" type="button">Menu</button>
+  </div>
+  <div id="wrap">
+    <canvas id="cv" width="1280" height="800" aria-label="Fazenda"></canvas>
+    <div id="toast"></div>
+    <div id="pad"><div id="joy"><i id="knob"></i></div><button id="act" type="button">AGIR</button></div>
+    <div class="ov" id="ovMenu"><div class="box">
+      <h1>MINHA FAZENDINHA</h1><p>Plante, regue, colha e venda. As galinhas botam ovos todo dia. Ganhe ouro e compre sementes melhores.</p>
+      <button class="btn primary" id="bPlay" type="button">Jogar</button>
+      <button class="btn" id="bNew" type="button">Começar do zero</button>
+      <p id="saveInfo"></p><div id="acc2"></div>
+      <div class="help"><span><b>Teclado:</b> setas ou WASD andam · Espaço ou E usa a ferramenta · 1 a 6 trocam de ferramenta · Q alterna</span><span><b>Celular:</b> joystick à esquerda, botão AGIR à direita, toque na barra de ferramentas para escolher</span><span>Chegue perto da <b>casa</b> (porta) para dormir e passar o dia, e do <b>balcão da loja</b> para comprar e vender. A lagoa enche o regador.</span></div>
+    </div></div>
+    <div class="ov" id="ovShop" hidden><div class="box" id="shopBox"></div></div>
+    <div class="ov" id="ovSleep" hidden><div class="box"><h2>Hora de dormir?</h2><p>Plantas regadas crescem durante a noite.</p><button class="btn primary" id="bSleepYes" type="button">Dormir</button><button class="btn" id="bSleepNo" type="button">Ainda não</button></div></div>
+  </div>
+  <div id="hot"></div>
+  <section class="info">
+    <h1 style="font-family:var(--font-display);font-weight:400;font-size:26px;margin:0 0 6px;color:var(--tx)">Jogo de fazenda online e grátis</h1>
+    <p>Em <strong>Minha Fazendinha</strong> você cuida da própria roça: ara a terra com a enxada, planta trigo, milho, tomate e morango, rega todo dia e colhe quando estiver pronto. Venda tudo no balcão da loja, compre sementes melhores e cuide das galinhas.</p>
+    <h2>Salvar o jogo</h2>
+    <p>O progresso fica salvo neste aparelho. Se você entrar na sua conta, o jogo também é salvo na nuvem e você continua de onde parou em qualquer celular ou computador.</p>
+  </section>
+</main>
+<script src="/fg.js"></script>
+<script src="farm.js"></script>
+<script>
+(function () {
+  var $ = function (i) { return document.getElementById(i); };
+  var F = window.Farm, T = F.T, MW = F.MW, MH = F.MH, C = F.CROPS;
+  var cv = $('cv'), g = cv.getContext('2d'), VW = cv.width, VH = cv.height, Z = 1.35;
+  var KEY = 'fg_fazendinha', S = null, playing = false, snd = true, tool = 0, face = { x: 0, y: 1 }, keys = {}, joy = { x: 0, y: 0 }, last = 0, tAcc = 0, anim = 0, ac = null;
+  var TOOLS = [{ k: 'enxada', n: 'Enxada', e: '⛏️' }, { k: 'regador', n: 'Regador', e: '🚿' }, { k: 'trigo', n: 'Trigo', e: '🌾' }, { k: 'milho', n: 'Milho', e: '🌽' }, { k: 'tomate', n: 'Tomate', e: '🍅' }, { k: 'morango', n: 'Morango', e: '🍓' }];
+  var HORA_S = 24; // segundos reais por hora de jogo
+
+  function carregar() { try { var d = JSON.parse(localStorage.getItem(KEY)); if (F.valido(d)) return d; } catch (e) { } return null; }
+  function salvar() { if (!S) return; S.t = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } FG.schedulePush(function () { return S; }); }
+  function info() { var d = carregar(); $('saveInfo').textContent = d ? 'Jogo salvo: dia ' + d.dia + ', ' + d.ouro + ' de ouro.' : 'Nenhum jogo salvo ainda.'; }
+  info();
+  FG.init('fazendinha'); FG.mountBar($('acc')); FG.mountBar($('acc2'));
+  FG.onLogin = async function () {
+    var c = await FG.cloudLoad(), l = carregar();
+    if (c && F.valido(c) && (!l || c.t > l.t)) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) { } if (playing) { S = c; hud(); toast('Jogo carregado da nuvem'); } info(); }
+    else if (l) FG.cloudSave(l);
+  };
+
+  // som
+  function beep(f, d, ty, v) { if (!snd) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); var o = ac.createOscillator(), gn = ac.createGain(); o.type = ty || 'sine'; o.frequency.value = f; gn.gain.value = v || 0.05; gn.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d); o.connect(gn); gn.connect(ac.destination); o.start(); o.stop(ac.currentTime + d); } catch (e) { } }
+  var SFX = { dig: function () { beep(120, .12, 'square'); }, splash: function () { beep(520, .15, 'sine'); beep(700, .1, 'sine'); }, plant: function () { beep(300, .1, 'triangle'); }, pick: function () { beep(660, .08, 'triangle'); beep(880, .12, 'triangle'); }, coin: function () { beep(988, .08, 'square', .04); beep(1319, .14, 'square', .04); } };
+  function sfx(n) { if (n && SFX[n]) SFX[n](); }
+  var toastT = 0;
+  function toast(m) { var t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('on'); }, 1600); }
+
+  function hud() {
+    $('hDia').textContent = S.dia; var h = Math.floor(S.hora), m = Math.floor((S.hora - h) * 60 / 10) * 10;
+    $('hHora').textContent = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; $('hClima').textContent = S.chuva ? '🌧️' : '☀️';
+    $('hOuro').textContent = S.ouro; $('hAgua').textContent = S.agua + '/' + S.maxAgua; $('hOvos').textContent = '🥚 ' + S.ovos;
+    var hb = $('hot'); hb.innerHTML = '';
+    TOOLS.forEach(function (t, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = i === tool ? 'on' : '';
+      var q = i >= 2 ? '<small>x' + S.sementes[t.k] + '</small>' : (i === 1 ? '<small>' + S.agua + '/' + S.maxAgua + '</small>' : '<small>&nbsp;</small>');
+      b.innerHTML = t.e + ' ' + (i + 1) + '<br>' + t.n + q; b.onclick = function () { tool = i; hud(); }; hb.appendChild(b);
+    });
+  }
+
+  function alvo() {
+    var cx = S.px + face.x * T * 0.75, cy = S.py + face.y * T * 0.75;
+    return { x: Math.floor(cx / T), y: Math.floor(cy / T) };
+  }
+  function agir() {
+    if (!playing || !$('ovShop').hidden || !$('ovSleep').hidden) return;
+    var a = alvo(), tp = F.tipo(a.x, a.y), r, k = F.idx(a.x, a.y);
+    if (tp === 8) { abrirLoja(); return; }
+    if (tp === 7) { $('ovSleep').hidden = false; return; }
+    // colher tem prioridade
+    if (S.plantas[k] && F.pronta(S.plantas[k])) { r = F.colher(S, a.x, a.y); }
+    else if (tool === 0) r = F.arar(S, a.x, a.y);
+    else if (tool === 1) r = F.regar(S, a.x, a.y);
+    else r = F.plantar(S, a.x, a.y, TOOLS[tool].k);
+    if (r && r.msg) toast(r.msg); if (r && r.ok) { sfx(r.sfx); salvar(); } hud();
+  }
+
+  function abrirLoja() {
+    var b = $('shopBox'), h = '<h2>Loja da fazenda</h2><p>Ouro: <b style="color:var(--gold)">' + S.ouro + '</b></p><p><b>Comprar sementes</b></p>';
+    Object.keys(C).forEach(function (k) {
+      h += '<div class="row"><span>' + C[k].nome + ' · ' + C[k].compra + ' 🪙 <small>(' + C[k].dias + ' dias · vende ' + C[k].venda + ')</small></span><button class="btn" data-b="' + k + '" data-n="1" type="button">+1</button><button class="btn" data-b="' + k + '" data-n="5" type="button">+5</button></div>';
+    });
+    h += '<p><b>Vender</b></p>';
+    Object.keys(C).forEach(function (k) { if (S.colheita[k]) h += '<div class="row"><span>' + C[k].nome + ' x' + S.colheita[k] + '</span><button class="btn" data-s="' + k + '" type="button">Vender (' + S.colheita[k] * C[k].venda + ')</button></div>'; });
+    if (S.ovos) h += '<div class="row"><span>Ovos x' + S.ovos + '</span><button class="btn" data-s="ovos" type="button">Vender (' + S.ovos * F.OVO + ')</button></div>';
+    h += '<button class="btn primary" id="bAll" type="button">Vender tudo</button> <button class="btn" id="bShopX" type="button">Fechar</button>';
+    b.innerHTML = h; $('ovShop').hidden = false;
+    b.querySelectorAll('[data-b]').forEach(function (x) { x.onclick = function () { var r = F.comprar(S, x.dataset.b, +x.dataset.n); if (r.ok) sfx('coin'); else toast(r.msg); salvar(); hud(); abrirLoja(); }; });
+    b.querySelectorAll('[data-s]').forEach(function (x) { x.onclick = function () { F.vender(S, x.dataset.s); sfx('coin'); salvar(); hud(); abrirLoja(); }; });
+    $('bAll').onclick = function () { var v = F.venderTudo(S); if (v) { sfx('coin'); toast('+' + v + ' de ouro'); } salvar(); hud(); abrirLoja(); };
+    $('bShopX').onclick = function () { $('ovShop').hidden = true; };
+  }
+
+  function dormir() {
+    $('ovSleep').hidden = true; F.dormir(S); salvar(); hud();
+    toast(S.chuva ? 'Dia ' + S.dia + ': está chovendo, tudo regado!' : 'Dia ' + S.dia + ': bom dia!');
+  }
+  $('bSleepYes').onclick = dormir; $('bSleepNo').onclick = function () { $('ovSleep').hidden = true; };
+
+  function iniciar(novo) {
+    S = novo ? F.novo() : (carregar() || F.novo()); S.galinhas.forEach(function (c) { c.dx = 0; c.dy = 0; c.w = 0; });
+    playing = true; $('ovMenu').hidden = true; tool = 0; hud(); salvar(); last = performance.now(); requestAnimationFrame(loop);
+  }
+  $('bPlay').onclick = function () { iniciar(false); };
+  $('bNew').onclick = function () { if (carregar() && !confirm('Isso apaga o jogo salvo neste aparelho. Continuar?')) return; iniciar(true); };
+  $('bMenu').onclick = function () { if (!playing) return; salvar(); playing = false; info(); $('ovMenu').hidden = false; };
+  $('bSnd').onclick = function () { snd = !snd; $('bSnd').textContent = 'Som: ' + (snd ? 'ligado' : 'desligado'); };
+
+  // entrada
+  addEventListener('keydown', function (e) {
+    var k = e.key.toLowerCase(); keys[k] = true;
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].indexOf(k) >= 0 && playing) e.preventDefault();
+    if (k === ' ' || k === 'e') agir();
+    if (k >= '1' && k <= '6') { tool = +k - 1; if (S) hud(); }
+    if (k === 'q' && S) { tool = (tool + 1) % TOOLS.length; hud(); }
+  });
+  addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+  var isTouch = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window; if (isTouch) $('wrap').classList.add('touch');
+  var jid = null, jr = $('joy');
+  function jmove(e) {
+    var r = jr.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, dx = e.clientX - cx, dy = e.clientY - cy, m = Math.hypot(dx, dy), lim = r.width / 2;
+    if (m > lim) { dx *= lim / m; dy *= lim / m; } $('knob').style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    joy.x = Math.abs(dx) > 12 ? dx / lim : 0; joy.y = Math.abs(dy) > 12 ? dy / lim : 0;
+  }
+  jr.addEventListener('pointerdown', function (e) { jid = e.pointerId; jr.setPointerCapture(jid); jmove(e); e.preventDefault(); });
+  jr.addEventListener('pointermove', function (e) { if (e.pointerId === jid) jmove(e); });
+  function jend(e) { if (e.pointerId === jid) { jid = null; joy.x = joy.y = 0; $('knob').style.transform = ''; } }
+  jr.addEventListener('pointerup', jend); jr.addEventListener('pointercancel', jend);
+  $('act').addEventListener('pointerdown', function (e) { e.preventDefault(); agir(); });
+
+  // atualizar
+  function update(dt) {
+    var dx = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x, dy = (keys.s || keys.arrowdown ? 1 : 0) - (keys.w || keys.arrowup ? 1 : 0) + joy.y;
+    var m = Math.hypot(dx, dy);
+    if ($('ovShop').hidden && $('ovSleep').hidden && m > 0.1) {
+      dx /= Math.max(1, m); dy /= Math.max(1, m);
+      if (Math.abs(dx) > Math.abs(dy)) face = { x: Math.sign(dx), y: 0 }; else face = { x: 0, y: Math.sign(dy) };
+      var sp = 190 * dt, nx = S.px + dx * sp, ny = S.py + dy * sp;
+      if (F.podeIr(nx, S.py, 13)) S.px = nx; if (F.podeIr(S.px, ny, 13)) S.py = ny; anim += dt * 10;
+    }
+    // tempo
+    if ($('ovShop').hidden && $('ovSleep').hidden) {
+      S.hora += dt / HORA_S;
+      if (S.hora >= 22) { toast('Já é tarde, você foi dormir.'); dormir(); }
+    }
+    // galinhas
+    S.galinhas.forEach(function (c) {
+      c.w -= dt;
+      if (c.w <= 0) { c.w = 1 + Math.random() * 2.5; var a = Math.random() * 6.28, mv = Math.random() < 0.6; c.dx = mv ? Math.cos(a) : 0; c.dy = mv ? Math.sin(a) * 0.5 : 0; }
+      var nx = c.x + c.dx * dt * 0.7, ny = c.y + c.dy * dt * 0.7;
+      if (nx > 10.6 && nx < 14.9) c.x = nx; if (ny > 2.7 && ny < 3.8) c.y = ny;
+      if (c.ovo && Math.hypot(c.x * T - S.px, c.y * T - S.py) < 36) { c.ovo = false; S.ovos++; toast('+1 ovo'); sfx('pick'); hud(); }
+    });
+    tAcc += dt; if (tAcc > 0.5) { tAcc = 0; hud(); }
+  }
+
+  // desenho
+  function hash(x, y) { var h = (x * 374761393 + y * 668265263) ^ (x * y + 1274126177); h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
+  function draw() {
+    var cw = VW / Z, ch = VH / Z, cx = Math.max(0, Math.min(MW * T - cw, S.px - cw / 2)), cy = Math.max(0, Math.min(MH * T - ch, S.py - ch / 2));
+    g.setTransform(Z, 0, 0, Z, -cx * Z, -cy * Z);
+    var x0 = Math.floor(cx / T), y0 = Math.floor(cy / T), x1 = Math.min(MW - 1, Math.ceil((cx + cw) / T)), y1 = Math.min(MH - 1, Math.ceil((cy + ch) / T)), x, y;
+    var tm = performance.now() / 1000;
+    for (y = y0; y <= y1; y++) for (x = x0; x <= x1; x++) {
+      var t = F.tipo(x, y), px = x * T, py = y * T, h = hash(x, y), k = F.idx(x, y);
+      if (t === 1) { g.fillStyle = '#4db8ff'; g.fillRect(px, py, T, T); g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 2; g.beginPath(); g.arc(px + 24, py + 24 + Math.sin(tm * 2 + x) * 2, 10, 3.5, 5.9); g.stroke(); continue; }
+      g.fillStyle = h < .5 ? '#96e377' : '#8cdc6e'; g.fillRect(px, py, T, T);
+      if (t === 5) { g.fillStyle = '#e8d3a2'; g.fillRect(px, py, T, T); g.fillStyle = '#d9c08a'; g.fillRect(px + 8 + h * 20, py + 10, 6, 5); }
+      else if (t === 0 && h > .86) { g.fillStyle = '#ffffff'; g.beginPath(); g.arc(px + 12 + h * 20, py + 14, 4, 0, 6.3); g.fill(); g.fillStyle = '#ffd23c'; g.beginPath(); g.arc(px + 12 + h * 20, py + 14, 1.8, 0, 6.3); g.fill(); }
+      if (S.solo[k]) { g.fillStyle = S.solo[k] === 2 ? '#6b4528' : '#9a6a3c'; g.fillRect(px + 2, py + 2, T - 4, T - 4); g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(px + 6, py + 14, T - 12, 4); g.fillRect(px + 6, py + 30, T - 12, 4); }
+      var p = S.plantas[k];
+      if (p) {
+        var st = F.estagio(p), col = C[p.t].cor;
+        g.fillStyle = '#3f9e3a'; g.fillRect(px + 22, py + 30 - st * 5, 4, 14 + st * 5);
+        if (st === 0) { g.beginPath(); g.arc(px + 24, py + 32, 4, 0, 6.3); g.fill(); }
+        else { g.beginPath(); g.ellipse(px + 17, py + 26 - st * 3, 7, 4, -.5, 0, 6.3); g.ellipse(px + 31, py + 26 - st * 3, 7, 4, .5, 0, 6.3); g.fill(); }
+        if (st === 3) { g.fillStyle = col; g.beginPath(); g.arc(px + 24, py + 14, 9, 0, 6.3); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke(); }
+      }
+    }
+    // objetos grandes
+    for (y = y0; y <= y1; y++) for (x = x0; x <= x1; x++) {
+      var tt = F.tipo(x, y), qx = x * T, qy = y * T;
+      if (tt === 2) { g.fillStyle = '#7a4a24'; g.fillRect(qx + 19, qy + 24, 10, 22); g.fillStyle = (x + y) % 2 ? '#2fae4e' : '#27a046'; g.beginPath(); g.arc(qx + 24, qy + 18, 22, 0, 6.3); g.fill(); g.fillStyle = 'rgba(255,255,255,.2)'; g.beginPath(); g.arc(qx + 16, qy + 10, 8, 0, 6.3); g.fill(); }
+      else if (tt === 6) { g.fillStyle = '#c28a4a'; g.fillRect(qx, qy + 18, T, 8); g.fillRect(qx + 6, qy + 6, 8, 34); g.fillRect(qx + 34, qy + 6, 8, 34); }
+    }
+    // casa
+    g.fillStyle = '#f4e3c1'; g.fillRect(3 * T, 2.6 * T, 5 * T, 2.4 * T); g.fillStyle = '#e0533d'; g.beginPath(); g.moveTo(2.7 * T, 2.7 * T); g.lineTo(5.5 * T, 1.1 * T); g.lineTo(8.3 * T, 2.7 * T); g.fill();
+    g.fillStyle = '#8a5a2c'; g.fillRect(4.7 * T, 3.7 * T, 0.7 * T, 1.3 * T); g.fillStyle = '#9fdcff'; g.fillRect(3.5 * T, 3.4 * T, 0.8 * T, 0.7 * T); g.fillRect(6.4 * T, 3.4 * T, 0.8 * T, 0.7 * T);
+    // loja
+    g.fillStyle = '#ffe9a8'; g.fillRect(22 * T, 2.8 * T, 5 * T, 2.2 * T);
+    for (var i = 0; i < 10; i++) { g.fillStyle = i % 2 ? '#fff' : '#2f9bff'; g.fillRect(22 * T + i * T / 2, 2.2 * T, T / 2, 0.8 * T); }
+    g.fillStyle = '#8a5a2c'; g.fillRect(23.3 * T, 4.2 * T, 2.4 * T, 0.8 * T); g.fillStyle = '#fff'; g.font = '700 16px sans-serif'; g.textAlign = 'center'; g.fillText('LOJA', 24.5 * T, 3.7 * T);
+    // galinhas
+    S.galinhas.forEach(function (c) {
+      var bx = c.x * T, by = c.y * T + Math.sin(tm * 8 + c.x) * (c.dx || c.dy ? 2 : 0);
+      g.fillStyle = '#fff'; g.beginPath(); g.ellipse(bx, by, 13, 10, 0, 0, 6.3); g.fill(); g.beginPath(); g.arc(bx + 10 * (c.dx < 0 ? -1 : 1), by - 8, 6, 0, 6.3); g.fill();
+      g.fillStyle = '#ff9d2e'; g.fillRect(bx + (c.dx < 0 ? -20 : 14), by - 9, 6, 3); g.fillStyle = '#e8402f'; g.fillRect(bx + (c.dx < 0 ? -12 : 8), by - 16, 5, 4);
+      if (c.ovo) { g.fillStyle = '#fff4d6'; g.strokeStyle = '#c9a85a'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, by + 15, 5, 7, 0, 0, 6.3); g.fill(); g.stroke(); }
+    });
+    // jogador
+    var jx = S.px, jy = S.py, bob = Math.sin(anim) * 2;
+    g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(jx, jy + 18, 13, 5, 0, 0, 6.3); g.fill();
+    g.fillStyle = '#3a78d8'; g.fillRect(jx - 10, jy - 4 + bob, 20, 20); g.fillStyle = '#ffd7ae'; g.beginPath(); g.arc(jx, jy - 12 + bob, 10, 0, 6.3); g.fill();
+    g.fillStyle = '#e8b24a'; g.beginPath(); g.ellipse(jx, jy - 18 + bob, 15, 5, 0, 0, 6.3); g.fill(); g.fillRect(jx - 8, jy - 26 + bob, 16, 9);
+    g.fillStyle = '#222'; g.fillRect(jx - 5 + face.x * 3, jy - 13 + bob + face.y * 2, 3, 3); g.fillRect(jx + 2 + face.x * 3, jy - 13 + bob + face.y * 2, 3, 3);
+    // alvo
+    var a = alvo(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 3; g.setLineDash([8, 5]); g.strokeRect(a.x * T + 2, a.y * T + 2, T - 4, T - 4); g.setLineDash([]);
+    // noite / chuva
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    var hr = S.hora, dark = hr < 7 ? (7 - hr) * 0.1 : (hr > 18 ? Math.min(0.55, (hr - 18) * 0.14) : 0);
+    if (S.chuva) dark = Math.max(dark, 0.2);
+    if (dark > 0) { g.fillStyle = 'rgba(20,20,70,' + dark.toFixed(2) + ')'; g.fillRect(0, 0, VW, VH); }
+    if (S.chuva) { g.strokeStyle = 'rgba(200,225,255,.6)'; g.lineWidth = 2; g.beginPath(); for (var d = 0; d < 70; d++) { var rx = (hash(d, 1) * VW + tm * 120) % VW, ry = (hash(d, 2) * VH + tm * 700) % VH; g.moveTo(rx, ry); g.lineTo(rx - 6, ry + 18); } g.stroke(); }
+  }
+  function loop(now) {
+    if (!playing) return; var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    update(dt); if (playing) draw(); requestAnimationFrame(loop);
+  }
+  addEventListener('beforeunload', salvar); addEventListener('visibilitychange', function () { if (document.hidden) salvar(); });
+})();
+</script>
+<script src="/cookies.js"></script>
+</body>
+</html>

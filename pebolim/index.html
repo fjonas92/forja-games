@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pebolim | Falzinho Games</title>
+<meta name="description" content="Pebolim online: jogue contra a IA, faça gols com as barras e dispute o ranking geral de pontos com outros jogadores. Direto no navegador, no computador ou no celular.">
+<link rel="canonical" href="https://falzinhogames.com.br/pebolim/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<style>
+:root{--bg:#0d2a3e;--sf:#12384f;--ln:#1f5a7a;--tx:#f2fbff;--mut:#9cc3d6;--blue:#2f7bff;--red:#ff4a4a;--gold:#ffc83d;--green:#2bd67b;--gt:16px;
+--font-display:'Bungee',Impact,sans-serif;--font-body:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--tx);font-family:var(--font-body);font-size:16px;line-height:1.5;padding-inline:var(--gt);-webkit-tap-highlight-color:transparent;
+background:radial-gradient(900px 500px at 50% -120px,rgba(47,123,255,.35),transparent 70%),radial-gradient(700px 500px at 100% 60%,rgba(43,214,123,.14),transparent 70%),var(--bg)}
+[hidden]{display:none!important}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
+.bar{max-width:1100px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.bar .back{text-decoration:none;color:var(--mut);font-weight:600;font-size:14px}
+.bar .logo{font-family:var(--font-display);font-size:16px;color:var(--gold);letter-spacing:1px}
+main{max-width:1100px;margin-inline:auto;padding-bottom:40px}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.score{display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-size:clamp(20px,5vw,30px)}
+.score .t{padding:2px 12px;border-radius:10px;min-width:48px;text-align:center}
+.score .a{background:var(--blue)}.score .b{background:var(--red)}
+.score small{font:600 12px var(--font-body);color:var(--mut);display:block;text-align:center;letter-spacing:1px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;color:var(--tx);background:var(--sf);border:2px solid var(--ln);border-radius:10px;padding:8px 14px;cursor:pointer}
+.btn:hover{border-color:var(--gold)}
+.btn.primary{background:var(--gold);color:#1a1209;border-color:var(--gold)}
+.btn.on{border-color:var(--green)}
+#wrap{position:relative;width:100%;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:14px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+canvas{display:block;width:100%;height:auto;background:#0e5a2c}
+#kick{position:absolute;right:12px;bottom:12px;width:92px;height:92px;border-radius:50%;border:4px solid rgba(255,255,255,.7);background:rgba(255,200,61,.55);color:#fff;font:700 15px var(--font-display);letter-spacing:1px;display:none;place-items:center;touch-action:none}
+#kick.on{background:rgba(255,200,61,.95)}
+@media (pointer:coarse){#kick{display:grid}}
+.ov{position:absolute;inset:0;background:rgba(6,20,32,.82);display:grid;place-items:center;padding:14px;overflow:auto}
+.box{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:20px;width:min(480px,100%);display:grid;gap:12px;text-align:center}
+.box h1,.box h2{font-family:var(--font-display);margin:0;font-weight:400}
+.box h1{font-size:clamp(28px,7vw,44px);color:var(--gold)}
+.box p{margin:0;color:var(--mut);font-size:14px}
+.seg{display:flex;gap:8px;justify-content:center}
+.seg .btn{flex:1}
+.help{font-size:13px;color:var(--mut);text-align:left;display:grid;gap:4px}
+.help b{color:var(--tx)}
+.info{max-width:820px;margin:28px auto 0;color:var(--mut)}
+.info h2{font-family:var(--font-display);font-weight:400;color:var(--tx);font-size:20px;margin:22px 0 8px}
+.info strong{color:var(--tx)}
+</style>
+<script src="/analytics.js"></script>
+</head>
+<body>
+<header class="bar"><a class="back" href="/">&larr; Falzinho Games</a><span class="logo">PEBOLIM</span><div id="acc"></div></header>
+<main>
+  <div class="hud">
+    <div class="score"><div><span class="t a" id="sA">0</span><small>VOCÊ</small></div><span>x</span><div><span class="t b" id="sB">0</span><small>IA</small></div></div>
+    <div class="tools"><button class="btn" id="bAuto" type="button">Barra: Auto</button><button class="btn" id="bSnd" type="button">Som: ligado</button><button class="btn" id="bRank" type="button">Ranking</button><button class="btn" id="bPause" type="button">Pausar</button></div>
+  </div>
+  <div id="wrap">
+    <canvas id="cv" width="2256" height="1280" aria-label="Mesa de pebolim"></canvas>
+    <button id="kick" type="button">CHUTAR</button>
+    <div class="ov" id="ovMenu"><div class="box">
+      <h1>PEBOLIM</h1><p>Primeiro a fazer 5 gols vence. Cada partida vale pontos no ranking geral.</p>
+      <div class="seg" id="segD"><button class="btn" data-d="facil" type="button">Fácil</button><button class="btn on" data-d="normal" type="button">Normal</button><button class="btn" data-d="dificil" type="button">Difícil</button></div>
+      <button class="btn primary" id="bPlay" type="button">Jogar</button>
+      <button class="btn" id="bRank2" type="button">Ranking geral</button>
+      <div class="help"><span><b>Teclado:</b> ↑ ↓ (ou W S) movem a barra · Espaço chuta · ← → (ou A D) trocam de barra</span><span><b>Celular:</b> arraste o dedo na mesa para mover a barra e toque em CHUTAR</span><span>A barra mais perto da bola é escolhida sozinha (modo Auto).</span></div>
+      <p id="stats"></p><div id="acc2"></div>
+    </div></div>
+    <div class="ov" id="ovEnd" hidden><div class="box"><h2 id="eT">Fim de jogo</h2><p id="eS"></p><p id="eP"></p><p id="eM"></p>
+      <button class="btn primary" id="bAgain" type="button">Jogar de novo</button><button class="btn" id="bRank3" type="button">Ver ranking</button><button class="btn" id="bMenu" type="button">Menu</button></div></div>
+    <div class="ov" id="ovPause" hidden><div class="box"><h2>Pausado</h2><button class="btn primary" id="bResume" type="button">Continuar</button><button class="btn" id="bMenu2" type="button">Sair da partida</button></div></div>
+  </div>
+  <section class="info">
+    <h1 style="font-family:var(--font-display);font-weight:400;font-size:26px;margin:0 0 6px;color:var(--tx)">Pebolim online, grátis e no navegador</h1>
+    <p>Controle as barras do seu time azul, defenda o gol e marque contra a IA. São três dificuldades e o <strong>ranking geral</strong> soma os pontos de todas as partidas de cada jogador.</p>
+    <h2>Como os pontos funcionam</h2>
+    <p>Cada gol seu vale <strong>2 pontos</strong>. Vencer a partida dá <strong>+10</strong>, com bônus de <strong>+2</strong> no Normal e <strong>+5</strong> no Difícil. Para entrar no ranking é preciso estar logado; sem conta você joga normalmente, mas os pontos não são registrados.</p>
+  </section>
+</main>
+<script src="/fg.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  var $ = function (i) { return document.getElementById(i); };
+  var F = window.Foos, W = F.W, H = F.H, OX = 56, OY = 28, LW = W + OX * 2, LH = H + OY * 2;
+  var cv = $('cv'), g = cv.getContext('2d'), SC = cv.width / LW;
+  var sim = null, sel = null, manual = false, state = 'menu', diff = 'normal', snd = true, lastSwitch = 0, flash = null, ptr = null, axisKeys = {};
+  var KEY = 'fg_pebolim';
+  var stats = { pontos: 0, partidas: 0, vitorias: 0 };
+  try { var s0 = JSON.parse(localStorage.getItem(KEY)); if (s0 && s0.partidas >= 0) stats = s0; } catch (e) { }
+  function saveStats() { try { localStorage.setItem(KEY, JSON.stringify(stats)); } catch (e) { } FG.schedulePush(function () { return stats; }); showStats(); }
+  function showStats() { $('stats').textContent = 'Seus pontos: ' + stats.pontos + ' · Vitórias: ' + stats.vitorias + ' de ' + stats.partidas + ' partidas'; }
+  showStats();
+
+  /* conta */
+  FG.init('pebolim');
+  FG.mountBar($('acc')); FG.mountBar($('acc2'));
+  FG.onLogin = async function () {
+    var c = await FG.cloudLoad();
+    if (c && c.partidas > stats.partidas) { stats = c; try { localStorage.setItem(KEY, JSON.stringify(stats)); } catch (e) { } showStats(); }
+    else FG.cloudSave(stats);
+  };
+
+  /* som */
+  var AC = null;
+  function beep(f, d, type, v, f2) {
+    if (!snd) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      var o = AC.createOscillator(), gn = AC.createGain(); o.type = type || 'sine'; o.frequency.value = f; if (f2) o.frequency.exponentialRampToValueAtTime(f2, AC.currentTime + d);
+      gn.gain.value = v || 0.08; gn.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d); o.connect(gn); gn.connect(AC.destination); o.start(); o.stop(AC.currentTime + d);
+    } catch (e) { }
+  }
+
+  /* partida */
+  function start() {
+    sim = new F.Sim({ diff: diff, aiTeams: [1], target: 5 });
+    sim.rods.forEach(function (r) { if (r.team === 0) r.maxv = 720; });
+    manual = false; sel = sim.bestRod(0); flash = null; state = 'play';
+    $('ovMenu').hidden = true; $('ovEnd').hidden = true; $('ovPause').hidden = true; $('bAuto').textContent = 'Barra: Auto'; $('bAuto').classList.remove('on');
+    $('sA').textContent = '0'; $('sB').textContent = '0';
+    beep(520, 0.15, 'square', 0.06); setTimeout(function () { beep(780, 0.2, 'square', 0.06); }, 160);
+  }
+  function endMatch() {
+    state = 'end';
+    var win = sim.winner === 0, mine = sim.score[0];
+    var pts = mine * 2 + (win ? 10 + ({ facil: 0, normal: 2, dificil: 5 }[diff]) : 0);
+    stats.pontos += pts; stats.partidas++; if (win) stats.vitorias++; saveStats();
+    $('eT').textContent = win ? 'VITÓRIA!' : 'Derrota';
+    $('eS').textContent = 'Placar final: ' + sim.score[0] + ' x ' + sim.score[1];
+    $('eP').textContent = '+' + pts + ' pontos nesta partida';
+    var m = $('eM');
+    if (FG.user) { m.textContent = 'Registrando no ranking...'; FG.report(pts, win).then(function (r) { m.textContent = r.err ? 'Não consegui registrar agora (espere alguns segundos entre partidas).' : 'Pontos registrados no ranking geral!'; }); }
+    else { m.innerHTML = 'Entre na sua conta para registrar os pontos no ranking. <button class="btn" id="bLogin" type="button">Entrar</button>'; $('bLogin').onclick = function () { FG.openAuth('Entre para os pontos irem para o ranking geral.'); }; }
+    beep(win ? 880 : 220, 0.5, 'triangle', 0.1, win ? 1320 : 140);
+    $('ovEnd').hidden = false;
+  }
+
+  /* entrada */
+  function teamRods() { return sim.teamRods(0).sort(function (a, b) { return a.x - b.x; }); }
+  function cycle(d) { var rs = teamRods(), i = rs.indexOf(sel); sel = rs[(i + d + rs.length) % rs.length]; sel.ty = sel.y; manual = true; $('bAuto').textContent = 'Barra: Manual'; $('bAuto').classList.add('on'); }
+  function doKick() { if (sim && state === 'play' && sel && sel.kick()) beep(160, 0.08, 'square', 0.05, 90); }
+  addEventListener('keydown', function (e) {
+    var k = e.code;
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].indexOf(k) >= 0 && state !== 'menu') e.preventDefault();
+    if (k === 'ArrowUp' || k === 'KeyW') axisKeys.u = 1; if (k === 'ArrowDown' || k === 'KeyS') axisKeys.d = 1;
+    if (e.repeat) return;
+    if (k === 'ArrowLeft' || k === 'KeyA' || k === 'KeyQ') { if (sim && state === 'play') cycle(-1); }
+    if (k === 'ArrowRight' || k === 'KeyD' || k === 'KeyE') { if (sim && state === 'play') cycle(1); }
+    if (k === 'Space' || k === 'Enter') { if (state === 'play') doKick(); }
+    if (k === 'KeyP' || k === 'Escape') togglePause();
+  });
+  addEventListener('keyup', function (e) { if (e.code === 'ArrowUp' || e.code === 'KeyW') axisKeys.u = 0; if (e.code === 'ArrowDown' || e.code === 'KeyS') axisKeys.d = 0; });
+  var wrap = $('wrap');
+  function toY(ev) { var r = cv.getBoundingClientRect(); return ((ev.clientY - r.top) / r.height) * LH - OY; }
+  wrap.addEventListener('pointerdown', function (e) { if (e.target.closest('.ov') || e.target.id === 'kick') return; ptr = e.pointerId; if (sel) sel.ty = toY(e) - 0; });
+  wrap.addEventListener('pointermove', function (e) { if (ptr === e.pointerId && sel && state === 'play') sel.ty = toY(e); });
+  addEventListener('pointerup', function (e) { if (ptr === e.pointerId) ptr = null; });
+  var kb = $('kick');
+  kb.addEventListener('pointerdown', function (e) { e.preventDefault(); kb.classList.add('on'); doKick(); });
+  kb.addEventListener('pointerup', function () { kb.classList.remove('on'); }); kb.addEventListener('pointercancel', function () { kb.classList.remove('on'); });
+  function togglePause() {
+    if (state === 'play') { state = 'pause'; $('ovPause').hidden = false; }
+    else if (state === 'pause') { state = 'play'; $('ovPause').hidden = true; }
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden && state === 'play') togglePause(); });
+  $('segD').addEventListener('click', function (e) { var b = e.target.closest('[data-d]'); if (!b) return; diff = b.dataset.d; [].forEach.call($('segD').children, function (x) { x.classList.toggle('on', x === b); }); });
+  $('bPlay').onclick = start; $('bAgain').onclick = start;
+  $('bMenu').onclick = function () { state = 'menu'; $('ovEnd').hidden = true; $('ovMenu').hidden = false; };
+  $('bMenu2').onclick = function () { state = 'menu'; $('ovPause').hidden = true; $('ovMenu').hidden = false; };
+  $('bResume').onclick = togglePause; $('bPause').onclick = togglePause;
+  $('bAuto').onclick = function () { manual = !manual; $('bAuto').textContent = manual ? 'Barra: Manual' : 'Barra: Auto'; $('bAuto').classList.toggle('on', manual); };
+  $('bSnd').onclick = function () { snd = !snd; $('bSnd').textContent = 'Som: ' + (snd ? 'ligado' : 'desligado'); };
+  ['bRank', 'bRank2', 'bRank3'].forEach(function (id) { $(id).onclick = function () { FG.showRanking('Ranking do Pebolim'); }; });
+
+  /* desenho */
+  function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+  function draw() {
+    g.setTransform(SC, 0, 0, SC, 0, 0);
+    // moldura de madeira
+    var gr = g.createLinearGradient(0, 0, 0, LH); gr.addColorStop(0, '#b9783a'); gr.addColorStop(1, '#8a5326');
+    g.fillStyle = gr; rr(0, 0, LW, LH, 26); g.fill();
+    g.save(); g.translate(OX, OY);
+    // campo
+    for (var i = 0; i < 10; i++) { g.fillStyle = i % 2 ? '#35b35a' : '#2fa653'; g.fillRect(i * W / 10, 0, W / 10 + 1, H); }
+    g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 4;
+    g.strokeRect(2, 2, W - 4, H - 4);
+    g.beginPath(); g.moveTo(W / 2, 0); g.lineTo(W / 2, H); g.stroke();
+    g.beginPath(); g.arc(W / 2, H / 2, 70, 0, 7); g.stroke();
+    g.strokeRect(0, H / 2 - 130, 110, 260); g.strokeRect(W - 110, H / 2 - 130, 110, 260);
+    // gols (redes)
+    [[-OX + 6, 0], [W, 1]].forEach(function (G) {
+      var x = G[0], w = OX - 6;
+      g.fillStyle = '#0b1f14'; g.fillRect(x, H / 2 - F.GOAL / 2, w, F.GOAL);
+      g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1;
+      for (var k = 0; k <= 8; k++) { g.beginPath(); g.moveTo(x, H / 2 - F.GOAL / 2 + k * F.GOAL / 8); g.lineTo(x + w, H / 2 - F.GOAL / 2 + k * F.GOAL / 8); g.stroke(); }
+      for (k = 0; k <= 4; k++) { g.beginPath(); g.moveTo(x + k * w / 4, H / 2 - F.GOAL / 2); g.lineTo(x + k * w / 4, H / 2 + F.GOAL / 2); g.stroke(); }
+    });
+    // postes
+    g.fillStyle = '#fff'; [[0, H / 2 - F.GOAL / 2], [0, H / 2 + F.GOAL / 2], [W, H / 2 - F.GOAL / 2], [W, H / 2 + F.GOAL / 2]].forEach(function (p) { g.beginPath(); g.arc(p[0], p[1], 6, 0, 7); g.fill(); });
+    if (sim) {
+      // barras
+      sim.rods.forEach(function (r) {
+        var on = r === sel && state === 'play';
+        g.fillStyle = on ? 'rgba(255,200,61,.35)' : 'rgba(0,0,0,.18)'; g.fillRect(r.x - (on ? 8 : 5), -6, on ? 16 : 10, H + 12);
+        var lg = g.createLinearGradient(r.x - 4, 0, r.x + 4, 0); lg.addColorStop(0, '#9aa3ad'); lg.addColorStop(0.5, '#f2f5f8'); lg.addColorStop(1, '#8b949e');
+        g.fillStyle = lg; g.fillRect(r.x - 3.5, -OY + 4, 7, H + OY * 2 - 8);
+      });
+      // bonecos
+      sim.rods.forEach(function (r) {
+        var col = r.team === 0 ? '#2f7bff' : '#ff4a4a', dk = r.team === 0 ? '#1b4fb5' : '#b82a2a';
+        r.figs().forEach(function (f) {
+          g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(f[0] + 4, f[1] + 5, 12, 20, 0, 0, 7); g.fill();
+          g.fillStyle = dk; g.beginPath(); g.ellipse(f[0] + r.dir * 9, f[1], 7, 9, 0, 0, 7); g.fill(); // pe
+          var bg = g.createLinearGradient(f[0] - 12, f[1], f[0] + 12, f[1]); bg.addColorStop(0, col); bg.addColorStop(1, dk);
+          g.fillStyle = bg; g.beginPath(); g.ellipse(f[0], f[1], 12, 19, 0, 0, 7); g.fill();
+          g.fillStyle = '#ffd7b0'; g.beginPath(); g.arc(f[0], f[1], 7, 0, 7); g.fill();
+          g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1.5; g.beginPath(); g.ellipse(f[0], f[1], 12, 19, 0, 0, 7); g.stroke();
+        });
+      });
+      // bola
+      var b = sim.ball;
+      g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(b.x + 4, b.y + 5, 10, 8, 0, 0, 7); g.fill();
+      var rg = g.createRadialGradient(b.x - 3, b.y - 3, 1, b.x, b.y, 11); rg.addColorStop(0, '#fff'); rg.addColorStop(1, '#cfd6dd');
+      g.fillStyle = rg; g.beginPath(); g.arc(b.x, b.y, F.BR, 0, 7); g.fill();
+      g.strokeStyle = '#555'; g.lineWidth = 1.5; g.beginPath(); g.arc(b.x, b.y, F.BR, 0, 7); g.stroke();
+      if (flash && performance.now() < flash.until) {
+        g.fillStyle = flash.team === 0 ? 'rgba(47,123,255,.88)' : 'rgba(255,74,74,.88)'; rr(W / 2 - 190, H / 2 - 56, 380, 112, 20); g.fill();
+        g.fillStyle = '#fff'; g.font = '700 74px Bungee, Impact, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('GOOOL!', W / 2, H / 2 + 4);
+      }
+    }
+    g.restore();
+  }
+
+  /* laco */
+  var last = performance.now(), acc = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (sim && state === 'play') {
+      if (!manual && now - lastSwitch > 220) { var c = sim.bestRod(0); if (c && c !== sel) { sel = c; sel.ty = sel.y; lastSwitch = now; } }
+      var ax = (axisKeys.d ? 1 : 0) - (axisKeys.u ? 1 : 0);
+      if (ax !== 0 && sel) sel.ty = sel.y + ax * 260;
+      else if (ax === 0 && ptr === null && sel && (axisKeys.lastAx || 0) !== 0) sel.ty = sel.y;
+      axisKeys.lastAx = ax;
+      acc += dt;
+      while (acc >= 1 / 120) {
+        sim.step(1 / 120); acc -= 1 / 120;
+        for (var i = 0; i < sim.events.length; i++) {
+          var ev = sim.events[i];
+          if (ev.t === 'goal') { flash = { team: ev.team, until: performance.now() + 1300 }; $('sA').textContent = sim.score[0]; $('sB').textContent = sim.score[1]; beep(ev.team === 0 ? 660 : 300, 0.5, 'sawtooth', 0.07, ev.team === 0 ? 990 : 200); }
+          else if (ev.t === 'kick') beep(120 + 120 * ev.power, 0.06, 'square', 0.05);
+          else if (ev.t === 'touch') beep(300, 0.03, 'sine', 0.03 + 0.04 * ev.power);
+          else if (ev.t === 'wall') beep(200, 0.03, 'triangle', 0.03);
+          else if (ev.t === 'end') { setTimeout(endMatch, 1300); }
+        }
+      }
+    }
+    draw();
+  }
+  requestAnimationFrame(frame);
+  window.__pebolim = { get sim() { return sim; } };
+})();
+</script>
+<script src="/cookies.js"></script>
+</body>
+</html>

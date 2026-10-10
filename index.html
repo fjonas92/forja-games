@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal e APEX, corrida 3D.">
+<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal, APEX (corrida 3D), Laylla (plataforma 3D), Minha Fazendinha, Pebolim, Palavras Cruzadas e Cartas (Truco, Blackjack e Poker).">
 <title>Falzinho Games</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -156,7 +156,22 @@ const GAMES = [
     url: "/elydran/", c1: "#2A1A5A", c2: "#7FD6FF", arte: "elydran", pagina: "" },
   { nome: "APEX", genero: "Corrida 3D · Campeonato", status: "Jogue agora",
     texto: "Crie seu piloto, escolha a equipe, evolua o carro e dispute 12 circuitos em 3D contra 15 rivais. Teclado, joystick ou toque no celular.",
-    url: "/apex/", c1: "#14182C", c2: "#FF3B30", arte: "apex", pagina: "" }
+    url: "/apex/", c1: "#14182C", c2: "#FF3B30", arte: "apex", pagina: "" },
+  { nome: "Laylla e os Cristais do Céu", genero: "Plataforma 3D · Aventura", status: "Jogue agora",
+    texto: "Ajude a Laylla a pular entre ilhas flutuantes, pisar nas gelinhas, achar estrelas escondidas e trazer os cristais de volta. Quatro fases, mapa do céu e progresso salvo na conta.",
+    url: "/laylla/", c1: "#2B5CB0", c2: "#FF5FA2", arte: "laylla", pagina: "" },
+  { nome: "Minha Fazendinha", genero: "Fazenda · Relaxante", status: "Jogue agora",
+    texto: "Are a terra, plante, regue, colha e venda na loja. Cuide das galinhas, enfrente dias de chuva e salve sua fazenda na nuvem entrando na conta.",
+    url: "/fazendinha/", c1: "#2F8A3D", c2: "#FFD23C", arte: "fazenda", pagina: "" },
+  { nome: "Pebolim", genero: "Mesa · Esportes", status: "Jogue agora",
+    texto: "Controle as barras, defenda e faça gols contra a IA em 3 dificuldades. Os pontos de cada partida entram no ranking geral de jogadores.",
+    url: "/pebolim/", c1: "#0D2A3E", c2: "#2F7BFF", arte: "pebolim", pagina: "" },
+  { nome: "Palavras Cruzadas", genero: "Palavras · Raciocínio", status: "Jogue agora",
+    texto: "Grade nova a cada partida, com dicas de letra, verificação de erros e o desafio do dia igual para todo mundo.",
+    url: "/cruzadas/", c1: "#2A1F5C", c2: "#FFC83D", arte: "cruzadas", pagina: "" },
+  { nome: "Cartas", genero: "Truco · Blackjack · Poker", status: "Jogue agora",
+    texto: "Truco com pedido de seis, nove e doze, Blackjack e Poker Texas Hold'em contra a IA, com fichas virtuais e ranking geral.",
+    url: "/cartas/", c1: "#0E5A3A", c2: "#E5384A", arte: "cartas", pagina: "" }
 ];
 
 const cap = (x, y, cor, miolo) => `<g transform="translate(${x} ${y})"><circle r="15" fill="#000" opacity=".28" transform="translate(2 3)"/><circle r="14" fill="${cor}" stroke="#fff" stroke-width="2"/><circle r="14" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="3" stroke-dasharray="2.2 2.2"/><circle r="8" fill="${miolo}" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/></g>`;
@@ -256,6 +271,45 @@ const ARTES = {
       <rect x="-48" y="2" width="14" height="22" rx="4" fill="#15171C"/><rect x="34" y="2" width="14" height="22" rx="4" fill="#15171C"/>
       <path d="M-30 6L-18 -14H18L30 6V20H-30Z" fill="#FF3B30"/><path d="M-12 -14L-6 -26H6L12 -14Z" fill="#B5201A"/>
       <rect x="-40" y="-16" width="80" height="6" fill="#15171C"/><circle cx="0" cy="-8" r="6" fill="#F4F4F4"/></g>
+  </svg>`
+  ,laylla: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><linearGradient id="ly-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4AA9FF"/><stop offset="1" stop-color="#EAF8FF"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#ly-sky)"/>
+    <g fill="#fff" opacity=".95"><ellipse cx="60" cy="40" rx="30" ry="9"/><ellipse cx="80" cy="34" rx="20" ry="8"/><ellipse cx="260" cy="60" rx="34" ry="9"/></g>
+    <path d="M70 140Q160 150 250 140Q230 190 160 196Q100 190 70 140Z" fill="#E9B98C"/>
+    <ellipse cx="160" cy="138" rx="92" ry="20" fill="#79E05A"/><ellipse cx="160" cy="134" rx="88" ry="16" fill="#8CEB6C"/>
+    <g transform="translate(160 78)"><path d="M-22 40L22 40L12 16L-12 16Z" fill="#FF5FA2"/><rect x="-9" y="6" width="18" height="14" rx="6" fill="#FFD23C"/><circle cx="0" cy="-4" r="15" fill="#9A5F3C"/><circle cx="-16" cy="-12" r="9" fill="#2B1A14"/><circle cx="16" cy="-12" r="9" fill="#2B1A14"/><circle cx="0" cy="-17" r="12" fill="#2B1A14"/><circle cx="-5" cy="-3" r="2.2" fill="#1B1020"/><circle cx="5" cy="-3" r="2.2" fill="#1B1020"/><path d="M-4 4Q0 8 4 4" stroke="#6B2A2A" stroke-width="2" fill="none"/><path d="M6 -24l2 5h5l-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3h5z" fill="#FFD23C"/></g>
+    <path d="M250 70l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#FFD23C" stroke="#fff" stroke-width="2"/>
+    <g fill="#3DE7FF"><path d="M60 100l7 10-7 10-7-10z"/><path d="M110 70l6 9-6 9-6-9z" fill="#FF6BD6"/></g>
+  </svg>`
+  ,fazenda: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#9BE0FF"/><circle cx="270" cy="38" r="20" fill="#FFE066"/>
+    <rect y="90" width="320" height="110" fill="#8CDC6E"/>
+    <rect x="30" y="52" width="86" height="54" fill="#E8403A"/><path d="M24 54L73 22L122 54Z" fill="#B5201A"/><rect x="62" y="74" width="22" height="32" fill="#fff"/><path d="M62 74l22 32M84 74l-22 32" stroke="#E8403A" stroke-width="3"/>
+    <g fill="#9A6A3C"><rect x="150" y="118" width="150" height="14"/><rect x="150" y="142" width="150" height="14"/><rect x="150" y="166" width="150" height="14"/></g>
+    <g fill="#6BC24A"><circle cx="165" cy="114" r="6"/><circle cx="190" cy="114" r="6"/><circle cx="215" cy="114" r="6"/><circle cx="240" cy="114" r="6"/><circle cx="265" cy="114" r="6"/></g>
+    <g fill="#E8402F"><circle cx="165" cy="138" r="6"/><circle cx="215" cy="138" r="6"/><circle cx="265" cy="138" r="6"/></g><g fill="#F2D23C"><circle cx="190" cy="162" r="6"/><circle cx="240" cy="162" r="6"/></g>
+    <g fill="#fff"><ellipse cx="70" cy="150" rx="14" ry="10"/><circle cx="82" cy="140" r="6"/></g><path d="M86 138l8 2-8 3z" fill="#FF9D2E"/>
+  </svg>`
+  ,pebolim: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#B87333"/><rect x="14" y="14" width="292" height="172" fill="#2BB26A"/><path d="M160 14V186" stroke="#fff" stroke-width="2"/><circle cx="160" cy="100" r="26" fill="none" stroke="#fff" stroke-width="2"/>
+    <g stroke="#CBD5DF" stroke-width="4"><path d="M60 10V190M110 10V190M160 10V190M210 10V190M260 10V190"/></g>
+    <g fill="#2F7BFF"><ellipse cx="60" cy="100" rx="8" ry="11"/><ellipse cx="110" cy="70" rx="8" ry="11"/><ellipse cx="110" cy="130" rx="8" ry="11"/><ellipse cx="160" cy="60" rx="8" ry="11"/><ellipse cx="160" cy="100" rx="8" ry="11"/><ellipse cx="160" cy="140" rx="8" ry="11"/></g>
+    <g fill="#FF4A4A"><ellipse cx="210" cy="80" rx="8" ry="11"/><ellipse cx="210" cy="120" rx="8" ry="11"/><ellipse cx="260" cy="100" rx="8" ry="11"/></g><circle cx="140" cy="104" r="7" fill="#fff" stroke="#333" stroke-width="2"/>
+  </svg>`
+  ,cruzadas: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="320" height="200" fill="#2A1F5C"/>
+    <g fill="#fff"><rect x="40" y="40" width="30" height="30" rx="4"/><rect x="72" y="40" width="30" height="30" rx="4"/><rect x="104" y="40" width="30" height="30" rx="4"/><rect x="136" y="40" width="30" height="30" rx="4"/><rect x="168" y="40" width="30" height="30" rx="4"/><rect x="104" y="72" width="30" height="30" rx="4"/><rect x="104" y="104" width="30" height="30" rx="4"/><rect x="104" y="136" width="30" height="30" rx="4"/><rect x="136" y="104" width="30" height="30" rx="4"/><rect x="168" y="104" width="30" height="30" rx="4"/><rect x="200" y="104" width="30" height="30" rx="4"/><rect x="232" y="104" width="30" height="30" rx="4"/><rect x="232" y="72" width="30" height="30" rx="4"/><rect x="232" y="136" width="30" height="30" rx="4"/></g>
+    <g fill="#2A1F5C" font-family="Arial,sans-serif" font-weight="700" font-size="22" text-anchor="middle"><text x="55" y="62">J</text><text x="87" y="62">O</text><text x="119" y="62">G</text><text x="151" y="62">A</text><text x="183" y="62">R</text><text x="119" y="94">O</text><text x="119" y="126">R</text><text x="151" y="126">A</text><text x="183" y="126">P</text><text x="247" y="94">F</text></g>
+    <rect x="104" y="104" width="30" height="30" rx="4" fill="#FFC83D"/><text x="119" y="126" fill="#2A1F5C" font-family="Arial,sans-serif" font-weight="700" font-size="22" text-anchor="middle">R</text>
+  </svg>`
+  ,cartas: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><radialGradient id="ct-f" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#14724A"/><stop offset="1" stop-color="#0A3D28"/></radialGradient></defs><rect width="320" height="200" fill="url(#ct-f)"/>
+    <g font-family="Arial,sans-serif" font-weight="700">
+      <g transform="translate(100 110) rotate(-18)"><rect x="-32" y="-48" width="64" height="92" rx="8" fill="#fff"/><text x="-24" y="-28" font-size="20" fill="#1A1A2A">K</text><text x="0" y="12" font-size="40" text-anchor="middle" fill="#1A1A2A">♠</text></g>
+      <g transform="translate(220 110) rotate(18)"><rect x="-32" y="-48" width="64" height="92" rx="8" fill="#fff"/><text x="-24" y="-28" font-size="20" fill="#E5384A">Q</text><text x="0" y="12" font-size="40" text-anchor="middle" fill="#E5384A">♥</text></g>
+      <g transform="translate(160 104)"><rect x="-32" y="-48" width="64" height="92" rx="8" fill="#fff" stroke="#FFC83D" stroke-width="3"/><text x="-24" y="-28" font-size="20" fill="#E5384A">A</text><text x="0" y="12" font-size="40" text-anchor="middle" fill="#E5384A">♦</text></g>
+    </g>
   </svg>`
 };
 
