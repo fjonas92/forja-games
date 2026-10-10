@@ -135,10 +135,9 @@ export class UI {
         <tr><td>Câmera</td><td>C</td><td>Y</td></tr>
         <tr><td>Pausa</td><td>P / Esc</td><td>Start</td></tr>
         <tr><td>Reposicionar</td><td>R</td><td>Select</td></tr>
-        <tr><td>Box (pit stop)</td><td>B ou E</td><td>Direcional ↑</td></tr>
       </table>
       <p class="hint">No celular: ◀ ▶ viram o carro, ACELERA e FREIO ficam à direita. Nas opções dá para ligar o acelerador automático e virar o carro inclinando o aparelho.</p>
-      <p class="hint">Dica: atrás de outro carro você pega a aspiração e ganha velocidade. Pneus gastam em curvas fortes, freadas e na grama. Na chuva, troque para pneus de chuva no box (B): aperte uma vez para pedir, de novo para trocar o composto, e mais uma vez para cancelar.</p>
+      <p class="hint">Dica: atrás de outro carro você pega a aspiração e ganha velocidade. Pneus gastam em curvas fortes, freadas e na grama. Na chuva, escolha pneus de chuva antes de largar.</p>
       ${this.btn('back', 'Voltar', '', 'data-def')}</div>`;
   }
 

@@ -107,7 +107,7 @@ export class RaceCore {
     this.wet += (this.rain - this.wet) * Math.min(1, dt / (this.rain > this.wet ? 18 : 40));
     for (const c of cars) {
       c.wetNow = this.wet; c.gm = tyreGm(c.tyre, this.wet);
-      if (racing && !c.isPlayer && !c.pit && !c.pitReq && !c.finished) {
+      if (false && racing && !c.isPlayer && !c.pit && !c.pitReq && !c.finished) { // box desativado: ninguem para na corrida
         const want = (c.tyre === 'S' && this.wet > 0.32) ? 'W' : (c.tyre === 'W' && this.wet < 0.07 && this.rain < 0.05) ? 'S' : null;
         if (want) { if (c.aiWait == null) c.aiWait = this.raceTime + this.rnd() * 35; if (this.raceTime >= c.aiWait) c.pitReq = want; } else c.aiWait = null;
       }

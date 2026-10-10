@@ -419,7 +419,7 @@ function raceFrame(dt) {
     if (inp.edge('reset') && race.phase === 'race' && resetCd <= 0) {
       const p = race.player; if (p && !p.finished) { p.place(race.t, ((p.lastS % race.t.length) + race.t.length) % race.t.length, 0); p.v = Math.min(p.v, 25); resetCd = 3; msg('REPOSICIONADO', 900); }
     }
-    if (inp.edge('pit') && race.phase === 'race') {
+    if (inp.edge('pit') && false) {
       const p = race.player;
       if (p && !p.finished && !p.pit) {
         if (race.laps - p.lap <= 1) msg('ÚLTIMA VOLTA: SEM BOX', 1200, '#ff9a4a');
@@ -499,7 +499,7 @@ let tvT = 0; function updateTouchVisThrottled() { tvT++; if (tvT % 20 === 0) upd
 S.input.bindTouch({ left: $('tL'), right: $('tR'), gas: $('tG'), brake: $('tB') });
 $('tP').addEventListener('click', () => pauseGame());
 $('tC').addEventListener('click', () => { S.camMode = (S.camMode + 1) % 3; });
-$('tX').addEventListener('click', () => { S.input._edge.pit = true; });
+//box removido
 const unlock = () => { S.sfx.start(); if (S.mode === 'menu') S.sfx.music(true); };
 addEventListener('pointerdown', unlock); addEventListener('keydown', unlock);
 addEventListener('keydown', e => {
