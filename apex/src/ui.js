@@ -275,6 +275,26 @@ export class UI {
       <div class="row" style="margin-top:8px">${R.career ? this.btn('resultok', 'Continuar', 'primary', 'data-def') : this.btn('again', 'Correr de novo', 'primary', 'data-def') + this.btn('resultok', 'Menu')}</div></div>`;
   }
 
+  // ----- antes da corrida: classificacao opcional
+  s_prerace() {
+    const a = this.app, ci = CIRCUITS[a.pre.ci];
+    return `<div class="panel center" style="width:46%"><h2 class="t">Antes da corrida</h2>
+      <div class="card" style="cursor:default;margin-bottom:8px"><b style="font-size:calc(var(--u)*22px)">${esc(ci.name)}</b><small><span class="dot" style="background:${THEMES[ci.theme].sky[0]}"></span>${ci.country} · ${(ci.len / 1000).toFixed(1)} km · ${a.settings.laps} voltas</small></div>
+      <div class="sub">Quer fazer uma volta de classificação? Você corre sozinho na pista e o tempo define a sua posição de largada.</div>
+      ${this.btn('qualify', 'Volta de classificação', 'primary', 'data-def')}${this.btn('direct', 'Largar direto (grid pelo carro)')}${this.btn('back', 'Voltar')}</div>`;
+  }
+
+  s_qualyres() {
+    const a = this.app, rows = a.qres || [], best = rows.length ? rows[0].time : 0;
+    const me = rows.findIndex(r => r.isPlayer) + 1;
+    const tr = rows.map((r, i) => `<tr class="${r.isPlayer ? 'me' : ''}"><td>${i + 1}</td><td><span class="dot" style="background:${r.c1}"></span>${esc(r.name)}</td><td>${esc(r.tag)}</td><td class="r">${i === 0 ? fmtTime(r.time) : '+' + (r.time - best).toFixed(3)}</td></tr>`).join('');
+    return `<div class="panel wide" style="width:68%;left:2.5%">
+      <h2 class="t">Grid de largada</h2>
+      <div class="sub">Você larga em <b class="gold">${me}º</b> de ${rows.length}</div>
+      <table class="tb"><tr><th>#</th><th>Piloto</th><th>Equipe</th><th class="r">Tempo</th></tr>${tr}</table>
+      <div class="row" style="margin-top:8px">${this.btn('gridgo', 'Ir para a corrida', 'primary', 'data-def')}${this.btn('qualify', 'Tentar de novo')}</div></div>`;
+  }
+
   // desenhos dos tracados
   after() {
     for (const cv of this.root.querySelectorAll('canvas[data-ol]')) {

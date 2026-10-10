@@ -26,7 +26,7 @@ export class RaceCore {
     this.player = this.cars.find(c => c.isPlayer) || null;
     this.time = 0; this.phase = 'countdown'; this.cd = 0; this.goAt = 5.2 + this.rnd() * 0.9; this.lights = 0;
     this.raceTime = 0; this.finishCount = 0; this.afterFinish = 0; this.done = false;
-    this.events = []; this.skill = skill;
+    this.events = []; this.skill = skill; this.finishWait = 4; this.noBand = false;
     this.order = this.cars.slice();
     this.ranking = null;
   }
@@ -67,7 +67,7 @@ export class RaceCore {
         if (!racing) inp = { steer: 0, throttle: 0, brake: 1 };
         else {
           const gapP = pp - c.prog;
-          const boost = 1 + Math.max(-0.02, Math.min(0.035, gapP / 2500)) * (this.skill > 0.99 ? 0.5 : 1);
+          const boost = this.noBand ? 1 : 1 + Math.max(-0.02, Math.min(0.035, gapP / 2500)) * (this.skill > 0.99 ? 0.5 : 1);
           const fin = c.finished;
           const o = d.drive(dt, cars, pp, fin ? 0.62 : boost);
           if (o.stuck) { c.place(t, ((c.lastS % t.length) + t.length) % t.length, 0); c.loc.lat = 0; d.stuck = 0; }
@@ -75,6 +75,8 @@ export class RaceCore {
         }
       }
       c.thr = inp.throttle; c.brk = inp.brake; c.str = inp.steer;
+      // na contagem os carros ficam parados no grid (freio em v=0 engataria a re)
+      if (!racing && !c.finished) { c.thr = 0; c.brk = 1; c.str = 0; c.v = 0; c.brakeOn = false; c.hit = 0; continue; }
       const hit = stepCar(c, inp, dt, t, racing ? c.slipstream : 0);
       if (hit > 0.05) ev.push({ type: 'wall', car: c, force: hit });
       // voltas
@@ -98,7 +100,7 @@ export class RaceCore {
     // fim
     if (this.player && this.player.finished && !this.done) {
       this.afterFinish += dt;
-      if (this.afterFinish > 4 || cars.every(c => c.finished)) { this.done = true; this.ranking = this.computeRanking(); ev.push({ type: 'done' }); }
+      if (this.afterFinish > this.finishWait || cars.every(c => c.finished)) { this.done = true; this.ranking = this.computeRanking(); ev.push({ type: 'done' }); }
     } else if (!this.player && cars.every(c => c.finished)) { this.done = true; this.ranking = this.computeRanking(); }
     return ev;
   }

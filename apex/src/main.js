@@ -44,7 +44,7 @@ if (S.settings.tilt) S.input.enableTilt(true);
 const app = {
   get cloud() { return cloud; },
   get settings() { return S.settings; }, get career() { return S.career; }, get input() { return S.input; }, get sfx() { return S.sfx; }, get quick() { return S.quick; }, get draft() { return S.draft; },
-  get garageTab() { return S.garageTab; }, get stTab() { return S.stTab; }, get result() { return S.result; }, get race() { return S.race; },
+  get garageTab() { return S.garageTab; }, get stTab() { return S.stTab; }, get result() { return S.result; }, get race() { return S.race; }, get pre() { return S.pre; }, get qres() { return S.qres; },
   getTrack(i) { return S.tracks[i] || (S.tracks[i] = buildTrack(CIRCUITS[i])); },
   playerTeamObj() { return C.playerTeam(S.career); },
   careerEntries() { const c = S.career; return C.buildEntries(c.pilot, c.team, c.car, c.upg, c.customName, c.team === 'custom'); },
@@ -79,7 +79,7 @@ const OPT = {
 };
 
 // ---------- previa 3D ----------
-const MENU = ['title', 'quick', 'pilot', 'teams', 'hub', 'garage', 'standings', 'settings', 'help', 'account'];
+const MENU = ['title', 'quick', 'pilot', 'teams', 'hub', 'garage', 'standings', 'settings', 'help', 'account', 'prerace', 'qualyres'];
 function onScreen(s) {
   S.lastScreen = s;
   if (S.mode !== 'menu') return;
@@ -92,7 +92,7 @@ function carOpts() {
   if (sc === 'pilot' || sc === 'teams') {
     pilot = d.pilot; const id = sc === 'teams' ? (d.pv || d.teamId || 'vortex') : 'silvano';
     team = id === 'custom' ? TEAMS[TEAMS.length - 1] : TEAMS.find(t => t.id === id);
-  } else if (S.career && ['hub', 'garage', 'standings', 'title', 'settings', 'help', 'account'].includes(sc)) {
+  } else if (S.career && ['hub', 'garage', 'standings', 'title', 'settings', 'help', 'account', 'prerace', 'qualyres'].includes(sc)) {
     pilot = S.career.pilot; car = S.career.car; team = TEAMS[0]; sp = [SPONSORS[car.sp[0]], SPONSORS[car.sp[1]]];
   } else {
     const t = TEAMS.find(t => t.id === S.quick.team) || TEAMS[0]; team = t; pilot = S.career ? S.career.pilot : d.pilot;
@@ -109,7 +109,7 @@ function sanitizeName(n) { n = String(n || '').replace(/[<>]/g, '').trim(); retu
 function go(name, push = true) { if (push && ui.screen && ui.screen !== name) S.stack.push(ui.screen); ui.go(name); }
 function back() {
   const s = ui.screen;
-  if (s === 'title' || s === 'hub' || s === 'results') return;
+  if (s === 'title' || s === 'hub' || s === 'results' || s === 'qualyres') return;
   if (s === 'pause') return resume();
   const p = S.stack.pop(); if (p) ui.go(p); else ui.go(S.career ? 'hub' : 'title');
 }
@@ -151,7 +151,10 @@ function act(a, d, el) {
     case 'garage': go('garage'); break;
     case 'back': back(); break;
     case 'pickcircuit': S.quick.circuit = +d.v; ui.render(); break;
-    case 'qstart': startRace({ kind: 'quick', ci: S.quick.circuit }); break;
+    case 'qstart': S.pre = { kind: 'quick', ci: S.quick.circuit }; go('prerace'); break;
+    case 'qualify': startRace(S.pre, { qualify: true }); break;
+    case 'direct': startRace(S.pre, {}); break;
+    case 'gridgo': startRace(S.pre, { grid: S.grid }); break;
     case 'pilotnext': S.draft.pilot.name = sanitizeName(S.draft.pilot.name); go('teams'); break;
     case 'pickteam': S.draft.teamId = d.v; S.draft.pv = d.v; ui.render(); break;
     case 'teamok': {
@@ -160,7 +163,7 @@ function act(a, d, el) {
       S.career = C.newCareer(Object.assign({}, S.draft.pilot), S.draft.teamId, nm); C.saveCareer(S.career);
       S.stack = ['title']; ui.go('hub'); break;
     }
-    case 'race': startRace({ kind: 'career', ci: S.career.round }); break;
+    case 'race': S.pre = { kind: 'career', ci: S.career.round }; go('prerace'); break;
     case 'col': {
       if (d.k === 'h1' || d.k === 'h2') S.draft.pilot[d.k] = d.v;
       else { S.career.car[d.k] = d.v; C.saveCareer(S.career); }
@@ -171,9 +174,9 @@ function act(a, d, el) {
     case 'buy': if (C.buyUpgrade(S.career, d.v)) { C.saveCareer(S.career); sfx.fanfare && sfx.beep(880, .12, .2); } ui.render(); break;
     case 'menu': C.saveCareer(S.career); S.stack = []; ui.go('title'); break;
     case 'resume': resume(); break;
-    case 'restart': startRace(S.cfg); break;
+    case 'restart': startRace(S.cfg, S.opts); break;
     case 'quit': quitRace(); break;
-    case 'again': startRace(S.cfg); break;
+    case 'again': S.pre = S.cfg; S.stack = ['title']; ui.go('prerace'); break;
     case 'resultok': finishResultScreen(); break;
   }
 }
@@ -189,9 +192,9 @@ let miniCache = null, msgT = 0, hudT = 0, towerT = 0, lastHud = {}, finishT = 0,
 
 function msg(text, ms = 1600, color = '#fff') { H.msg.textContent = text; H.msg.style.color = color; H.msg.classList.add('show'); msgT = ms / 1000; }
 
-async function startRace(cfg) {
+async function startRace(cfg, opts = {}) {
   if (!cfg) return;
-  S.cfg = cfg; S.mode = 'race'; S.paused = false; S.result = null; S.sfx.music(false);
+  S.cfg = cfg; S.opts = opts; S.mode = 'race'; S.paused = false; S.result = null; S.sfx.music(false);
   ui.clear(); S.stack = [];
   const ld = $('loading'); ld.hidden = false; ld.querySelector('small').textContent = CIRCUITS[cfg.ci].name;
   await new Promise(r => setTimeout(r, 60));
@@ -202,10 +205,15 @@ async function startRace(cfg) {
     const p = S.career ? S.career.pilot : S.draft.pilot;
     entries = C.buildEntries({ name: sanitizeName(p.name), nat: p.nat, number: p.number, h1: p.h1, h2: p.h2, hs: p.hs }, S.quick.team, { c1: TEAMS.find(t => t.id === S.quick.team).c1, c2: TEAMS.find(t => t.id === S.quick.team).c2, sp: [0, 1], wing: 0 }, {}, 'Minha Equipe', false);
   }
+  if (opts.grid) for (const e of entries) if (opts.grid[e.id] != null) e.qual = opts.grid[e.id];
   S.entries = entries;
   const track = app.getTrack(cfg.ci);
   try { S.view.loadTrack(track); } catch (e) { console.error(e); }
-  S.race = new RaceCore(track, entries, settings.laps, diff.skill, (Date.now() & 0xffff));
+  if (opts.qualify) {
+    // volta de classificacao: so o jogador na pista, 1 volta, contagem curta
+    S.race = new RaceCore(track, entries.filter(e => e.isPlayer), 1, diff.skill, (Date.now() & 0xffff));
+    S.race.goAt = 2.6; S.race.finishWait = 2.2;
+  } else S.race = new RaceCore(track, entries, settings.laps, diff.skill, (Date.now() & 0xffff));
   S.view.spawnCars(S.race.cars, entries);
   S.view.camInit = false;
   miniCache = null; lastHud = {}; finishT = 0; resetCd = 0;
@@ -243,12 +251,39 @@ function onRaceEvent(e, race) {
     case 'best': if (e.car === p) { msg('MELHOR VOLTA  ' + C.fmtTime(e.time), 1800, '#c78bff'); sfx.beep(1320, .15, .18, 'triangle'); } break;
     case 'wall': if (e.car === p) { sfx.thud(e.force); S.input.rumble(0.9, 0.5, 120 + 200 * e.force); S.view.shake = Math.max(S.view.shake, 0.25 * e.force); } break;
     case 'crash': sfx.thud(e.force * 0.6); S.input.rumble(0.5, 0.8, 120); break;
-    case 'finish': if (e.car === p) { sfx.fanfare(); msg(e.car.finishPos === 1 ? 'VITÓRIA!' : 'BANDEIRADA  P' + e.car.finishPos, 3000, '#ffc83d'); } break;
+    case 'finish': if (e.car === p && S.opts && S.opts.qualify) { sfx.fanfare(); msg('VOLTA COMPLETA', 2000, '#ffc83d'); } else if (e.car === p) { sfx.fanfare(); msg(e.car.finishPos === 1 ? 'VITÓRIA!' : 'BANDEIRADA  P' + e.car.finishPos, 3000, '#ffc83d'); } break;
     case 'done': onRaceDone(race); break;
   }
 }
 
+// tempos de classificacao dos rivais: cada carro faz 1 volta sozinho (simulacao rapida, sem graficos)
+async function finishQualy(race) {
+  const myT = race.player.finishTime || race.raceTime;
+  hud.hidden = true; $('touch').hidden = true; S.input.captureKeys = false; S.sfx.update(null, 0, true);
+  const ld = $('loading'); ld.hidden = false; ld.querySelector('small').textContent = 'calculando o grid...';
+  await new Promise(r => setTimeout(r, 50));
+  const diff = DIFFS.find(d => d.id === S.settings.diff) || DIFFS[1];
+  const track = race.t, times = {};
+  const rnd = (() => { let a = (Date.now() & 0xffff) + 7; return () => ((a = (a * 1664525 + 1013904223) >>> 0) / 4294967296); })();
+  let k = 0;
+  for (const e of S.entries) {
+    if (e.isPlayer) { times[e.id] = myT; continue; }
+    const rc = new RaceCore(track, [e], 1, diff.skill, 1000 + k++);
+    rc.noBand = true; rc.phase = 'race'; rc.raceTime = 0;
+    for (let n = 0; n < 40000 && !rc.done; n++) rc.step(1 / 60, null);
+    const c = rc.cars[0];
+    times[e.id] = (c.finished ? c.finishTime : 999) * (1 + (rnd() - 0.5) * 0.006);
+    await new Promise(r => setTimeout(r, 0));
+  }
+  const rows = S.entries.map(e => ({ id: e.id, name: e.name, tag: e.tag, c1: e.c1, isPlayer: !!e.isPlayer, time: times[e.id] })).sort((a, b) => a.time - b.time);
+  const grid = {}; rows.forEach(r => { grid[r.id] = -r.time; });
+  S.grid = grid; S.qres = rows;
+  S.mode = 'menu'; S.race = null; S.view.clearRace(); S.view.mode = 'none'; S.stack = [];
+  ld.hidden = true; ui.go('qualyres');
+}
+
 function onRaceDone(race) {
+  if (S.opts && S.opts.qualify) { finishQualy(race); return; }
   const ranking = race.ranking, R = { ranking };
   if (S.cfg.kind === 'career' && S.career) {
     const ent = S.entries;
