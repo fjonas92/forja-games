@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0a0d14">
+<title>TURBO MOTO: Campeonato de Corrida de Moto 3D | Falzinho Games</title>
+<meta name="description" content="TURBO MOTO, jogo de corrida de moto 3D no navegador com carreira, 8 equipes, 16 motos, 14 circuitos, chuva, box com troca de pneus e pinturas. Crie seu piloto, evolua o carro e dispute o campeonato. Joga com teclado, controle (joystick) ou toque no celular.">
+<link rel="canonical" href="https://falzinhogames.com.br/moto/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Figtree:wght@400;600;700&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
+<style>
+:root{--bg:#090b12;--surface:#141824;--line:#2a3150;--fg:#f2f5ff;--muted:#9ba6c8;--red:#ff3b30;--gold:#ffc83d;--blue:#4ab3ff;--gutter:16px;--font-body:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--font-hud:'Rajdhani','Figtree',system-ui,sans-serif;--u:1}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:radial-gradient(900px 500px at 50% -10%,#2a1630 0%,#090b12 65%) fixed,var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.55;padding-inline:var(--gutter);-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+a{color:inherit}
+.bar{max-width:1200px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
+.bar .back{text-decoration:none;color:var(--muted);font-weight:600;font-size:14px}
+.bar .back:hover{color:var(--fg)}
+.bar .logo{font-family:var(--font-hud);font-weight:700;font-size:22px;letter-spacing:4px;color:#fff}
+.bar .logo small{color:var(--red);font-size:12px;letter-spacing:1px;margin-left:8px}
+main{max-width:1200px;margin-inline:auto;padding-bottom:40px}
+#stage{position:relative;width:min(100%,calc((100vh - 70px)*16/9));aspect-ratio:16/9;margin:0 auto;background:#000;border-radius:10px;overflow:hidden;box-shadow:0 0 0 2px #2a3150,0 20px 50px rgba(0,0,0,.6);touch-action:none;user-select:none;-webkit-user-select:none}
+#stage:fullscreen{width:min(100vw,calc(100vh*16/9));border-radius:0;box-shadow:none;margin:auto}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+#ui,#hud,#touch{position:absolute;inset:0}
+#ui{z-index:5;font-family:var(--font-hud);font-size:max(12px,calc(var(--u)*17px));pointer-events:none}
+#ui>*{pointer-events:auto}
+#hud{z-index:3;pointer-events:none;font-family:var(--font-hud)}
+#touch{z-index:4;pointer-events:none}
+#btnFull{position:absolute;bottom:8px;right:8px;z-index:8;background:rgba(10,13,20,.75);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;font:700 12px var(--font-body);padding:6px 10px;cursor:pointer}
+#padstatus{max-width:820px;margin:10px auto 0;text-align:center;color:var(--muted);font-size:14px}
+#padstatus b{color:var(--gold)}
+/* ---------- menus ---------- */
+.panel{position:absolute;left:2.5%;top:4%;bottom:4%;width:47%;overflow:auto;backdrop-filter:blur(7px);box-shadow:0 10px 40px rgba(0,0,0,.55);background:linear-gradient(90deg,rgba(7,9,15,.92),rgba(12,16,30,.6));border-left:calc(var(--u)*4px) solid var(--red);border-radius:calc(var(--u)*12px);padding:calc(var(--u)*20px) calc(var(--u)*22px);scrollbar-width:thin}
+.panel.wide{width:95%}
+.panel.center{left:50%;transform:translateX(-50%);width:44%;text-align:center;top:6%;bottom:6%;background:rgba(7,9,15,.82);border-left:0;border-top:calc(var(--u)*4px) solid var(--red);display:flex;flex-direction:column;justify-content:safe center}
+.panel.left{width:38%;text-align:center;display:flex;flex-direction:column;justify-content:safe center;top:6%;bottom:6%}
+.panel.right{left:auto;right:2.5%}
+h2.t{margin:0 0 calc(var(--u)*10px);font-size:calc(var(--u)*30px);letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.sub{color:var(--muted);font-size:calc(var(--u)*17px);margin-bottom:calc(var(--u)*10px)}
+.big-logo{background:linear-gradient(180deg,#fff 30%,#ff8a80);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:calc(var(--u)*96px);font-weight:700;letter-spacing:calc(var(--u)*14px);line-height:1;text-shadow:0 0 30px rgba(255,59,48,.55);margin-bottom:calc(var(--u)*2px)}
+.btn{transition:transform .12s,border-color .12s,box-shadow .12s;display:block;width:100%;min-height:max(34px,calc(var(--u)*46px));margin:calc(var(--u)*7px) 0;padding:0 calc(var(--u)*16px);background:linear-gradient(180deg,rgba(44,52,86,.92),rgba(24,30,52,.92));color:#fff;border:2px solid #36406d;border-radius:calc(var(--u)*8px);font:700 calc(var(--u)*20px)/1 var(--font-hud);letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;text-align:center}
+.btn.primary{background:linear-gradient(180deg,#ff4a3f,#c9211a);border-color:#ff8077}
+.btn.small{display:inline-block;width:auto;min-height:max(30px,calc(var(--u)*38px));font-size:calc(var(--u)*16px);margin-right:calc(var(--u)*6px)}
+.btn:hover,.btn.focus,.btn:focus-visible,.nav:focus-visible,.nav.focus{outline:0;border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,200,61,.45),0 0 18px rgba(255,200,61,.3);transform:translateY(-1px)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.row{display:flex;gap:calc(var(--u)*10px);align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+.lbl{font-size:calc(var(--u)*14px);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin:calc(var(--u)*10px) 0 calc(var(--u)*3px)}
+.cyc{color:#fff;display:flex;align-items:center;justify-content:space-between;height:max(34px,calc(var(--u)*44px));background:rgba(30,36,60,.9);border:2px solid #2f3860;border-radius:calc(var(--u)*8px);padding:0 calc(var(--u)*6px);cursor:pointer;font-weight:700;font-size:calc(var(--u)*19px);outline:0}
+.cyc button{background:none;border:0;color:var(--gold);font:700 calc(var(--u)*26px) var(--font-hud);cursor:pointer;width:calc(var(--u)*40px);height:100%;padding:0}
+.cyc span{flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cyc:hover,.cyc.focus,.cyc:focus-visible{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,200,61,.45)}
+input.txt{width:100%;height:max(34px,calc(var(--u)*44px));background:rgba(30,36,60,.9);border:2px solid #2f3860;border-radius:calc(var(--u)*8px);color:#fff;font:700 calc(var(--u)*20px) var(--font-hud);padding:0 calc(var(--u)*12px);letter-spacing:1px;outline:0}
+input.txt:focus,input.txt.focus{border-color:var(--gold)}
+.sw{display:flex;flex-wrap:wrap;gap:calc(var(--u)*8px)}
+.sw button{width:calc(var(--u)*34px);height:calc(var(--u)*34px);min-width:26px;min-height:26px;border-radius:50%;border:3px solid transparent;cursor:pointer;padding:0}
+.sw button.sel{border-color:#fff}
+.sw button:hover,.sw button.focus,.sw button:focus-visible{outline:0;box-shadow:0 0 0 3px var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*8px)}
+.card{position:relative;text-align:left;background:rgba(24,29,48,.92);border:2px solid #2f3860;border-radius:calc(var(--u)*8px);padding:calc(var(--u)*8px) calc(var(--u)*10px);color:#fff;cursor:pointer;font-family:var(--font-hud);outline:0;min-height:calc(var(--u)*74px)}
+.card.sel{border-color:var(--red);background:rgba(60,24,28,.92)}
+.card:hover,.card.focus,.card:focus-visible{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,200,61,.4)}
+.card b{display:block;font-size:calc(var(--u)*17px);line-height:1.1}
+.card small{color:var(--muted);font-size:calc(var(--u)*13px)}
+.card:has(canvas){padding-right:calc(var(--u)*66px)}
+.card canvas{position:absolute;right:calc(var(--u)*6px);top:calc(var(--u)*6px);width:calc(var(--u)*56px);height:calc(var(--u)*40px);opacity:.9}
+.dot{display:inline-block;width:.7em;height:.7em;border-radius:50%;margin-right:.4em;vertical-align:middle}
+.bars{display:grid;grid-template-columns:auto 1fr;gap:2px calc(var(--u)*8px);font-size:calc(var(--u)*13px);color:var(--muted);margin-top:4px}
+.bar2{height:calc(var(--u)*6px);background:#222844;border-radius:4px;align-self:center;overflow:hidden}
+.bar2 i{display:block;height:100%;background:linear-gradient(90deg,#4ab3ff,#7fe0ff)}
+table.tb{width:100%;border-collapse:collapse;font-size:calc(var(--u)*17px)}
+table.tb th,table.tb td{padding:calc(var(--u)*4px) calc(var(--u)*6px);text-align:left;border-bottom:1px solid #222a48;white-space:nowrap}
+table.tb th{color:var(--muted);font-size:calc(var(--u)*13px);letter-spacing:1px;text-transform:uppercase}
+table.tb tr.me td{background:rgba(255,59,48,.22);font-weight:700}
+table.tb td.r,table.tb th.r{text-align:right}
+.tabs{display:flex;gap:calc(var(--u)*6px);margin-bottom:calc(var(--u)*8px);flex-wrap:wrap}
+.tabs .btn{margin:0;flex:1;min-height:max(30px,calc(var(--u)*38px));font-size:calc(var(--u)*15px)}
+.tabs .btn.sel{background:var(--red);border-color:#ff8077}
+.pips{display:inline-flex;gap:3px}
+.pips i{width:calc(var(--u)*14px);height:calc(var(--u)*8px);background:#2a3150;border-radius:2px}
+.pips i.on{background:var(--gold)}
+.hint{color:var(--muted);font-size:calc(var(--u)*14px);margin-top:calc(var(--u)*10px)}
+.gold{color:var(--gold)}
+.pill{display:inline-block;padding:0 .5em;border-radius:4px;background:#2a3150;font-size:.8em;margin-right:.4em}
+.kbd{display:inline-block;min-width:1.6em;padding:0 .4em;border:1px solid #556;border-radius:4px;background:#1a2036;text-align:center;font-size:.9em}
+#loading{position:absolute;inset:0;z-index:20;background:#05070b;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--font-hud);font-size:calc(var(--u)*28px);letter-spacing:4px}
+#loading small{color:var(--muted);font-size:calc(var(--u)*16px);letter-spacing:1px;margin-top:8px}
+.spin{width:calc(var(--u)*44px);height:calc(var(--u)*44px);border:5px solid #222;border-top-color:var(--red);border-radius:50%;animation:sp 0.9s linear infinite;margin-bottom:16px}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* ---------- HUD ---------- */
+.h{position:absolute;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+#hPos{left:2%;top:3%;font-size:calc(var(--u)*72px);font-weight:700;line-height:.9;font-style:italic}
+#hPos small{font-size:.38em;color:#ddd;margin-left:.2em}
+#hLap{left:2%;top:calc(var(--u)*88px);font-size:calc(var(--u)*24px);font-weight:700;letter-spacing:2px}
+#tower{left:2%;top:calc(var(--u)*122px);font-size:calc(var(--u)*15px);font-weight:600;background:rgba(0,0,0,.35);border-radius:6px;padding:4px 6px;min-width:calc(var(--u)*150px)}
+#tower div{display:flex;gap:6px;white-space:nowrap;line-height:1.35}
+#tower i{width:4px;border-radius:2px;display:block}
+#tower .me{color:var(--gold);font-weight:700}
+#hTimes{right:2%;top:3%;text-align:right;font-size:calc(var(--u)*22px);font-weight:600;letter-spacing:1px;line-height:1.25}
+#hTimes b{font-size:1.5em;display:block}
+#hTimes small{color:#ccd;font-size:.75em}
+#hSpeed{left:50%;bottom:3%;transform:translateX(-50%);text-align:center;min-width:calc(var(--u)*220px)}
+#hSpeed .n{font-size:calc(var(--u)*76px);font-weight:700;font-style:italic;line-height:.9}
+#hSpeed .u{font-size:calc(var(--u)*17px);color:#ddd;letter-spacing:2px}
+#rpm{display:flex;gap:2px;justify-content:center;margin:4px 0}
+#rpm i{width:calc(var(--u)*11px);height:calc(var(--u)*9px);background:rgba(255,255,255,.2);border-radius:2px;transform:skewX(-20deg)}
+#rpm i.on{background:#7be37b}#rpm i.on.y{background:#ffd23f}#rpm i.on.r{background:#ff3b30}
+#hGear{font-size:calc(var(--u)*28px);font-weight:700;color:var(--gold)}
+#hTyre{right:2%;bottom:calc(var(--u)*22px);width:calc(var(--u)*130px);font-size:calc(var(--u)*14px);text-align:right;letter-spacing:1px}
+#hTyre .tb{height:calc(var(--u)*8px);background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;margin-top:3px}
+#hTyre .tb i{display:block;height:100%;background:#7be37b;transition:width .2s}
+#hTyre b{padding:0 6px;border-radius:4px;font-size:.95em}
+#hTyre b.s{background:#ffd23f;color:#111}#hTyre b.w{background:#3aa0ff;color:#06121f}
+#hTyre{background:linear-gradient(180deg,rgba(10,14,24,.62),rgba(10,14,24,.35));padding:calc(var(--u)*8px) calc(var(--u)*10px);border-radius:10px;border-right:3px solid var(--red);backdrop-filter:blur(3px)}
+#hFx{inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 52%,rgba(160,210,255,.16) 78%,rgba(190,230,255,.34) 100%);transition:opacity .25s}
+#hWx{left:50%;top:calc(var(--u)*92px);transform:translateX(-50%);font-size:calc(var(--u)*16px);letter-spacing:3px;color:#8fd0ff;background:rgba(10,24,44,.55);padding:2px 12px;border-radius:20px;border:1px solid rgba(143,208,255,.4)}
+#hPit{left:50%;top:32%;transform:translateX(-50%);font-size:calc(var(--u)*26px);font-weight:700;letter-spacing:3px;padding:calc(var(--u)*6px) calc(var(--u)*18px);border-radius:10px;background:rgba(10,14,24,.7);border:2px solid #4ab3ff;text-align:center;white-space:nowrap}
+#hPit.stop{font-size:calc(var(--u)*54px);border-color:#ffd23f;color:#ffd23f}
+#hPit.tip{font-size:calc(var(--u)*17px);border-color:#ff9a4a;color:#ffc58a;top:calc(var(--u)*130px)}
+#hPit.req,#hPit.in{color:#8fd0ff}
+#hMini{left:2%;bottom:calc(var(--u)*22px);width:calc(var(--u)*150px);height:calc(var(--u)*110px);background:rgba(0,0,0,.35);border-radius:8px}
+#lights{left:50%;top:5%;transform:translateX(-50%);display:flex;gap:calc(var(--u)*12px);background:rgba(0,0,0,.6);padding:calc(var(--u)*10px) calc(var(--u)*16px);border-radius:12px}
+#lights i{width:calc(var(--u)*34px);height:calc(var(--u)*34px);border-radius:50%;background:#2a0b0b;border:2px solid #111}
+#lights i.on{background:#ff2a1d;box-shadow:0 0 18px #ff2a1d}
+#hMsg{left:50%;top:22%;transform:translateX(-50%);font-size:calc(var(--u)*40px);font-weight:700;font-style:italic;letter-spacing:3px;text-align:center;opacity:0;transition:opacity .25s}
+#hMsg.show{opacity:1}
+#hSlip{left:50%;bottom:calc(var(--u)*120px);transform:translateX(-50%);font-size:calc(var(--u)*17px);letter-spacing:3px;color:#7fe0ff;opacity:0;transition:opacity .2s}
+#hSlip.show{opacity:1}
+#hPad{right:2%;top:calc(var(--u)*92px);font-size:calc(var(--u)*13px);color:#cde}
+/* ---------- toque ---------- */
+.tbtn{position:absolute;pointer-events:auto;touch-action:none;background:rgba(10,13,20,.45);border:3px solid rgba(255,255,255,.4);color:#fff;font:700 calc(var(--u)*34px) var(--font-hud);border-radius:calc(var(--u)*20px);display:grid;place-items:center;padding:0;user-select:none;-webkit-user-select:none}
+.tbtn.on{background:rgba(255,200,61,.55);border-color:#fff}
+#tL{left:2.5%;bottom:5%;width:calc(var(--u)*130px);height:calc(var(--u)*130px)}
+#tR{left:calc(2.5% + var(--u)*144px);bottom:5%;width:calc(var(--u)*130px);height:calc(var(--u)*130px)}
+#tG{right:2.5%;bottom:5%;width:calc(var(--u)*150px);height:calc(var(--u)*150px);background:rgba(60,200,90,.35);font-size:calc(var(--u)*22px);letter-spacing:1px}
+#tB{right:calc(2.5% + var(--u)*166px);bottom:5%;width:calc(var(--u)*110px);height:calc(var(--u)*110px);background:rgba(255,59,48,.35);font-size:calc(var(--u)*18px)}
+#tX{right:calc(2.5% + var(--u)*112px);top:calc(var(--u)*90px);width:calc(var(--u)*56px);height:calc(var(--u)*40px);font-size:calc(var(--u)*15px);border-radius:10px}
+#tP{right:2.5%;top:calc(var(--u)*90px);width:calc(var(--u)*46px);height:calc(var(--u)*40px);font-size:calc(var(--u)*20px);border-radius:10px}
+#tC{right:calc(2.5% + var(--u)*56px);top:calc(var(--u)*90px);width:calc(var(--u)*46px);height:calc(var(--u)*40px);font-size:calc(var(--u)*17px);border-radius:10px}
+body.tv #hMini{bottom:auto;top:calc(var(--u)*124px);width:calc(var(--u)*120px);height:calc(var(--u)*88px)}
+body.tv #tower{display:none}
+#rotate{position:absolute;inset:0;z-index:30;background:rgba(5,7,11,.96);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:var(--font-hud);font-size:20px;gap:12px;padding:20px}
+#rotate b{font-size:46px}
+@media (orientation:portrait) and (pointer:coarse){#rotate{display:flex}}
+.info{max-width:820px;margin:28px auto 0;color:var(--muted)}
+.info h1{font-family:var(--font-hud);color:var(--fg);font-size:clamp(26px,5vw,36px);margin:0 0 6px;letter-spacing:2px}
+.info h2{font-family:var(--font-hud);color:var(--fg);font-size:22px;margin:24px 0 8px;letter-spacing:1px}
+.info table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden;font-size:14px}
+.info th,.info td{padding:8px 10px;text-align:left;border-top:1px solid var(--line)}
+.info th{color:var(--fg);background:#1c2238;border-top:0}
+.info p strong{color:var(--fg)}
+.info ul{padding-left:20px}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"}}</script>
+<script src="/analytics.js"></script>
+</head>
+<body>
+<div id="redes" style="margin-inline:calc(var(--gutter) * -1);padding:10px var(--gutter);background:#FF8A3D;color:#1A1209;font-size:14px;font-weight:600;text-align:center;display:flex;gap:6px 16px;justify-content:center;align-items:center;flex-wrap:wrap"><span>Siga a gente nas redes: dicas, novidades e feedbacks</span><a href="https://www.instagram.com/falzingames" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Instagram</a><a href="https://x.com/falzinhogames" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">X (Twitter)</a></div>
+<header class="bar"><a class="back" href="/">&larr; Falzinho Games</a><span class="logo">TURBO MOTO<small>Campeonato 3D</small></span><span></span></header>
+<main>
+  <div id="stage">
+    <canvas id="gl" aria-label="TURBO MOTO, jogo de corrida de moto 3D"></canvas>
+    <div id="hud" hidden>
+      <div class="h" id="hPos">1<small>/16</small></div>
+      <div class="h" id="hLap">VOLTA 1/3</div>
+      <div class="h" id="tower"></div>
+      <div class="h" id="hTimes"></div>
+      <div class="h" id="hPad"></div>
+      <canvas class="h" id="hMini" width="300" height="220"></canvas>
+      <div class="h" id="hSpeed"><div id="rpm"></div><div class="n">0</div><div class="u">KM/H <span id="hGear">N</span></div></div>
+      <div class="h" id="hFx"></div>
+      <div class="h" id="hTyre">PNEUS <b id="hCmp" class="s">LISO</b><div class="tb"><i></i></div></div>
+      <div class="h" id="hWx" style="display:none"></div>
+      <div class="h" id="hPit" style="display:none"></div>
+      <div class="h" id="lights"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="h" id="hMsg"></div>
+      <div class="h" id="hSlip">ASPIRACAO</div>
+    </div>
+    <div id="touch" hidden>
+      <button class="tbtn" id="tL" type="button" aria-label="Esquerda">&#9664;</button>
+      <button class="tbtn" id="tR" type="button" aria-label="Direita">&#9654;</button>
+      <button class="tbtn" id="tB" type="button">FREIO</button>
+      <button class="tbtn" id="tG" type="button">ACELERA</button>
+      <button class="tbtn" id="tC" type="button" aria-label="Camera">&#128247;</button>
+      <button class="tbtn" id="tX" type="button" aria-label="Box">BOX</button>
+      <button class="tbtn" id="tP" type="button" aria-label="Pausar">&#10074;&#10074;</button>
+    </div>
+    <div id="ui"></div>
+    <div id="loading"><div class="spin"></div>TURBO MOTO<small>carregando...</small></div>
+    <div id="rotate"><b>&#8635;</b>Gire o celular para a horizontal<span style="font-size:15px;color:#9ba6c8">O jogo funciona melhor deitado e em tela cheia.</span></div>
+    <button id="btnFull" type="button">&#9974; Tela cheia</button>
+  </div>
+  <p id="padstatus" role="status">Nenhum controle detectado. Conecte um joystick e aperte qualquer botão, ou use teclado e toque.</p>
+  <section class="info">
+    <h1>TURBO MOTO: Campeonato de Corrida de Moto 3D</h1>
+    <p>Crie seu <strong>piloto</strong>, escolha uma das <strong>8 equipes</strong> (ou monte a sua) e dispute uma temporada com <strong>14 circuitos</strong> inéditos contra mais 15 motos. Ganhe créditos nas corridas, evolua motor, aerodinâmica, freios e pneus e personalize pintura, patrocinadores e carenagem. As equipes, pilotos e pistas são todos fictícios.</p>
+    <p>O jogo é em 3D e roda direto no navegador, no computador ou no celular. Use <strong>teclado</strong>, <strong>joystick (controle de videogame)</strong> ou os <strong>botões na tela</strong>. Dica: use a aspiração (ficar atrás de outra moto) para ultrapassar nas retas e não esqueça de frear antes das curvas.</p>
+    <h2>Controles</h2>
+    <table>
+      <tr><th>Ação</th><th>Teclado</th><th>Joystick</th><th>Toque</th></tr>
+      <tr><td>Virar</td><td>Setas ou A / D</td><td>Analógico esquerdo ou direcional</td><td>Botões ◀ ▶ (ou inclinar o celular)</td></tr>
+      <tr><td>Acelerar</td><td>Seta cima ou W</td><td>RT / R2 (ou A)</td><td>Botão ACELERA (ou modo automático)</td></tr>
+      <tr><td>Frear</td><td>Seta baixo, S ou Espaço</td><td>LT / L2 (ou X / B)</td><td>Botão FREIO</td></tr>
+      <tr><td>Trocar câmera</td><td>C</td><td>Y / triângulo</td><td>Botão da câmera</td></tr>
+      <tr><td>Pausar</td><td>P ou Esc</td><td>Start / Menu</td><td>Botão de pausa</td></tr>
+      <tr><td>Voltar para a pista</td><td>R</td><td>Select / View</td><td>Pausa e reiniciar</td></tr>
+      <tr><td>Menus</td><td>Setas e Enter</td><td>Direcional, A confirma, B volta</td><td>Tocar</td></tr>
+    </table>
+    <h2>Circuitos</h2>
+    <p>Costa Azul, Cidade do Vento, Dunas, Serra Alta, Lago Gelado, Neon Night, Bosque Verde, Sakura Park, Grande Velocidade, Penhasco do Sol, Ocaso, Ilha Tropical, Canion Vermelho e Vulcao Negro. Cada um tem clima, cenário e traçado próprios.</p>
+    <p style="font-size:13px">Música da abertura: Alex Morgan (Pixabay). Demo versão 0.1. O progresso da carreira fica salvo no seu navegador.</p>
+  </section>
+</main>
+<script src="/fg.js"></script>
+<script type="module" src="src/main.js"></script>
+<script src="/cookies.js"></script>
+</body>
+</html>

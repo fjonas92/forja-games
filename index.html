@@ -157,6 +157,9 @@ const GAMES = [
   { nome: "APEX", genero: "Corrida 3D · Campeonato", status: "Jogue agora",
     texto: "Crie seu piloto, escolha a equipe, evolua o carro e dispute 14 circuitos em 3D contra 15 rivais. Teclado, joystick ou toque no celular.",
     url: "/apex/", c1: "#14182C", c2: "#FF3B30", arte: "apex", pagina: "" },
+  { nome: "TURBO MOTO", genero: "Corrida de moto 3D · Campeonato", status: "Jogue agora",
+    texto: "Escolha seu piloto e a equipe, evolua a moto, enfrente a chuva e dispute 14 circuitos em 3D contra 15 rivais. Teclado, joystick ou toque no celular, com carreira salva na conta.",
+    url: "/moto/", c1: "#1B2A5E", c2: "#FF8A1F", arte: "moto", pagina: "" },
   { nome: "Laylla e os Cristais", genero: "Plataforma 3D · Aventura", status: "Jogue agora",
     texto: "Ajude a Laylla a pular entre ilhas flutuantes, pisar nas gelinhas, achar estrelas escondidas e trazer os cristais de volta. Teclado, controle ou toque, com progresso salvo na conta.",
     url: "/laylla/", c1: "#2B5CB0", c2: "#FF5FA2", arte: "laylla", pagina: "" },
@@ -286,6 +289,20 @@ const ARTES = {
       <rect x="-48" y="2" width="14" height="22" rx="4" fill="#15171C"/><rect x="34" y="2" width="14" height="22" rx="4" fill="#15171C"/>
       <path d="M-30 6L-18 -14H18L30 6V20H-30Z" fill="#FF3B30"/><path d="M-12 -14L-6 -26H6L12 -14Z" fill="#B5201A"/>
       <rect x="-40" y="-16" width="80" height="6" fill="#15171C"/><circle cx="0" cy="-8" r="6" fill="#F4F4F4"/></g>
+  </svg>`
+  ,moto: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><linearGradient id="mt-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A64D0"/><stop offset="1" stop-color="#F6CDA0"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#mt-sky)"/>
+    <path d="M0 98L60 66L104 92L158 60L212 94L268 70L320 98V122H0Z" fill="#5D6C86"/>
+    <rect y="106" width="320" height="94" fill="#3F8B3A"/>
+    <path d="M146 106H174L316 200H4Z" fill="#33353B"/>
+    <path d="M146 106H151L26 200H4ZM174 106H169L294 200H316Z" fill="#E5E7EB"/>
+    <g stroke="#fff" stroke-width="3" stroke-dasharray="10 12" opacity=".7"><path d="M160 110V200"/></g>
+    <g transform="translate(160 150) rotate(-14)"><ellipse cx="0" cy="40" rx="48" ry="6" fill="#000" opacity=".35"/>
+      <circle cx="-30" cy="28" r="15" fill="#15171C"/><circle cx="-30" cy="28" r="8" fill="#C9CCD1"/><circle cx="32" cy="28" r="13" fill="#15171C"/><circle cx="32" cy="28" r="7" fill="#C9CCD1"/>
+      <path d="M-30 28L-8 8L12 6L32 28" stroke="#15171C" stroke-width="5" fill="none"/>
+      <path d="M-14 6Q0 -6 16 4L24 16L-8 18Z" fill="#FF8A1F"/><path d="M14 4L34 8L38 18L22 18Z" fill="#E6700A"/>
+      <path d="M-18 6L-4 -18L8 -14L6 6Z" fill="#1B2A5E"/><circle cx="4" cy="-28" r="9" fill="#F4F4F4"/><rect x="6" y="-31" width="7" height="5" fill="#15171C"/></g>
   </svg>`
   ,laylla: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs><linearGradient id="ly-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4AA9FF"/><stop offset="1" stop-color="#EAF8FF"/></linearGradient></defs>
