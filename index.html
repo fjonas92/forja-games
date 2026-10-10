@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal, APEX (corrida 3D), Laylla (plataforma 3D), Minha Fazendinha, Pebolim, Palavras Cruzadas e Cartas (Truco, Blackjack e Poker).">
+<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal, APEX (corrida 3D), Laylla (plataforma 3D), Corrida dos Heróis (corrida 3D), Minha Fazendinha, Pebolim, Palavras Cruzadas e Cartas (Truco, Blackjack e Poker).">
 <title>Falzinho Games</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -160,6 +160,9 @@ const GAMES = [
   { nome: "Laylla e os Cristais", genero: "Plataforma 3D · Aventura", status: "Jogue agora",
     texto: "Ajude a Laylla a pular entre ilhas flutuantes, pisar nas gelinhas, achar estrelas escondidas e trazer os cristais de volta. Teclado, controle ou toque, com progresso salvo na conta.",
     url: "/laylla/", c1: "#2B5CB0", c2: "#FF5FA2", arte: "laylla", pagina: "" },
+  { nome: "Corrida dos Heróis", genero: "Corrida infinita 3D · Aventura", status: "Jogue agora",
+    texto: "Corra em 3D por 5 fases, desvie, pule e deslize, junte moedas e use o poder especial. Escolha entre Laylla, Palito Trovão, Super Bela e Super Cabeção. Teclado, controle ou toque.",
+    url: "/corrida/", c1: "#1E50D8", c2: "#FFD400", arte: "corrida", pagina: "" },
   { nome: "Minha Fazendinha", genero: "Fazenda · Relaxante", status: "Jogue agora",
     texto: "Are a terra, plante, regue, colha e venda na loja. Cuide das galinhas, enfrente dias de chuva e salve sua fazenda na nuvem entrando na conta.",
     url: "/fazendinha/", c1: "#2F8A3D", c2: "#FFD23C", arte: "fazenda", pagina: "" },
@@ -281,6 +284,15 @@ const ARTES = {
     <g transform="translate(160 78)"><path d="M-22 40L22 40L12 16L-12 16Z" fill="#FF5FA2"/><rect x="-9" y="6" width="18" height="14" rx="6" fill="#FFD23C"/><circle cx="0" cy="-4" r="15" fill="#F6D2B5"/><path d="M-16 -2Q-20 -24 0 -24Q20 -24 16 -2Q14 -14 0 -16Q-14 -14 -16 -2Z" fill="#14101A"/><path d="M-16 -2v18M16 -2v18" stroke="#14101A" stroke-width="5" stroke-linecap="round"/><circle cx="-5" cy="-3" r="2.2" fill="#1B1020"/><circle cx="5" cy="-3" r="2.2" fill="#1B1020"/><path d="M-4 4Q0 8 4 4" stroke="#6B2A2A" stroke-width="2" fill="none"/><path d="M6 -24l2 5h5l-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3h5z" fill="#FFD23C"/></g>
     <path d="M250 70l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#FFD23C" stroke="#fff" stroke-width="2"/>
     <g fill="#3DE7FF"><path d="M60 100l7 10-7 10-7-10z"/><path d="M110 70l6 9-6 9-6-9z" fill="#FF6BD6"/></g>
+  </svg>`
+  ,corrida: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><linearGradient id="cr-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4AA9FF"/><stop offset="1" stop-color="#EAF8FF"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#cr-sky)"/>
+    <path d="M140 70L180 70L300 200L20 200Z" fill="#4A4F5E"/>
+    <path d="M160 70L160 200" stroke="#fff" stroke-width="2" stroke-dasharray="8 8" opacity=".6"/>
+    <rect x="20" y="30" width="46" height="90" fill="#7BD66C"/><rect x="76" y="50" width="38" height="70" fill="#FF7A6B"/><rect x="250" y="26" width="48" height="100" fill="#9C7BE0"/><rect x="206" y="52" width="36" height="68" fill="#FFC83D"/>
+    <g fill="#FFD400" stroke="#C99A00" stroke-width="2"><circle cx="160" cy="96" r="7"/><circle cx="160" cy="120" r="9"/><circle cx="160" cy="148" r="11"/></g>
+    <g transform="translate(110 130)"><path d="M-16 40L16 40L8 14L-8 14Z" fill="#FF5FA2"/><rect x="-8" y="4" width="16" height="14" rx="6" fill="#F6D2B5"/><circle cx="0" cy="-4" r="13" fill="#F6D2B5"/><path d="M-14 -4Q-14 -18 0 -18Q14 -18 14 -4L14 6L8 6L8 -6L-8 -6L-8 6L-14 6Z" fill="#14101A"/></g>
   </svg>`
   ,fazenda: `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <rect width="320" height="200" fill="#9BE0FF"/><circle cx="270" cy="38" r="20" fill="#FFE066"/>
