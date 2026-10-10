@@ -70,7 +70,7 @@ const OPT = {
   cam: { list: () => [0, 1, 2], get: () => S.settings.cam, set: v => { S.settings.cam = v; C.saveSettings(S.settings); }, fmt: v => ['Traseira', 'Alta', 'Capô'][v] },
   unit: { list: () => ['kmh', 'mph'], get: () => S.settings.speedUnit, set: v => { S.settings.speedUnit = v; C.saveSettings(S.settings); }, fmt: v => v === 'kmh' ? 'km/h' : 'mph' },
   touch: { list: () => ['auto', 'on', 'off'], get: () => S.settings.touch, set: v => { S.settings.touch = v; C.saveSettings(S.settings); }, fmt: v => ({ auto: 'Automático', on: 'Sempre', off: 'Escondidos' }[v]) },
-  qlaps: { list: () => [2, 3, 5, 8], get: () => S.settings.laps, set: v => { S.settings.laps = v; C.saveSettings(S.settings); }, fmt: v => v + ' voltas' },
+  qlaps: { list: () => [2, 3, 5, 8, 10, 15, 20, 30], get: () => S.settings.laps, set: v => { S.settings.laps = v; C.saveSettings(S.settings); }, fmt: v => v + ' voltas' },
   qteam: { list: () => TEAMS.map(t => t.id), get: () => S.quick.team, set: v => { S.quick.team = v; }, fmt: v => TEAMS.find(t => t.id === v).name },
   nat: { list: () => NATIONS.map(n => n[0]), get: () => S.draft.pilot.nat, set: v => { S.draft.pilot.nat = v; }, fmt: v => v + '  ' + NATIONS.find(n => n[0] === v)[1] },
   num: { list: () => Array.from({ length: 99 }, (_, i) => i + 1), get: () => S.draft.pilot.number, set: v => { S.draft.pilot.number = v; }, fmt: v => '#' + v },
@@ -209,7 +209,7 @@ function act(a, d, el) {
 // ---------- corrida ----------
 const H = {
   pos: $('hPos'), lap: $('hLap'), tower: $('tower'), times: $('hTimes'), speed: $('hSpeed'), n: $('hSpeed').querySelector('.n'), rpm: $('rpm'), gear: $('hGear'),
-  tyre: $('hTyre').querySelector('i'), cmp: $('hCmp'), dmg: $('hDmg'), wx: $('hWx'), pit: $('hPit'), fx: $('hFx'), mini: $('hMini'), lights: [...$('lights').children], lightsBox: $('lights'), msg: $('hMsg'), slip: $('hSlip'), pad: $('hPad'),
+  tyre: $('hTyre').querySelector('i'), cmp: $('hCmp'), wx: $('hWx'), pit: $('hPit'), fx: $('hFx'), mini: $('hMini'), lights: [...$('lights').children], lightsBox: $('lights'), msg: $('hMsg'), slip: $('hSlip'), pad: $('hPad'),
 };
 for (let i = 0; i < 16; i++) H.rpm.appendChild(document.createElement('i'));
 const rpmEls = [...H.rpm.children];
@@ -375,15 +375,13 @@ function updateHud(race, dt) {
   if (lastHud.wear !== w) { lastHud.wear = w; H.tyre.style.width = Math.max(0, (p.wear - 0.5) * 200) + '%'; H.tyre.style.background = p.wear > 0.85 ? '#7be37b' : p.wear > 0.7 ? '#ffd23f' : '#ff5a4d'; }
   const cmpT = p.tyre === 'W' ? 'CHUVA' : 'LISO';
   if (lastHud.cmp !== cmpT) { lastHud.cmp = cmpT; H.cmp.textContent = cmpT; H.cmp.className = p.tyre === 'W' ? 'w' : 's'; }
-  const dp = Math.round((p.dmg || 0) * 100);
-  if (lastHud.dmg !== dp) { lastHud.dmg = dp; H.dmg.style.width = dp + '%'; H.dmg.style.background = dp < 30 ? '#7be37b' : dp < 60 ? '#ffd23f' : '#ff5a4d'; }
   const wxs = race.rain > 0.04 ? (race.wet > 0.55 ? 'PISTA ENCHARCADA' : race.wet > 0.2 ? 'PISTA MOLHADA' : 'GAROANDO') : (race.wet > 0.12 ? 'PISTA SECANDO' : '');
   setTxt(H.wx, 'wx', wxs); H.wx.style.display = wxs ? 'block' : 'none';
   let pt = '', pc = '';
   if (p.pit && p.pit.ph === 'stop') { pt = 'BOX ' + Math.max(0, p.pit.left).toFixed(1) + 's'; pc = 'stop'; }
   else if (p.pit && p.pit.ph === 'in') { pt = 'ENTRANDO NO BOX'; pc = 'in'; }
   else if (p.pitReq) { pt = 'BOX NA PRÓXIMA VOLTA · ' + (p.pitReq === 'W' ? 'CHUVA' : 'LISOS'); pc = 'req'; }
-  else if (race.phase === 'race' && (p.dmg > 0.35 || (race.wet > 0.3 && p.tyre === 'S') || (race.wet < 0.08 && race.rain < 0.05 && p.tyre === 'W')) && race.laps - p.lap > 1) { pt = p.dmg > 0.35 ? 'CARRO DANIFICADO · BOX? (B)' : 'TROCAR PNEUS? BOX (B)'; pc = 'tip'; }
+  else if (race.phase === 'race' && ((race.wet > 0.3 && p.tyre === 'S') || (race.wet < 0.08 && race.rain < 0.05 && p.tyre === 'W')) && race.laps - p.lap > 1) { pt = 'TROCAR PNEUS? BOX (B)'; pc = 'tip'; }
   if (lastHud.pit !== pt) { lastHud.pit = pt; H.pit.textContent = pt; H.pit.className = 'h ' + pc; H.pit.style.display = pt ? 'block' : 'none'; }
   const fxv = Math.max(0, Math.min(1, (Math.abs(p.v) - 55) / 40)).toFixed(2);
   if (lastHud.fx !== fxv) { lastHud.fx = fxv; H.fx.style.opacity = fxv; }

@@ -116,7 +116,7 @@ export function stepCar(r, inp, dt, track, slip = 0) {
     // alinha com a pista
     let da = track.hdg[i] - r.yaw; da = Math.atan2(Math.sin(da), Math.cos(da));
     const rel = Math.abs(da);
-    if (r.wallCd <= 0) { hit = Math.min(1, rel * 1.2 + av / 90); r.v *= 0.62; r.wallCd = 0.45; r.hits++; r.dmg = Math.min(1, (r.dmg || 0) + hit * 0.16); }
+    if (r.wallCd <= 0) { hit = Math.min(1, rel * 1.2 + av / 90); r.v *= 0.62; r.wallCd = 0.45; r.hits++; }
     r.yaw += da * Math.min(1, dt * 6);
     r.v *= 1 - Math.min(0.9, dt * 2.2);
     r.loc.lat = sgn * lim; r.lat = r.loc.lat;
@@ -152,7 +152,7 @@ export function carCollisions(cars, dt) {
           A.x -= dx * pen; A.z -= dz * pen; B.x += dx * pen; B.z += dz * pen;
           const rear = A.prog < B.prog ? A : B, front = rear === A ? B : A;
           const rel = rear.v - front.v;
-          if (rel > 0) { rear.v -= rel * 0.45; front.v += rel * 0.15; if (rel > big) big = rel; if (rel > 2) { rear.dmg = Math.min(1, (rear.dmg || 0) + rel * 0.006); front.dmg = Math.min(1, (front.dmg || 0) + rel * 0.002); } }
+          if (rel > 0) { rear.v -= rel * 0.45; front.v += rel * 0.15; if (rel > big) big = rel; }
           // pequeno giro
           const side = (dx * Math.cos(A.yaw) - dz * Math.sin(A.yaw));
           A.yaw += side * 0.01; B.yaw -= side * 0.01;

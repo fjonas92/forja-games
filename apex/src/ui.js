@@ -138,7 +138,7 @@ export class UI {
         <tr><td>Box (pit stop)</td><td>B ou E</td><td>Direcional ↑</td></tr>
       </table>
       <p class="hint">No celular: ◀ ▶ viram o carro, ACELERA e FREIO ficam à direita. Nas opções dá para ligar o acelerador automático e virar o carro inclinando o aparelho.</p>
-      <p class="hint">Dica: atrás de outro carro você pega a aspiração e ganha velocidade. Pneus gastam em curvas fortes, freadas e na grama. Na chuva, troque para pneus de chuva no box (B): aperte uma vez para pedir, de novo para trocar o composto, e mais uma vez para cancelar. O box também conserta o carro batido.</p>
+      <p class="hint">Dica: atrás de outro carro você pega a aspiração e ganha velocidade. Pneus gastam em curvas fortes, freadas e na grama. Na chuva, troque para pneus de chuva no box (B): aperte uma vez para pedir, de novo para trocar o composto, e mais uma vez para cancelar.</p>
       ${this.btn('back', 'Voltar', '', 'data-def')}</div>`;
   }
 
@@ -305,6 +305,7 @@ export class UI {
     return `<div class="panel center" style="width:46%"><h2 class="t">Antes da corrida</h2>
       <div class="card" style="cursor:default;margin-bottom:8px"><b style="font-size:calc(var(--u)*22px)">${esc(ci.name)}</b><small><span class="dot" style="background:${THEMES[ci.theme].sky[0]}"></span>${ci.country} · ${(ci.len / 1000).toFixed(1)} km · ${a.settings.laps} voltas</small></div>
       <div class="row" style="margin-bottom:6px"><div><div class="lbl">Clima</div>${this.cyc('wx')}</div><div><div class="lbl">Pneus de largada</div>${this.cyc('ptyre')}</div></div>
+      <div class="lbl">Número de voltas</div>${this.cyc('qlaps')}
       <div class="sub">Previsão: <b class="gold">${esc(a.wxText(a.pre.wx))}</b>${a.pre.wx.r0 > 0.3 && a.pre.tyre === 'S' ? ' · <span style="color:#ff8077">pista molhada pede pneus de chuva</span>' : ''}</div>
       <div class="sub">Quer fazer uma volta de classificação? Você corre sozinho na pista e o tempo define a sua posição de largada.</div>
       ${this.btn('qualify', 'Volta de classificação', 'primary', 'data-def')}${this.btn('direct', 'Largar direto (grid pelo carro)')}${this.btn('back', 'Voltar')}</div>`;

@@ -245,7 +245,6 @@ export class View {
       api.body.rotation.z = -r.roll;
       api.body.position.y = r.surf === 1 ? Math.sin(performance.now() * 0.09 + r.number) * 0.012 * Math.min(1, r.v / 40) : 0;
       if (api._tyre !== r.tyre) { api._tyre = r.tyre; api.setTyre(TYRE_COL[r.tyre] || TYRE_COL.S); }
-      api.setDamage(Math.round((r.dmg || 0) * 20) / 20);
       api.spin(r.v * dt);
       api.steer(-r.str * 0.42);
       api.setBrake(r.brakeOn);
@@ -258,7 +257,6 @@ export class View {
           const fx = Math.sin(r.yaw), fz = Math.cos(r.yaw);
           for (const sx of [-0.97, 0.97]) if (Math.random() < 0.5 * this.wetV) this.emit(r.x - fx * 1.7 + (-fz) * sx, r.y + 0.25, r.z - fz * 1.7 + fx * sx, -fx * r.v * 0.12 + (Math.random() - .5), 1.2 + Math.random(), -fz * r.v * 0.12 + (Math.random() - .5), 0.7, 1.7, 0.8, 0.84, 0.9);
         }
-        if (r.dmg > 0.5 && Math.random() < r.dmg * 0.3) { const fx = Math.sin(r.yaw), fz = Math.cos(r.yaw); this.emit(r.x - fx * 0.6, r.y + 0.9, r.z - fz * 0.6, (Math.random() - .5) * 0.8, 1.6, (Math.random() - .5) * 0.8, 1.1, 1.2, 0.18, 0.18, 0.2); }
         if (smoke || grass) {
           const fx = Math.sin(r.yaw), fz = Math.cos(r.yaw);
           for (const sx of [-0.97, 0.97]) {

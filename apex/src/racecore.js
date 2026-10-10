@@ -75,7 +75,7 @@ export class RaceCore {
       P.lat += Math.max(-5 * dt, Math.min(5 * dt, target - P.lat));
       const vt = dist < 1 ? 0 : Math.min(26, Math.sqrt(2 * 9 * Math.max(0, dist - 2)));
       if ((dist < 7 && c.v < 1.2) || dist < 0.5) {
-        P.ph = 'stop'; c.v = 0; P.left = P.total = 2.2 + (c.isPlayer ? 3.5 * (c.dmg || 0) : this.rnd() * 0.5);
+        P.ph = 'stop'; c.v = 0; P.left = P.total = 2.2 + (c.isPlayer ? 0 : this.rnd() * 0.5);
         ev.push({ type: 'pit', car: c, ph: 'stop', time: P.total });
       } else if (P.t > 30) { c.pit = null; c.ghost = false; c.pitReq = null; }
       else return this._follow(c, P.lat, vt);
@@ -83,7 +83,7 @@ export class RaceCore {
     if (P.ph === 'stop') {
       P.left -= dt; c.v = 0; c.thr = 0; c.brk = 1;
       if (P.left <= 0) {
-        c.dmg = 0; c.pull = 0; c.wear = 1; c.tyre = P.tyre; c.pitReq = null; c.pitCount++;
+        c.wear = 1; c.tyre = P.tyre; c.pitReq = null; c.pitCount++;
         P.ph = 'out'; P.t = 0; ev.push({ type: 'pit', car: c, ph: 'done', tyre: c.tyre });
       } else return { steer: 0, throttle: 0, brake: 1, hold: true };
     }

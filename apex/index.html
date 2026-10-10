@@ -53,7 +53,7 @@ h2.t{margin:0 0 calc(var(--u)*10px);font-size:calc(var(--u)*30px);letter-spacing
 .row{display:flex;gap:calc(var(--u)*10px);align-items:center;flex-wrap:wrap}
 .row>*{flex:1}
 .lbl{font-size:calc(var(--u)*14px);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin:calc(var(--u)*10px) 0 calc(var(--u)*3px)}
-.cyc{display:flex;align-items:center;justify-content:space-between;height:max(34px,calc(var(--u)*44px));background:rgba(30,36,60,.9);border:2px solid #2f3860;border-radius:calc(var(--u)*8px);padding:0 calc(var(--u)*6px);cursor:pointer;font-weight:700;font-size:calc(var(--u)*19px);outline:0}
+.cyc{color:#fff;display:flex;align-items:center;justify-content:space-between;height:max(34px,calc(var(--u)*44px));background:rgba(30,36,60,.9);border:2px solid #2f3860;border-radius:calc(var(--u)*8px);padding:0 calc(var(--u)*6px);cursor:pointer;font-weight:700;font-size:calc(var(--u)*19px);outline:0}
 .cyc button{background:none;border:0;color:var(--gold);font:700 calc(var(--u)*26px) var(--font-hud);cursor:pointer;width:calc(var(--u)*40px);height:100%;padding:0}
 .cyc span{flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cyc:hover,.cyc.focus,.cyc:focus-visible{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,200,61,.45)}
@@ -176,7 +176,7 @@ body.tv #tower{display:none}
       <canvas class="h" id="hMini" width="300" height="220"></canvas>
       <div class="h" id="hSpeed"><div id="rpm"></div><div class="n">0</div><div class="u">KM/H <span id="hGear">N</span></div></div>
       <div class="h" id="hFx"></div>
-      <div class="h" id="hTyre">PNEUS <b id="hCmp" class="s">LISO</b><div class="tb"><i></i></div><div style="margin-top:6px">DANO</div><div class="tb dm"><i id="hDmg"></i></div></div>
+      <div class="h" id="hTyre">PNEUS <b id="hCmp" class="s">LISO</b><div class="tb"><i></i></div></div>
       <div class="h" id="hWx" style="display:none"></div>
       <div class="h" id="hPit" style="display:none"></div>
       <div class="h" id="lights"><i></i><i></i><i></i><i></i><i></i></div>
