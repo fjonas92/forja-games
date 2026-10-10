@@ -242,18 +242,30 @@ export class UI {
   s_standings() {
     const a = this.app, c = a.career, st = standings(c, a.careerEntries()), tab = a.stTab;
     const rows = tab === 'd'
-      ? st.drivers.map((d, i) => `<tr class="${d.isPlayer ? 'me' : ''}"><td>${i + 1}</td><td><span class="dot" style="background:${d.c1}"></span>${esc(d.name)}</td><td>${esc(d.team)}</td><td class="r">${d.pts}</td></tr>`).join('')
+      ? st.drivers.map((d, i) => `<tr class="${d.isPlayer ? 'me' : ''}"><td>${i + 1}</td><td><span class="dot" style="background:${d.c1}"></span>${esc(d.name)}</td><td>${esc(d.team)}</td><td class="r">${d.pts}</td>${d.pod.map(n => `<td class="r">${n || '·'}</td>`).join('')}</tr>`).join('')
       : st.teams.map((d, i) => `<tr class="${d.id === c.team ? 'me' : ''}"><td>${i + 1}</td><td><span class="dot" style="background:${d.c1}"></span>${esc(d.name)}</td><td></td><td class="r">${d.pts}</td></tr>`).join('');
     return `<div class="panel">
       <h2 class="t">Classificação</h2>
       <div class="tabs"><button class="btn nav ${tab === 'd' ? 'sel' : ''}" type="button" data-act="sttab" data-v="d" data-id="std">Pilotos</button><button class="btn nav ${tab === 't' ? 'sel' : ''}" type="button" data-act="sttab" data-v="t" data-id="stt">Equipes</button></div>
-      <table class="tb"><tr><th>#</th><th>${tab === 'd' ? 'Piloto' : 'Equipe'}</th><th>${tab === 'd' ? 'Equipe' : ''}</th><th class="r">Pts</th></tr>${rows}</table>
+      <table class="tb"><tr><th>#</th><th>${tab === 'd' ? 'Piloto' : 'Equipe'}</th><th>${tab === 'd' ? 'Equipe' : ''}</th><th class="r">Pts</th>${tab === 'd' ? '<th class="r">🥇</th><th class="r">🥈</th><th class="r">🥉</th>' : ''}</tr>${rows}</table>
       ${this.btn('back', 'Voltar', 'primary', 'data-def')}</div>`;
   }
 
   s_pause() {
     return `<div class="panel center" style="width:36%"><h2 class="t">Pausa</h2>
       ${this.btn('resume', 'Continuar', 'primary', 'data-def')}${this.btn('restart', 'Reiniciar corrida')}${this.btn('settings', 'Opções')}${this.btn('quit', 'Sair da corrida')}</div>`;
+  }
+
+  s_podium() {
+    const a = this.app, R = a.result, pd = R.ranking.slice(0, 3), me = pd.findIndex(c => c.isPlayer), car = !!R.career;
+    const head = me === 0 ? 'VOCÊ VENCEU!' : me > 0 ? 'VOCÊ NO PÓDIO!' : 'PÓDIO';
+    const med = ['🥇', '🥈', '🥉'];
+    const rows = pd.map((c, i) => `<tr class="${c.isPlayer ? 'me' : ''}"><td>${med[i]}</td><td><span class="dot" style="background:${c.c1}"></span>${esc(c.name)}</td><td>${esc(c.tag)}</td>${car ? `<td class="r">na temporada: ${R.podStats[i].map((n, k) => med[k] + ' ' + n).join('  ')}</td>` : ''}</tr>`).join('');
+    const mine = car ? `<div class="sub" style="margin:6px 0 0">Suas conquistas · temporada: <b class="gold">${R.mySeason.map((n, k) => med[k] + ' ' + n).join('  ')}</b> · carreira: <b class="gold">${R.myAll.map((n, k) => med[k] + ' ' + n).join('  ')}</b></div>` : '';
+    return `<div class="panel" style="left:10%;top:auto;bottom:3%;width:80%;padding-top:calc(var(--u)*10px);padding-bottom:calc(var(--u)*10px)">
+      <h2 class="t" style="margin-bottom:4px;text-align:center">${head}</h2>
+      <table class="tb">${rows}</table>${mine}
+      <div class="row" style="margin-top:8px">${this.btn('toresults', 'Ver resultado completo', 'primary', 'data-def')}</div></div>`;
   }
 
   s_results() {

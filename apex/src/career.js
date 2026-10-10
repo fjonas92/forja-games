@@ -72,6 +72,8 @@ export function applyResult(career, ranking) {
   });
   out.credits = PRIZE[out.pos - 1] || 20;
   career.credits += out.credits;
+  career.pod = career.pod || {}; career.pos = career.pos || [career.wins || 0, 0, 0];
+  ranking.slice(0, 3).forEach((c, i) => { const a = career.pod[c.id] || (career.pod[c.id] = [0, 0, 0]); a[i]++; if (c.isPlayer) career.pos[i]++; });
   career.races++;
   if (out.pos === 1) career.wins++;
   if (out.pos <= 3) career.podiums++;
@@ -82,7 +84,7 @@ export function applyResult(career, ranking) {
 }
 
 export function standings(career, entries) {
-  const d = entries.map(e => ({ id: e.id, name: e.name, team: e.tag, teamId: e.teamId, c1: e.c1, isPlayer: e.isPlayer, pts: career.pts[e.id] || 0 }));
+  const d = entries.map(e => ({ id: e.id, name: e.name, team: e.tag, teamId: e.teamId, c1: e.c1, isPlayer: e.isPlayer, pts: career.pts[e.id] || 0, pod: (career.pod && career.pod[e.id]) || [0, 0, 0] }));
   d.sort((a, b) => b.pts - a.pts || (a.isPlayer ? -1 : 0));
   const tmap = {}; for (const e of entries) tmap[e.teamId] = { id: e.teamId, name: e.tag, c1: e.c1, pts: career.tpts[e.teamId] || 0 };
   const t = Object.values(tmap).sort((a, b) => b.pts - a.pts);
@@ -95,7 +97,7 @@ export function endSeason(career, entries) {
   if (champ) career.titles++;
   const bonus = champ ? 3000 : 600 + Math.max(0, 8 - st.drivers.findIndex(x => x.isPlayer)) * 100;
   career.credits += bonus;
-  career.season++; career.round = 0; career.pts = {}; career.tpts = {};
+  career.season++; career.round = 0; career.pts = {}; career.tpts = {}; career.pod = {};
   return { champ, bonus, pos: st.drivers.findIndex(x => x.isPlayer) + 1 };
 }
 

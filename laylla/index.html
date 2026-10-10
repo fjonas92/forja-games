@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Laylla e os Cristais do Céu | Falzinho Games</title>
-<meta name="description" content="Jogo de plataforma 3D grátis: ajude a Laylla a recuperar os cristais do céu. Pule entre ilhas flutuantes, pise nas gelinhas, colete estrelas e avance pelo mapa. Funciona no celular e no computador.">
+<title>Laylla e os Cristais | Falzinho Games</title>
+<meta name="description" content="Jogo de plataforma 3D grátis: ajude a Laylla a recuperar os cristais. Pule entre ilhas flutuantes, pise nas gelinhas, colete estrelas e avance pelo mapa. Funciona no celular e no computador.">
 <link rel="canonical" href="https://falzinhogames.com.br/laylla/">
 <link rel="icon" href="/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,11 +73,11 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div id="flash"></div>
     <div id="touch"><div id="joy"><i id="knob"></i></div><button class="tb" id="bS" type="button" aria-label="Giro">GIRO</button><button class="tb" id="bJ" type="button" aria-label="Pular">PULAR</button></div>
     <div class="ov" id="ovTitle"><div class="box">
-      <h1>LAYLLA</h1><p style="font-family:var(--font-display);color:#fff">e os Cristais do Céu</p>
+      <h1>LAYLLA</h1><p style="font-family:var(--font-display);color:#fff">e os Cristais</p>
       <p>Os quatro Cristais Solares caíram nas ilhas flutuantes. Ajude a Laylla a pular de ilha em ilha, vencer as gelinhas e trazer a luz de volta ao céu.</p>
       <div class="btns"><button class="btn primary" id="bPlay" type="button">Jogar</button><button class="btn" id="bNew" type="button">Novo jogo</button></div>
       <p id="saveInfo"></p><div id="acc2"></div>
-      <div class="help"><span><b>Teclado:</b> WASD ou setas andam · Espaço pula (aperte de novo no ar para pulo duplo) · Shift ou J dá o giro · Q e E giram a câmera · P pausa</span><span><b>Celular:</b> joystick à esquerda, PULAR e GIRO à direita, arraste o dedo no cenário para girar a câmera</span><span>Pise nas gelinhas para derrotá-las. Pegue as 3 estrelas grandes de cada fase!</span></div>
+      <div class="help"><span><b>Teclado:</b> WASD ou setas andam · Espaço pula (aperte de novo no ar para pulo duplo) · Shift ou J dá o giro · Q e E giram a câmera · P pausa</span><span><b>Controle:</b> analógico esquerdo anda, A pula, X ou B dá o giro, analógico direito ou LB/RB giram a câmera, Start pausa</span><span><b>Celular:</b> joystick à esquerda, PULAR e GIRO à direita, arraste o dedo no cenário para girar a câmera</span><span>Pise nas gelinhas para derrotá-las. Pegue as 3 estrelas grandes de cada fase!</span></div>
     </div></div>
     <div id="map" hidden><h2>Mapa do Céu</h2><svg id="mapSvg" viewBox="0 0 800 340" role="group" aria-label="Mapa das fases"></svg><div id="mapInfo"></div><div style="margin-top:6px;display:flex;gap:8px"><button class="btn primary" id="bGo" type="button">Entrar na fase</button><button class="btn" id="bMapBack" type="button">Voltar</button></div></div>
     <div class="ov" id="ovPause" hidden><div class="box"><h2>Pausado</h2><div class="btns"><button class="btn primary" id="bResume" type="button">Continuar</button><button class="btn" id="bRetry" type="button">Reiniciar fase</button><button class="btn" id="bToMap" type="button">Mapa</button></div></div></div>
@@ -87,7 +87,7 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="tools"><button class="btn" id="bSnd" type="button">Som: ligado</button><button class="btn" id="bFull" type="button">Tela cheia</button></div>
   <section class="info">
     <h1 style="font-family:var(--font-display);font-weight:400;font-size:26px;margin:0 0 6px;color:var(--tx)">Jogo de plataforma 3D online e grátis</h1>
-    <p><strong>Laylla e os Cristais do Céu</strong> é um jogo de plataforma em 3D no navegador, colorido e iluminado. São quatro fases em ilhas flutuantes, com plataformas móveis, gelinhas para pisar, checkpoints e três estrelas escondidas em cada uma. Pulo duplo e giro ajudam a chegar nos lugares difíceis.</p>
+    <p><strong>Laylla e os Cristais</strong> é um jogo de plataforma em 3D no navegador, colorido e iluminado. São quatro fases em ilhas flutuantes, com plataformas móveis, gelinhas para pisar, checkpoints e três estrelas escondidas em cada uma. Pulo duplo e giro ajudam a chegar nos lugares difíceis.</p>
     <h2>Salvar o progresso</h2>
     <p>O progresso fica salvo no aparelho. Entrando na sua conta, ele também vai para a nuvem e acompanha você no celular ou no computador.</p>
   </section>
@@ -149,14 +149,15 @@ function buildStar(size) {
   return new THREE.Mesh(g, toon(0xffd23c, 0xaa7a00));
 }
 function buildLaylla() {
-  const g = new THREE.Group(), skin = 0x9a5f3c, dress = 0xff5fa2, hair = 0x2b1a14;
+  const g = new THREE.Group(), skin = 0xf6d2b5, dress = 0xff5fa2, hair = 0x14101a;
   const body = new THREE.Group(); g.add(body);
   const dr = new THREE.Mesh(new THREE.ConeGeometry(0.46, 0.62, 20, 1, true), toon(dress)); dr.position.y = 0.58; dr.material.side = THREE.DoubleSide; body.add(dr);
   const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.2, 6, 12), toon(0xffd23c)); torso.position.y = 0.86; body.add(torso);
   const head = new THREE.Group(); head.position.y = 1.2; body.add(head);
   const face = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 18), toon(skin)); head.add(face);
   const hm = toon(hair);
-  [[-0.27, 0.22, 0], [0.27, 0.22, 0], [0, 0.3, -0.05]].forEach((p, i) => { const s = new THREE.Mesh(new THREE.SphereGeometry(i === 2 ? 0.26 : 0.19, 14, 12), hm); s.position.set(p[0], p[1], p[2]); head.add(s); });
+  const back = new THREE.Mesh(new THREE.SphereGeometry(0.34, 18, 14), hm); back.scale.set(1, 1.25, 0.8); back.position.set(0, -0.12, -0.13); head.add(back);
+  [-1, 1].forEach((sx) => { const lock = new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.34, 4, 8), hm); lock.position.set(sx * 0.3, -0.12, 0.02); head.add(lock); });
   const cap = new THREE.Mesh(new THREE.SphereGeometry(0.31, 20, 14, 0, 6.283, 0, 1.2), hm); cap.position.set(0, 0.04, -0.02); head.add(cap);
   const bow = new THREE.Mesh(buildStar(0.12).geometry, toon(0xffd23c, 0xaa7a00)); bow.position.set(0.12, 0.42, 0.18); head.add(bow);
   const eyeM = new THREE.MeshBasicMaterial({ color: 0x1b1020 }), shine = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -242,7 +243,7 @@ function showMap() {
       '<ellipse cx="' + n[0] + '" cy="' + (n[1] + 26) + '" rx="46" ry="18" fill="#d9a77a"/><ellipse cx="' + n[0] + '" cy="' + n[1] + '" rx="52" ry="26" fill="' + (un ? cols[i] : '#b9c2cf') + '" stroke="#fff" stroke-width="4"/>' +
       '<text x="' + n[0] + '" y="' + (n[1] + 9) + '" text-anchor="middle" font-family="Bungee,sans-serif" font-size="26" fill="' + (un ? '#1d3566' : '#fff') + '">' + (un ? (i + 1) : '🔒') + '</text>' +
       (b ? '<text x="' + n[0] + '" y="' + (n[1] - 36) + '" text-anchor="middle" font-size="20">' + '⭐'.repeat(b.stars) + '☆'.repeat(3 - b.stars) + '</text>' : '') + '</g>'; });
-  h += '<circle id="mk" r="15" fill="#9a5f3c" stroke="#fff" stroke-width="4"/><circle id="mk2" r="7" fill="#2b1a14"/>';
+  h += '<circle id="mk" r="15" fill="#f6d2b5" stroke="#fff" stroke-width="4"/><circle id="mk2" r="7" fill="#14101a"/>';
   svg.innerHTML = h; selNode(Math.min(lvIdx, prog.unlocked - 1), nodes);
   svg.querySelectorAll('.nodeBtn').forEach((g) => { const i = +g.dataset.n; const f = () => { if (i < prog.unlocked) selNode(i, nodes); }; g.onclick = f; g.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') f(); }; });
 }
@@ -294,23 +295,45 @@ let drag = null; cvs.addEventListener('pointerdown', (e) => { if (mode !== 'play
 cvs.addEventListener('pointermove', (e) => { if (!drag || e.pointerId !== drag.id) return; camYaw -= (e.clientX - drag.x) * 0.008; camPitch = Math.max(0.15, Math.min(1.1, camPitch + (e.clientY - drag.y) * 0.004)); drag.x = e.clientX; drag.y = e.clientY; });
 const dend = (e) => { if (drag && e.pointerId === drag.id) drag = null; }; cvs.addEventListener('pointerup', dend); cvs.addEventListener('pointercancel', dend);
 
+
+/* ---------- controle (joystick) ---------- */
+let gpPrev = {}, gpHeld = false; const gpOn = () => { const l = navigator.getGamepads ? navigator.getGamepads() : []; for (const p of l) if (p && p.connected) return p; return null; };
+function gpPoll(dt) {
+  const p = gpOn(); if (!p) return { x: 0, y: 0 };
+  const b = (i) => !!(p.buttons[i] && p.buttons[i].pressed), edge = (i) => { const v = b(i), e = v && !gpPrev[i]; gpPrev[i] = v; return e; };
+  const dz = (v) => (Math.abs(v) < 0.18 ? 0 : v);
+  const eA = edge(0), eB = edge(1), eX = edge(2), eS = edge(9), eL = edge(14), eR = edge(15);
+  if (mode === 'title') { if (eA || eS) showMap(); }
+  else if (mode === 'map') { const n = Math.min(prog.unlocked, LL.N); if (eR && lvIdx + 1 < n) { lvIdx++; showMap(); } if (eL && lvIdx > 0) { lvIdx--; showMap(); } if (eA || eS) startLevel(lvIdx); if (eB) { hide('map'); $('ovTitle').hidden = false; mode = 'title'; } }
+  else if (mode === 'pause') { if (eA || eS) resume(); }
+  else if (mode === 'win') { if (eA) $('bNext').click(); }
+  else if (mode === 'over') { if (eA) startLevel(lvIdx); }
+  else if (mode === 'play') {
+    if (eA) jumpEdge = true; if (eX || eB) spinEdge = true; if (eS) pause();
+    gpHeld = b(0);
+    camYaw -= dz(p.axes[2] || 0) * dt * 2.4; camPitch = Math.max(0.15, Math.min(1.1, camPitch + dz(p.axes[3] || 0) * dt * 1.2));
+    if (b(4)) camYaw += dt * 2; if (b(5)) camYaw -= dt * 2;
+    let x = dz(p.axes[0] || 0), y = -dz(p.axes[1] || 0); if (b(14)) x -= 1; if (b(15)) x += 1; if (b(12)) y += 1; if (b(13)) y -= 1; return { x, y };
+  }
+  return { x: 0, y: 0 };
+}
 /* ---------- loop ---------- */
 const V = new THREE.Vector3();
 function frame(now) {
-  requestAnimationFrame(frame); const dtR = Math.min(0.05, (now - last) / 1000 || 0.016); last = now;
+  requestAnimationFrame(frame); const dtR = Math.min(0.05, (now - last) / 1000 || 0.016); last = now; const gpad = gpPoll(dtR);
   if (world) {
     const t = now / 1000;
     world.clouds.forEach((c) => { c.position.x += c.userData.sp * dtR; });
     world.crystal.rotation.y += dtR * 1.5; world.ring.rotation.z += dtR * 2; world.crystal.position.y = 2.2 + Math.sin(t * 2) * 0.15;
     if (mode === 'play' && sim) {
-      let ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x, iy = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
+      let ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x + gpad.x, iy = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y + gpad.y;
       if (keys.q) camYaw += dtR * 2; if (keys.e) camYaw -= dtR * 2;
       const m = Math.hypot(ix, iy); if (m > 1) { ix /= m; iy /= m; }
       const fx_ = -Math.sin(camYaw), fz_ = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
       const mx = fx_ * iy + rx * ix, mz = fz_ * iy + rz * ix;
       acc += dtR; let steps = 0;
       while (acc >= 1 / 60 && steps++ < 5) {
-        sim.step(1 / 60, mx, mz, jumpEdge, jumpHeld, spinEdge); jumpEdge = spinEdge = false; acc -= 1 / 60;
+        sim.step(1 / 60, mx, mz, jumpEdge, jumpHeld || gpHeld, spinEdge); jumpEdge = spinEdge = false; acc -= 1 / 60;
         for (const ev of sim.events) {
           if (ev.t === 'jump' || ev.t === 'jump2') { SFX[ev.t](); burst(sim.x, sim.y + 0.1, sim.z, 0xffffff, 4, 1.5); }
           else if (ev.t === 'gem') { SFX.gem(); const p = sim.gemPos(world.lv.gems[ev.i]); burst(p.x, p.y, p.z, 0x6ff0ff, 8, 3); }

@@ -165,6 +165,7 @@ export class View {
     }
     for (const c of this.cars.values()) this.carRoot.remove(c.group);
     this.cars.clear(); this.pLife.fill(0);
+    if (this._podium) { this.scene.remove(this._podium.group); this._podium.group.traverse(o => { if (o.geometry) o.geometry.dispose(); }); this._podium = null; }
   }
   _prepCar(api) {
     api.group.traverse(o => { if (o.isMesh) { const ms = Array.isArray(o.material) ? o.material : [o.material]; ms.forEach(m => { if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) { m.envMap = this.env; m.envMapIntensity = this.th && this.th.night ? 0.25 : 0.9; } }); } });
@@ -287,6 +288,74 @@ export class View {
     this.renderer.toneMappingExposure = 1.05;
     this.th = null;
     if (this.bloom) { this.bloom.strength = 0.5; this.bloom.threshold = 0.85; }
+  }
+  // ---------- podio (fim da corrida) ----------
+  showPodium(list) {
+    this.clearRace(); this.mode = 'podium'; this._hideGarage();
+    const T = THREE, g = new T.Group(), std = (c, m = 0.3, ro = 0.45) => new T.MeshStandardMaterial({ color: c, metalness: m, roughness: ro });
+    const floor = new T.Mesh(new T.CircleGeometry(40, 64).rotateX(-Math.PI / 2), std(0x14161d, 0.6, 0.28)); floor.receiveShadow = true; g.add(floor);
+    const wall = new T.Mesh(new T.CylinderGeometry(24, 24, 16, 48, 1, true), new T.MeshStandardMaterial({ color: 0x0c0e14, roughness: 0.9, side: T.BackSide })); wall.position.y = 8; g.add(wall);
+    for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2, bar = new T.Mesh(new T.BoxGeometry(0.25, 9, 0.25), new T.MeshBasicMaterial({ color: i % 2 ? 0x4ab3ff : 0xff5da2 })); bar.position.set(Math.cos(a) * 20, 4.5, Math.sin(a) * 20 - 2); g.add(bar); }
+    const label = (txt, big) => { const cv = document.createElement('canvas'); cv.width = 512; cv.height = 128; const x = cv.getContext('2d'); x.font = '700 ' + (big ? 62 : 52) + 'px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 10; x.strokeStyle = 'rgba(0,0,0,.85)'; x.strokeText(txt, 256, 64); x.fillStyle = big ? '#ffd24a' : '#fff'; x.fillText(txt, 256, 64); const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; const s = new T.Sprite(new T.SpriteMaterial({ map: t, depthTest: false, transparent: true })); s.scale.set(3.2, 0.8, 1); s.renderOrder = 8; return s; };
+    const steps = [{ x: 0, h: 1.3, col: 0xf2c200, n: '1' }, { x: -2.5, h: 0.9, col: 0xc3cad6, n: '2' }, { x: 2.5, h: 0.6, col: 0xcd7f32, n: '3' }];
+    const figs = [];
+    list.forEach((p, i) => {
+      const st = steps[i]; if (!st) return;
+      const step = new T.Mesh(new T.BoxGeometry(2.2, st.h, 2), std(st.col, 0.5, 0.35)); step.position.set(st.x, st.h / 2, 0); step.castShadow = step.receiveShadow = true; g.add(step);
+      const cv = document.createElement('canvas'); cv.width = cv.height = 128; const x = cv.getContext('2d'); x.font = '700 100px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#1a1a22'; x.fillText(st.n, 64, 70); const tx = new T.CanvasTexture(cv);
+      const num = new T.Mesh(new T.PlaneGeometry(1.1, 1.1), new T.MeshBasicMaterial({ map: tx, transparent: true })); num.position.set(st.x, st.h * 0.55, 1.01); g.add(num);
+      // piloto
+      const f = new T.Group(); f.position.set(st.x, st.h, 0.1);
+      const dark = std(0x1a1a22, 0.1, 0.7), suit = std(p.c1, 0.2, 0.5), skin = std(0xd9a577, 0, 0.7), hc1 = std((p.helmet && p.helmet.c1) || '#ffffff', 0.2, 0.3), hc2 = std((p.helmet && p.helmet.c2) || p.c1, 0.2, 0.3);
+      for (const s of [-1, 1]) { const leg = new T.Mesh(new T.CapsuleGeometry(0.11, 0.55, 4, 8), dark); leg.position.set(s * 0.15, 0.4, 0); f.add(leg); }
+      const torso = new T.Mesh(new T.CapsuleGeometry(0.27, 0.4, 6, 12), suit); torso.scale.z = 0.65; torso.position.y = 1.05; torso.castShadow = true; f.add(torso);
+      const belt = new T.Mesh(new T.CylinderGeometry(0.28, 0.28, 0.1, 16), hc2); belt.scale.z = 0.65; belt.position.y = 0.82; f.add(belt);
+      const head = new T.Mesh(new T.SphereGeometry(0.27, 20, 16), hc1); head.position.y = 1.72; head.castShadow = true; f.add(head);
+      const stripe = new T.Mesh(new T.TorusGeometry(0.272, 0.04, 6, 24), hc2); stripe.rotation.x = Math.PI / 2; stripe.position.y = 1.8; f.add(stripe);
+      const visor = new T.Mesh(new T.SphereGeometry(0.275, 16, 8, -0.9, 1.8, 1.15, 0.5), std(0x0b0d14, 0.9, 0.1)); visor.position.y = 1.72; f.add(visor);
+      const arms = [];
+      for (const s of [-1, 1]) {
+        const piv = new T.Group(); piv.position.set(s * 0.36, 1.3, 0); const arm = new T.Mesh(new T.CapsuleGeometry(0.08, 0.5, 4, 8), suit); arm.position.y = 0.32; piv.add(arm);
+        const hand = new T.Mesh(new T.SphereGeometry(0.1, 10, 8), skin); hand.position.y = 0.66; piv.add(hand);
+        piv.rotation.z = i === 0 ? s * 0.28 : -s * 0.9; f.add(piv); arms.push(piv);
+      }
+      let trophy = null;
+      if (i === 0) {
+        trophy = new T.Group(); const gold = new T.MeshStandardMaterial({ color: 0xffc928, metalness: 1, roughness: 0.22, emissive: 0x553a00, side: T.DoubleSide });
+        const cup = new T.Mesh(new T.LatheGeometry([[0.05, 0], [0.12, 0.08], [0.27, 0.3], [0.3, 0.46], [0.26, 0.46], [0.22, 0.3], [0.08, 0.13], [0.05, 0]].map(q => new T.Vector2(q[0], q[1])), 24), gold); cup.position.y = 0.22; trophy.add(cup);
+        const stem = new T.Mesh(new T.CylinderGeometry(0.045, 0.06, 0.24, 10), gold); stem.position.y = 0.12; trophy.add(stem);
+        const base = new T.Mesh(new T.CylinderGeometry(0.2, 0.22, 0.07, 18), gold); base.position.y = 0.035; trophy.add(base);
+        for (const s of [-1, 1]) { const h = new T.Mesh(new T.TorusGeometry(0.1, 0.022, 6, 14, Math.PI), gold); h.position.set(s * 0.3, 0.52, 0); h.rotation.z = s * -Math.PI / 2 + (s > 0 ? Math.PI : 0); trophy.add(h); }
+        trophy.position.set(0, 1.95, 0); trophy.scale.setScalar(1.25); f.add(trophy);
+      }
+      f.traverse(o => { if (o.isMesh) o.castShadow = true; });
+      const lb = label(p.name, i === 0); lb.position.set(st.x, st.h + (i === 0 ? 3.15 : 2.5), 0.1); g.add(lb);
+      g.add(f); figs.push({ f, arms, trophy, y0: st.h, ph: i * 1.7 });
+      // carro ao fundo
+      const api = makeCar({ c1: p.c1, c2: p.c2, number: p.number, helmet: p.helmet, sponsors: null }); this.th = null; this._prepCar(api);
+      api.group.position.set(st.x * 2.1, 0, -6.2 + (i === 0 ? -1.2 : 0)); api.group.rotation.y = i === 0 ? 0 : (i === 1 ? 0.55 : -0.55); api.group.scale.setScalar(0.95);
+      api.group.traverse(o => { if (o.isMesh) o.castShadow = true; }); g.add(api.group);
+    });
+    this.scene.add(g);
+    this._podium = { group: g, figs, t: 0, spot: new THREE.PointLight(0xffe2a0, 110, 40, 1.4) }; this._podium.spot.position.set(0, 6, 4); g.add(this._podium.spot);
+    this.sky.visible = false; this.parts.visible = true;
+    this.scene.fog = null; this.scene.background = new THREE.Color(0x07090f);
+    this.hemi.color.set(0xa8bcff); this.hemi.groundColor.set(0x2a2a38); this.hemi.intensity = 1.1;
+    this.sun.color.set(0xfff0dc); this.sun.intensity = 2.6; this.sunDir.set(-0.4, 0.8, 0.6).normalize();
+    this.followSun(0, 0, 0); this.renderer.toneMappingExposure = 1.05;
+    if (this.bloom) { this.bloom.strength = 0.45; this.bloom.threshold = 0.85; }
+  }
+  updatePodium(dt) {
+    const P = this._podium; if (!P) return; P.t += dt;
+    P.figs.forEach((o, i) => {
+      const w = Math.sin(P.t * 5 + o.ph) * 0.18;
+      o.arms[0].rotation.z = (i === 0 ? -0.28 : 0.9) + w * (i === 0 ? 0.15 : 1); o.arms[1].rotation.z = (i === 0 ? 0.28 : -0.9) - w * (i === 0 ? 0.15 : 1);
+      o.f.position.y = o.y0 + Math.abs(Math.sin(P.t * 3.2 + o.ph)) * (i === 0 ? 0.08 : 0.12);
+      if (o.trophy) o.trophy.rotation.y = P.t * 1.2;
+    });
+    for (let k = 0; k < 2; k++) { const c = [[1, .8, .2], [1, .3, .5], [.3, .7, 1], [.4, 1, .5]][(Math.random() * 4) | 0]; this.emit((Math.random() - .5) * 10, 7 + Math.random() * 2, (Math.random() - .5) * 5, (Math.random() - .5) * 0.8, -2.2 - Math.random(), (Math.random() - .5) * 0.8, 3, 0.16, c[0], c[1], c[2]); }
+    this._updParticles(dt);
+    const cam = this.camera; cam.fov = 40; cam.position.set(Math.sin(P.t * 0.3) * 1.6, 2.5, 10.8); cam.lookAt(0, 0.9, 0); cam.updateProjectionMatrix();
   }
   _hideGarage() { if (this.headlight) this.headlight.intensity = 0; if (this._garage) this.scene.remove(this._garage.group); this.sky.visible = true; this.parts.visible = true; }
   setGarageCar(o) {

@@ -109,7 +109,7 @@ function sanitizeName(n) { n = String(n || '').replace(/[<>]/g, '').trim(); retu
 function go(name, push = true) { if (push && ui.screen && ui.screen !== name) S.stack.push(ui.screen); ui.go(name); }
 function back() {
   const s = ui.screen;
-  if (s === 'title' || s === 'hub' || s === 'results' || s === 'qualyres') return;
+  if (s === 'title' || s === 'hub' || s === 'results' || s === 'qualyres' || s === 'podium') return;
   if (s === 'pause') return resume();
   const p = S.stack.pop(); if (p) ui.go(p); else ui.go(S.career ? 'hub' : 'title');
 }
@@ -178,6 +178,7 @@ function act(a, d, el) {
     case 'quit': quitRace(); break;
     case 'again': S.pre = S.cfg; S.stack = ['title']; ui.go('prerace'); break;
     case 'resultok': finishResultScreen(); break;
+    case 'toresults': ui.go('results'); break;
   }
 }
 
@@ -238,7 +239,7 @@ function quitRace() {
 }
 function finishResultScreen() {
   const wasCareer = S.cfg.kind === 'career';
-  S.mode = 'menu'; S.race = null; hud.hidden = true; S.input.captureKeys = false; S.view.clearRace(); S.view.mode = 'none'; S.sfx.update(null, 0, true);
+  S.mode = 'menu'; S.podium = false; S.race = null; hud.hidden = true; S.input.captureKeys = false; S.view.clearRace(); S.view.mode = 'none'; S.sfx.update(null, 0, true);
   S.stack = []; ui.go(wasCareer ? 'hub' : 'title');
 }
 
@@ -288,12 +289,15 @@ function onRaceDone(race) {
   if (S.cfg.kind === 'career' && S.career) {
     const ent = S.entries;
     R.career = C.applyResult(S.career, ranking);
+    R.podStats = ranking.slice(0, 3).map(c => (S.career.pod && S.career.pod[c.id] || [0, 0, 0]).slice());
+    R.mySeason = (S.career.pod && S.career.pod.player || [0, 0, 0]).slice(); R.myAll = (S.career.pos || [0, 0, 0]).slice();
     if (R.career.endSeason) R.season = C.endSeason(S.career, ent);
     C.saveCareer(S.career);
   }
   S.result = R; S.sfx.update(null, 0, true);
   hud.hidden = true; $('touch').hidden = true;
-  ui.go('results');
+  S.podium = true; S.view.showPodium(ranking.slice(0, 3));
+  ui.go('podium');
 }
 
 // ---------- HUD ----------
@@ -417,7 +421,8 @@ function frame(now) {
   requestAnimationFrame(frame);
   let dt = (now - last) / 1000; last = now; if (dt > 0.1) dt = 0.1; if (dt <= 0) return;
   S.input.update(dt);
-  if (S.mode === 'race') {
+  if (S.mode === 'race' && S.podium) { S.view.updatePodium(dt); uiNav(dt); }
+  else if (S.mode === 'race') {
     raceFrame(dt);
     if (S.paused || (S.race && S.race.done)) uiNav(dt);
     // desempenho: reduz qualidade se estiver ruim (so no modo automatico)
