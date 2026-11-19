@@ -1,12 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://falzinhogames.com.br/</loc></url>
+  <url><loc>https://falzinhogames.com.br/sobre.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/contato.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/privacidade.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/termos.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/</loc></url>
   <url><loc>https://falzinhogames.com.br/atelon.html</loc></url>
   <url><loc>https://falzinhogames.com.br/novo-mundo.html</loc></url>
   <url><loc>https://falzinhogames.com.br/master-fut.html</loc></url>
-  <url><loc>https://falzinhogames.com.br/privacidade.html</loc></url>
-  <url><loc>https://falzinhogames.com.br/sobre.html</loc></url>
-  <url><loc>https://falzinhogames.com.br/contato.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/tampinhas.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/mestre-do-taco.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/mente-em-jogo.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/xadrez.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/elydran.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/apex.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/moto.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/laylla.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/corrida.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/blocos.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/fazenda3d.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/escritorio.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/damas.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/fazendinha.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/pebolim.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/cruzadas.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/cartas.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/tampinhas-como-jogar.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/tampinhas-dicas.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/sinuca-regras.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/sinuca-mirar-forca.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/mente-em-jogo-modos.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/mente-em-jogo-milionario.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/xadrez-regras-especiais.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/damas-brasileiras-regras.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/truco-regras-basicas.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/elydran-controles-e-dicas.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/apex-dicas-de-pilotagem.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/fazenda-idle-dicas.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/atelon-primeiros-passos.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/novo-mundo-planejar-cidade.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/master-fut-comecar-carreira.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/guias/jogar-no-celular.html</loc></url>
+  <url><loc>https://falzinhogames.com.br/jogar/atelon/</loc></url>
+  <url><loc>https://falzinhogames.com.br/jogar/novo-mundo/</loc></url>
+  <url><loc>https://falzinhogames.com.br/jogar/master-fut/</loc></url>
   <url><loc>https://falzinhogames.com.br/tampinhas/</loc></url>
   <url><loc>https://falzinhogames.com.br/mestre-do-taco/</loc></url>
   <url><loc>https://falzinhogames.com.br/mente-em-jogo/</loc></url>
@@ -24,7 +62,4 @@
   <url><loc>https://falzinhogames.com.br/pebolim/</loc></url>
   <url><loc>https://falzinhogames.com.br/cruzadas/</loc></url>
   <url><loc>https://falzinhogames.com.br/cartas/</loc></url>
-  <url><loc>https://falzinhogames.com.br/jogar/atelon/</loc></url>
-  <url><loc>https://falzinhogames.com.br/jogar/novo-mundo/</loc></url>
-  <url><loc>https://falzinhogames.com.br/jogar/master-fut/</loc></url>
 </urlset>

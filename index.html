@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Falzinho Games: jogos de navegador. Atelon, Novo Mundo, Master Fut 2026, Tampinhas, Mestre do Taco, Mente em Jogo, Xadrez 3D, ELYDRAN: Lendas do Cristal, APEX (corrida 3D), Laylla (plataforma 3D), Corrida dos Heróis (corrida 3D), Blocos Cristal 3D, Império da Fazenda 3D, Meu Escritório 3D, Damas 3D, Minha Fazendinha, Pebolim, Palavras Cruzadas e Cartas (Truco, Blackjack e Poker).">
-<title>Falzinho Games</title>
+<meta name="description" content="Jogos de navegador grátis: estratégia, futebol de botão, sinuca, quiz, xadrez 3D, corridas, RPG, fazenda e mais. Jogue no celular ou no computador, sem instalar nada.">
+<title>Falzinho Games: jogos de navegador grátis, sem baixar nada</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,6 +73,20 @@ footer { border-top: 1px solid var(--line); padding-block: 28px 36px; display: f
   .game { transition: transform .2s ease, border-color .2s ease; }
   .game:hover { transform: translateY(-4px); border-color: var(--ember); }
 }
+
+.sec { padding-block: 40px 8px; border-top: 1px solid var(--line); margin-top: 24px; }
+.sec h2 { font-family: var(--font-display); font-weight: 400; font-size: 28px; margin: 0 0 12px; }
+.sec p, .sec li, .sec dd { color: var(--muted); max-width: 72ch; }
+.sec dt { font-weight: 700; margin-top: 14px; }
+.sec dd { margin: 4px 0 0; }
+.cat { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 14px 28px; }
+.cat a { color: var(--fg); font-weight: 700; text-decoration: none; }
+.cat a:hover { color: var(--ember); }
+.gl { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.gl a { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; text-decoration: none; height: 100%; }
+.gl a:hover { border-color: var(--ember); }
+.gl strong { display: block; color: var(--fg); margin-bottom: 4px; }
+.gl span { color: var(--muted); font-size: 14px; }
 </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663080342721156" crossorigin="anonymous"></script>
 <script src="/analytics.js"></script>
@@ -86,16 +100,13 @@ footer { border-top: 1px solid var(--line); padding-block: 28px 36px; display: f
       <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M16 20C9 20 4 30 4 41C4 48 9 53 14 50C18 48 19 44 23 44H41C45 44 46 48 50 50C55 53 60 48 60 41C60 30 55 20 48 20Z" fill="currentColor"/><path d="M18 26H22V30H26V34H22V38H18V34H14V30H18Z" fill="var(--bg)"/><circle cx="43" cy="31" r="3.4" fill="#FF6B2C"/><circle cx="50" cy="37" r="3.4" fill="#FFB03A"/></svg>
       <span class="name">FALZINHO<small>GAMES</small></span>
     </a>
-    <nav class="nav" aria-label="Principal">
-      <a href="#jogos">Jogos</a>
-      <a href="#sobre">Sobre</a>
-    </nav>
+    <nav class="nav" aria-label="Principal"><a href="/#jogos">Jogos</a><a href="/guias/">Guias</a><a href="/sobre.html">Sobre</a><a href="/contato.html">Contato</a></nav>
   </header>
 
   <main id="topo">
     <section class="hero">
       <h1>Jogos de navegador do <em>Falzinho</em>.</h1>
-      <p>Reino medieval, cidade política e gerenciador de futebol. Escolha um, clique em jogar e comece direto do celular ou do computador.</p>
+      <p>Estratégia, esportes, corridas 3D, RPG, quebra-cabeças, fazenda e cartas. Escolha um jogo, clique em jogar e comece direto do celular ou do computador, sem baixar nada.</p>
       <a class="cta" href="#jogos">Ver os jogos</a>
     </section>
 
@@ -111,16 +122,74 @@ footer { border-top: 1px solid var(--line); padding-block: 28px 36px; display: f
 
     <div class="ad" id="ad-meio" hidden>Publicidade</div>
 
-    <section class="facts" id="sobre" aria-label="Sobre a Falzinho Games">
+    <section class="facts" aria-label="Destaques">
       <div><h4>Abre no navegador</h4><p>Sem baixar nada. Entrou no link, está jogando.</p></div>
       <div><h4>Funciona no celular</h4><p>Os jogos e este site se ajustam à tela que você tiver na mão.</p></div>
       <div><h4>Sempre tem novidade</h4><p>Novos jogos entram aqui conforme ficam prontos.</p></div>
     </section>
+
+    <section class="sec" id="sobre" aria-labelledby="t-sobre">
+      <h2 id="t-sobre">Sobre o Falzinho Games</h2>
+      <p>O Falzinho Games é um estúdio independente de jogos de navegador. Todos os jogos são gratuitos e abrem direto no celular ou no computador, sem instalação. Você pode jogar sem conta, e quem cria uma conta guarda o progresso, os recordes e participa dos rankings.</p>
+      <p>Os jogos são criados e mantidos por uma pessoa só, o Falzinho, que desenha, programa e testa tudo. O catálogo vai de estratégia medieval e gerenciador de futebol a corridas em 3D, RPG, jogos de tabuleiro, cartas, quiz e fazenda.</p>
+    </section>
+
+    <section class="sec" aria-labelledby="t-cat">
+      <h2 id="t-cat">Todos os jogos</h2>
+      <ul class="cat">
+        <li><a href="/atelon.html">Atelon</a>: Construa seu reino, treine tropas e defenda suas terras em um mundo medieval direto no navegador.</li>
+        <li><a href="/novo-mundo.html">Novo Mundo</a>: Erga uma cidade do zero e governe com decisões políticas que mudam o rumo do seu povo.</li>
+        <li><a href="/master-fut.html">Master Fut 2026</a>: Monte o elenco, defina a tática e leve o seu clube ao topo da temporada.</li>
+        <li><a href="/tampinhas.html">Tampinhas</a>: Futebol de botão em 3D com 550 clubes e seleções: Copa do Mundo de 48, Champions League no formato novo, Libertadores, campeonatos e 18 bolas.</li>
+        <li><a href="/mestre-do-taco.html">Mestre do Taco</a>: Bola 8 e Sinuca Brasileira contra o computador ou em 2, com treino livre, 5 níveis e progresso salvo na sua conta.</li>
+        <li><a href="/mente-em-jogo.html">Mente em Jogo</a>: Suba a escada até R$ 1 milhão, enfrente o Relâmpago, a Sobrevivência, o Desafio Diário e o Duelo, e entre no ranking.</li>
+        <li><a href="/xadrez.html">Xadrez 3D</a>: Tabuleiro em 3D que gira na sua mão: jogue contra o computador em 3 níveis ou com um amigo no mesmo aparelho.</li>
+        <li><a href="/elydran.html">ELYDRAN: Lendas do Cristal</a>: Explore a vila e a floresta, lute em tempo real, evolua suas criaturas companheiras e derrote o Golem Guardião. Teclado, controle ou toque.</li>
+        <li><a href="/apex.html">APEX</a>: Crie seu piloto, escolha a equipe, evolua o carro e dispute 14 circuitos em 3D contra 15 rivais. Teclado, joystick ou toque no celular.</li>
+        <li><a href="/moto.html">TURBO MOTO</a>: Escolha seu piloto e a equipe, evolua a moto, enfrente a chuva e dispute 14 circuitos em 3D contra 15 rivais. Teclado, joystick ou toque no celular, com carreira salva na conta.</li>
+        <li><a href="/laylla.html">Laylla e os Cristais</a>: Ajude a Laylla a pular entre ilhas flutuantes, pisar nas gelinhas, achar estrelas escondidas e trazer os cristais de volta. Teclado, controle ou toque, com progresso salvo na conta.</li>
+        <li><a href="/corrida.html">Corrida dos Heróis</a>: Corra em 3D por 5 fases, desvie, pule e deslize, junte moedas e use o poder especial. Escolha entre Laylla, Palito Trovão, Super Bela e Super Cabeção. Teclado, controle ou toque.</li>
+        <li><a href="/blocos.html">Blocos Cristal 3D</a>: Arraste peças de cristal para o tabuleiro, complete linhas e colunas para explodir tudo e encadeie combos. Mouse ou toque, com recorde salvo e ranking.</li>
+        <li><a href="/fazenda3d.html">Império da Fazenda 3D</a>: Plante, colha, compre animais, contrate fazendeiros robôs e peça chuva. A fazenda continua rendendo enquanto você está fora, com progresso salvo na conta.</li>
+        <li><a href="/escritorio.html">Meu Escritório 3D</a>: Atenda visitantes, limpe a bagunça, apague incêndios, contrate funcionários e expanda o prédio alugando salas. Teclado, controle ou toque, com save na conta.</li>
+        <li><a href="/damas.html">Damas 3D</a>: Damas brasileiras em 3D, com captura obrigatória, dama voadora e computador em três níveis. Jogue também com um amigo, no mouse ou no toque, com ranking.</li>
+        <li><a href="/fazendinha.html">Minha Fazendinha</a>: Are a terra, plante, regue, colha e venda na loja. Cuide das galinhas, enfrente dias de chuva e salve sua fazenda na nuvem entrando na conta.</li>
+        <li><a href="/pebolim.html">Pebolim</a>: Controle as barras, defenda e faça gols contra a IA em 3 dificuldades. Os pontos de cada partida entram no ranking geral de jogadores.</li>
+        <li><a href="/cruzadas.html">Palavras Cruzadas</a>: Grade nova a cada partida, com dicas de letra, verificação de erros e o desafio do dia igual para todo mundo.</li>
+        <li><a href="/cartas.html">Cartas</a>: Truco com pedido de seis, nove e doze, Blackjack e Poker Texas Hold&#x27;em contra a IA, com fichas virtuais e ranking geral.</li>
+      </ul>
+    </section>
+
+    <section class="sec" aria-labelledby="t-guias">
+      <h2 id="t-guias">Guias e dicas</h2>
+      <p>Regras, controles e estratégias para jogar melhor.</p>
+      <ul class="gl">
+        <li><a href="/guias/tampinhas-como-jogar.html"><strong>Como jogar Tampinhas: guia para começar</strong><span>Aprenda a chutar, entenda a vez de jogar e conheça os modos de Tampinhas, o futebol de botão 3D do navegador.</span></a></li>
+        <li><a href="/guias/tampinhas-dicas.html"><strong>Tampinhas: 6 dicas para fazer mais gols</strong><span>Seis dicas práticas para melhorar sua pontaria, controlar a força e vencer mais partidas de Tampinhas.</span></a></li>
+        <li><a href="/guias/sinuca-regras.html"><strong>Bola 8 e Sinuca Brasileira: regras do Mestre do Taco</strong><span>Entenda as regras da Bola 8 e da Sinuca Brasileira como funcionam no Mestre do Taco, incluindo as faltas.</span></a></li>
+        <li><a href="/guias/sinuca-mirar-forca.html"><strong>Sinuca: como mirar e controlar a força</strong><span>Dicas de mira, ajuste fino e controle de força para melhorar no Mestre do Taco.</span></a></li>
+        <li><a href="/guias/mente-em-jogo-modos.html"><strong>Mente em Jogo: como funcionam todos os modos</strong><span>Conheça os modos Milionário, Relâmpago, Sobrevivência, Desafio Diário e Duelo do quiz Mente em Jogo.</span></a></li>
+        <li><a href="/guias/mente-em-jogo-milionario.html"><strong>Milionário: como usar as ajudas e quando parar</strong><span>Estratégia para o modo Milionário do Mente em Jogo: 50/50, Plateia, Dica, Trocar e patamares garantidos.</span></a></li>
+      </ul>
+      <p><a href="/guias/">Ver todos os guias →</a></p>
+    </section>
+
+    <section class="sec" aria-labelledby="t-faq">
+      <h2 id="t-faq">Perguntas frequentes</h2>
+      <dl>
+        <dt>Os jogos são grátis?</dt><dd>Sim. Para cobrir os custos, o site poderá exibir anúncios.</dd>
+        <dt>Preciso instalar alguma coisa?</dt><dd>Não. Tudo roda no navegador, no celular ou no computador.</dd>
+        <dt>Preciso de conta?</dt><dd>Não para jogar. Com uma conta, o progresso e os rankings ficam salvos e você continua de qualquer aparelho.</dd>
+        <dt>Alguns jogos demoram para abrir. Por quê?</dt><dd>Alguns jogos rodam em servidores gratuitos que podem levar até um minuto para acordar no primeiro acesso do dia.</dd>
+        <dt>Como falo com vocês?</dt><dd>Pela página de <a href="/contato.html">contato</a> ou pelas redes sociais.</dd>
+      </dl>
+    </section>
+
   </main>
 
   <footer>
     <span>© <span id="ano"></span> Falzinho Games. Todos os direitos reservados.</span>
-    <nav aria-label="Rodapé" style="display:flex;gap:18px;flex-wrap:wrap"><a href="/privacidade.html" style="text-decoration:none">Política de Privacidade e Cookies</a><a href="/sobre.html" style="text-decoration:none">Sobre</a><a href="/contato.html" style="text-decoration:none">Contato</a><a href="https://www.instagram.com/falzingames" target="_blank" rel="noopener" style="text-decoration:none">Instagram</a><a href="https://x.com/falzinhogames" target="_blank" rel="noopener" style="text-decoration:none">X</a></nav>
+    <nav aria-label="Rodapé" style="display:flex;gap:18px;flex-wrap:wrap"><a href="/privacidade.html">Política de Privacidade e Cookies</a><a href="/termos.html">Termos de Uso</a><a href="/guias/">Guias</a><a href="/sobre.html">Sobre</a><a href="/contato.html">Contato</a><a href="/">Início</a><a href="https://www.instagram.com/falzingames" target="_blank" rel="noopener">Instagram</a><a href="https://x.com/falzinhogames" target="_blank" rel="noopener">X</a></nav>
   </footer>
 </div>
 
@@ -141,55 +210,55 @@ const GAMES = [
     url: "/jogar/master-fut/", c1: "#1F6B2A", c2: "#8DF29A", arte: "campo", pagina: "master-fut.html" },
   { nome: "Tampinhas", genero: "Futebol de botão · Esportes", status: "Jogue agora",
     texto: "Futebol de botão em 3D com 550 clubes e seleções: Copa do Mundo de 48, Champions League no formato novo, Libertadores, campeonatos e 18 bolas.",
-    url: "/tampinhas/", c1: "#1F6B2A", c2: "#FFB03A", arte: "tampinhas", pagina: "" },
+    url: "/tampinhas/", c1: "#1F6B2A", c2: "#FFB03A", arte: "tampinhas", pagina: "tampinhas.html" },
   { nome: "Mestre do Taco", genero: "Sinuca · Esportes", status: "Jogue agora",
     texto: "Bola 8 e Sinuca Brasileira contra o computador ou em 2, com treino livre, 5 níveis e progresso salvo na sua conta.",
-    url: "/mestre-do-taco/", c1: "#0B4A2E", c2: "#F2C14E", arte: "mesa", pagina: "" },
+    url: "/mestre-do-taco/", c1: "#0B4A2E", c2: "#F2C14E", arte: "mesa", pagina: "mestre-do-taco.html" },
   { nome: "Mente em Jogo", genero: "Quiz · Conhecimentos gerais", status: "Jogue agora",
     texto: "Suba a escada até R$ 1 milhão, enfrente o Relâmpago, a Sobrevivência, o Desafio Diário e o Duelo, e entre no ranking.",
-    url: "/mente-em-jogo/", c1: "#2A0F6B", c2: "#FF3D8B", arte: "quiz", pagina: "" },
+    url: "/mente-em-jogo/", c1: "#2A0F6B", c2: "#FF3D8B", arte: "quiz", pagina: "mente-em-jogo.html" },
   { nome: "Xadrez 3D", genero: "Xadrez · Estratégia", status: "Jogue agora",
     texto: "Tabuleiro em 3D que gira na sua mão: jogue contra o computador em 3 níveis ou com um amigo no mesmo aparelho.",
-    url: "/xadrez/", c1: "#6B4220", c2: "#E9B45A", arte: "xadrez", pagina: "" },
+    url: "/xadrez/", c1: "#6B4220", c2: "#E9B45A", arte: "xadrez", pagina: "xadrez.html" },
   { nome: "ELYDRAN", genero: "RPG de ação · Lendas do Cristal", status: "Jogue agora",
     texto: "Explore a vila e a floresta, lute em tempo real, evolua suas criaturas companheiras e derrote o Golem Guardião. Teclado, controle ou toque.",
-    url: "/elydran/", c1: "#2A1A5A", c2: "#7FD6FF", arte: "elydran", pagina: "" },
+    url: "/elydran/", c1: "#2A1A5A", c2: "#7FD6FF", arte: "elydran", pagina: "elydran.html" },
   { nome: "APEX", genero: "Corrida 3D · Campeonato", status: "Jogue agora",
     texto: "Crie seu piloto, escolha a equipe, evolua o carro e dispute 14 circuitos em 3D contra 15 rivais. Teclado, joystick ou toque no celular.",
-    url: "/apex/", c1: "#14182C", c2: "#FF3B30", arte: "apex", pagina: "" },
+    url: "/apex/", c1: "#14182C", c2: "#FF3B30", arte: "apex", pagina: "apex.html" },
   { nome: "TURBO MOTO", genero: "Corrida de moto 3D · Campeonato", status: "Jogue agora",
     texto: "Escolha seu piloto e a equipe, evolua a moto, enfrente a chuva e dispute 14 circuitos em 3D contra 15 rivais. Teclado, joystick ou toque no celular, com carreira salva na conta.",
-    url: "/moto/", c1: "#1B2A5E", c2: "#FF8A1F", arte: "moto", pagina: "" },
+    url: "/moto/", c1: "#1B2A5E", c2: "#FF8A1F", arte: "moto", pagina: "moto.html" },
   { nome: "Laylla e os Cristais", genero: "Plataforma 3D · Aventura", status: "Jogue agora",
     texto: "Ajude a Laylla a pular entre ilhas flutuantes, pisar nas gelinhas, achar estrelas escondidas e trazer os cristais de volta. Teclado, controle ou toque, com progresso salvo na conta.",
-    url: "/laylla/", c1: "#2B5CB0", c2: "#FF5FA2", arte: "laylla", pagina: "" },
+    url: "/laylla/", c1: "#2B5CB0", c2: "#FF5FA2", arte: "laylla", pagina: "laylla.html" },
   { nome: "Corrida dos Heróis", genero: "Corrida infinita 3D · Aventura", status: "Jogue agora",
     texto: "Corra em 3D por 5 fases, desvie, pule e deslize, junte moedas e use o poder especial. Escolha entre Laylla, Palito Trovão, Super Bela e Super Cabeção. Teclado, controle ou toque.",
-    url: "/corrida/", c1: "#1E50D8", c2: "#FFD400", arte: "corrida", pagina: "" },
+    url: "/corrida/", c1: "#1E50D8", c2: "#FFD400", arte: "corrida", pagina: "corrida.html" },
   { nome: "Blocos Cristal 3D", genero: "Quebra-cabeça 3D · Combos", status: "Jogue agora",
     texto: "Arraste peças de cristal para o tabuleiro, complete linhas e colunas para explodir tudo e encadeie combos. Mouse ou toque, com recorde salvo e ranking.",
-    url: "/blocos/", c1: "#2A1A66", c2: "#FF4D6D", arte: "blocos", pagina: "" },
+    url: "/blocos/", c1: "#2A1A66", c2: "#FF4D6D", arte: "blocos", pagina: "blocos.html" },
   { nome: "Império da Fazenda 3D", genero: "Fazenda · Idle 3D", status: "Jogue agora",
     texto: "Plante, colha, compre animais, contrate fazendeiros robôs e peça chuva. A fazenda continua rendendo enquanto você está fora, com progresso salvo na conta.",
-    url: "/fazenda3d/", c1: "#2F8F3A", c2: "#FFD23C", arte: "fazenda3d", pagina: "" },
+    url: "/fazenda3d/", c1: "#2F8F3A", c2: "#FFD23C", arte: "fazenda3d", pagina: "fazenda3d.html" },
   { nome: "Meu Escritório 3D", genero: "Simulação 3D · Gerência", status: "Jogue agora",
     texto: "Atenda visitantes, limpe a bagunça, apague incêndios, contrate funcionários e expanda o prédio alugando salas. Teclado, controle ou toque, com save na conta.",
-    url: "/escritorio/", c1: "#1F4E8C", c2: "#FFD23C", arte: "escritorio", pagina: "" },
+    url: "/escritorio/", c1: "#1F4E8C", c2: "#FFD23C", arte: "escritorio", pagina: "escritorio.html" },
   { nome: "Damas 3D", genero: "Tabuleiro 3D · Estratégia", status: "Jogue agora",
     texto: "Damas brasileiras em 3D, com captura obrigatória, dama voadora e computador em três níveis. Jogue também com um amigo, no mouse ou no toque, com ranking.",
-    url: "/damas/", c1: "#1D5A3A", c2: "#F4E6C6", arte: "damas", pagina: "" },
+    url: "/damas/", c1: "#1D5A3A", c2: "#F4E6C6", arte: "damas", pagina: "damas.html" },
   { nome: "Minha Fazendinha", genero: "Fazenda · Relaxante", status: "Jogue agora",
     texto: "Are a terra, plante, regue, colha e venda na loja. Cuide das galinhas, enfrente dias de chuva e salve sua fazenda na nuvem entrando na conta.",
-    url: "/fazendinha/", c1: "#2F8A3D", c2: "#FFD23C", arte: "fazenda", pagina: "" },
+    url: "/fazendinha/", c1: "#2F8A3D", c2: "#FFD23C", arte: "fazenda", pagina: "fazendinha.html" },
   { nome: "Pebolim", genero: "Mesa · Esportes", status: "Jogue agora",
     texto: "Controle as barras, defenda e faça gols contra a IA em 3 dificuldades. Os pontos de cada partida entram no ranking geral de jogadores.",
-    url: "/pebolim/", c1: "#0D2A3E", c2: "#2F7BFF", arte: "pebolim", pagina: "" },
+    url: "/pebolim/", c1: "#0D2A3E", c2: "#2F7BFF", arte: "pebolim", pagina: "pebolim.html" },
   { nome: "Palavras Cruzadas", genero: "Palavras · Raciocínio", status: "Jogue agora",
     texto: "Grade nova a cada partida, com dicas de letra, verificação de erros e o desafio do dia igual para todo mundo.",
-    url: "/cruzadas/", c1: "#2A1F5C", c2: "#FFC83D", arte: "cruzadas", pagina: "" },
+    url: "/cruzadas/", c1: "#2A1F5C", c2: "#FFC83D", arte: "cruzadas", pagina: "cruzadas.html" },
   { nome: "Cartas", genero: "Truco · Blackjack · Poker", status: "Jogue agora",
     texto: "Truco com pedido de seis, nove e doze, Blackjack e Poker Texas Hold'em contra a IA, com fichas virtuais e ranking geral.",
-    url: "/cartas/", c1: "#0E5A3A", c2: "#E5384A", arte: "cartas", pagina: "" }
+    url: "/cartas/", c1: "#0E5A3A", c2: "#E5384A", arte: "cartas", pagina: "cartas.html" }
 ];
 
 const cap = (x, y, cor, miolo) => `<g transform="translate(${x} ${y})"><circle r="15" fill="#000" opacity=".28" transform="translate(2 3)"/><circle r="14" fill="${cor}" stroke="#fff" stroke-width="2"/><circle r="14" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="3" stroke-dasharray="2.2 2.2"/><circle r="8" fill="${miolo}" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/></g>`;
